@@ -1,0 +1,33 @@
+// Public library surface — pure, testable building blocks plus the build+pin pipeline.
+// Lets consumers (SDK / integration tests) build trees and pin to IPFS in-process instead
+// of shelling out to the `csm-merkle` binary (which lives in cli.ts).
+
+// Pure deterministic core
+export { buildIcsTree, buildStrikesTree, ICS_LEAF_ENCODING, STRIKES_LEAF_ENCODING } from './tree';
+export type { StrikesEntry, TreeDump } from './tree';
+
+// File I/O helpers
+export {
+  parseAddresses,
+  readAddressFile,
+  readStrikesFile,
+  readJsonFile,
+  writeJsonFile,
+} from './io';
+export type { TreeConfig } from './io';
+
+// IPFS pinning client (env-switchable endpoint: real Pinata or @csm-lab/ipfs-mock)
+export {
+  pinJsonToIpfs,
+  hasPinataCredentials,
+  hasCustomIpfsEndpoint,
+  shouldAttemptPin,
+  resolveIpfsApiUrl,
+  ipfsOptionsFromEnv,
+  DEFAULT_IPFS_API_URL,
+} from './ipfs';
+export type { IpfsClientOptions, PinResponse } from './ipfs';
+
+// Build + pin pipeline (root + CID; on-chain work belongs to @csm-lab/receipts)
+export { makeIcs, makeStrikes } from './pipelines';
+export type { MakeResult, MakeOptions } from './pipelines';

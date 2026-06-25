@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "csm-lab library",
+  "extends": "../../tsconfig.base.json",
+  "comment": "Only PATH-INDEPENDENT options here. outDir/rootDir/include resolve relative to the file that declares them, so they must live in each package's own tsconfig — not in this shared base.",
+  "compilerOptions": {
+    "types": ["node"]
+  }
+}

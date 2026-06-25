@@ -1,0 +1,12 @@
+[
+  {
+    "nodeOperatorId": 4,
+    "pubkey": "0x8a1c6881aa97ac4e31694e42f837cd510355fed4760ac2495bb4d4b0df4ce2ce78bb27ee145e284563cb8582f7ee14e7",
+    "strikes": [0, 0, 0, 0, 0, 1]
+  },
+  {
+    "nodeOperatorId": 7,
+    "pubkey": "0xb2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1",
+    "strikes": [1, 0, 2]
+  }
+]

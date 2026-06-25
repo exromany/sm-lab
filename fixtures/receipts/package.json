@@ -1,0 +1,28 @@
+{
+  "name": "@csm-lab/receipts",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Versioned CSM anvil/deploy receipts — typed, importable contract addresses & ABIs",
+  "license": "MIT",
+  "keywords": ["csm", "lido", "anvil", "deploy", "receipts", "fixtures", "testing"],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./data/*": "./data/*"
+  },
+  "files": ["dist", "data", "README.md"],
+  "scripts": {
+    "build": "tsdown",
+    "types": "tsc --noEmit",
+    "refresh": "node --import tsx scripts/refresh.ts"
+  },
+  "devDependencies": {
+    "@csm-lab/config": "workspace:*",
+    "tsdown": "catalog:",
+    "tsx": "^4.19.0",
+    "typescript": "catalog:",
+    "@types/node": "catalog:"
+  }
+}

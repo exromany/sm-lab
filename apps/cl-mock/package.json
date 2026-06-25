@@ -1,0 +1,54 @@
+{
+  "name": "@csm-lab/cl-mock",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Standalone Consensus Layer (Beacon API) mock server for CSM integration testing",
+  "license": "MIT",
+  "keywords": [
+    "ethereum",
+    "beacon",
+    "beacon-api",
+    "consensus-layer",
+    "csm",
+    "lido",
+    "mock",
+    "testing"
+  ],
+  "bin": {
+    "csm-cl-mock": "dist/cli.mjs"
+  },
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "types": "tsc --noEmit",
+    "start": "node dist/cli.mjs serve"
+  },
+  "dependencies": {
+    "@csm-lab/core": "workspace:*",
+    "hono": "catalog:",
+    "@hono/node-server": "catalog:",
+    "commander": "catalog:"
+  },
+  "devDependencies": {
+    "@csm-lab/config": "workspace:*",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "@types/node": "catalog:"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

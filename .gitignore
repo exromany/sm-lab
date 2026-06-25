@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# env / secrets (Pinata keys, RPC urls, deployer pks — never commit)
+.env
+.env.*
+!.env.sample
+
+# local runtime state (mock servers persist here when --persist is used)
+.data/
+tmp/
+
+.DS_Store
+*.log

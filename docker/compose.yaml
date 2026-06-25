@@ -1,0 +1,27 @@
+# One-command local CSM test bed: beacon mock + IPFS mock + execution layer.
+# `pnpm stack:up` (from repo root) brings the whole thing online offline.
+#
+# Each app image is a thin wrapper over the same `bin` the package publishes to npm —
+# see docs/architecture.md "One source, two artifacts".
+services:
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:latest
+    entrypoint: ['anvil', '--host', '0.0.0.0']
+    ports:
+      - '8545:8545'
+
+  cl-mock:
+    build:
+      context: ..
+      dockerfile: apps/cl-mock/Dockerfile
+    command: ['serve', '--host', '0.0.0.0']
+    ports:
+      - '5052:5052'
+
+  ipfs-mock:
+    build:
+      context: ..
+      dockerfile: apps/ipfs-mock/Dockerfile
+    command: ['serve', '--host', '0.0.0.0']
+    ports:
+      - '3000:3000' # pinning API + /ipfs/:cid gateway

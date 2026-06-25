@@ -1,0 +1,82 @@
+import { describe, it, expect } from 'vitest';
+import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
+import {
+  buildIcsTree,
+  buildStrikesTree,
+  ICS_LEAF_ENCODING,
+  STRIKES_LEAF_ENCODING,
+  type StrikesEntry,
+} from '../src/tree';
+
+const ADDRESSES = [
+  '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+  '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
+  '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
+];
+
+const STRIKES: StrikesEntry[] = [
+  {
+    nodeOperatorId: 4,
+    pubkey:
+      '0x8a1c6881aa97ac4e31694e42f837cd510355fed4760ac2495bb4d4b0df4ce2ce78bb27ee145e284563cb8582f7ee14e7',
+    strikes: [0, 0, 0, 0, 0, 1],
+  },
+  {
+    nodeOperatorId: 7,
+    pubkey:
+      '0xb2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90a1',
+    strikes: [1, 0, 2],
+  },
+];
+
+// Pinned against `@openzeppelin/merkle-tree` output — regenerate only on a deliberate
+// algorithm change, never to "make the test pass".
+const ICS_ROOT = '0xff0cbba3ac8dfd35745552844b38c43c278b824d5bf0f52a51bc81d5e4e02931';
+const STRIKES_ROOT = '0x773efb050b1f9108d3f18adee2a21b71faa1d05c375230d639e31be0d9cd8d38';
+
+describe('buildIcsTree', () => {
+  it('produces a stable root for fixed addresses', () => {
+    expect(buildIcsTree(ADDRESSES).root).toBe(ICS_ROOT);
+  });
+
+  it('uses the ["address"] leaf encoding', () => {
+    const tree = buildIcsTree(ADDRESSES);
+    expect(ICS_LEAF_ENCODING).toEqual(['address']);
+    // dump() records the leaf-value encoding the tree was built with
+    expect(tree.dump().leafEncoding).toEqual(['address']);
+  });
+
+  it('round-trips: a leaf proof verifies against the root', () => {
+    const tree = buildIcsTree(ADDRESSES);
+    const [entry] = ADDRESSES;
+    const proof = tree.getProof([entry!]);
+    expect(StandardMerkleTree.verify(tree.root, ['address'], [entry!], proof)).toBe(true);
+  });
+
+  it('is order-independent in root (OZ sorts leaves)', () => {
+    const reversed = ADDRESSES.toReversed();
+    expect(buildIcsTree(reversed).root).toBe(ICS_ROOT);
+  });
+});
+
+describe('buildStrikesTree', () => {
+  it('produces a stable root for fixed strike records', () => {
+    expect(buildStrikesTree(STRIKES).root).toBe(STRIKES_ROOT);
+  });
+
+  it('uses the ["uint256","string","uint256[]"] leaf encoding', () => {
+    const tree = buildStrikesTree(STRIKES);
+    expect(STRIKES_LEAF_ENCODING).toEqual(['uint256', 'string', 'uint256[]']);
+    expect(tree.dump().leafEncoding).toEqual(['uint256', 'string', 'uint256[]']);
+  });
+
+  it('round-trips: a strikes leaf proof verifies against the root', () => {
+    const tree = buildStrikesTree(STRIKES);
+    const first = STRIKES[0]!;
+    const leaf = [first.nodeOperatorId, first.pubkey, first.strikes];
+    const proof = tree.getProof(leaf);
+    expect(
+      StandardMerkleTree.verify(tree.root, ['uint256', 'string', 'uint256[]'], leaf, proof),
+    ).toBe(true);
+  });
+});

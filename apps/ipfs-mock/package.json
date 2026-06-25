@@ -1,0 +1,55 @@
+{
+  "name": "@csm-lab/ipfs-mock",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Pinata-compatible IPFS pinning + gateway emulator with deterministic CIDs, for CSM testing",
+  "license": "MIT",
+  "keywords": [
+    "ipfs",
+    "pinata",
+    "mock",
+    "csm",
+    "lido",
+    "testing",
+    "cid",
+    "gateway"
+  ],
+  "bin": {
+    "csm-ipfs-mock": "dist/cli.mjs"
+  },
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "types": "tsc --noEmit",
+    "start": "node dist/cli.mjs serve"
+  },
+  "dependencies": {
+    "@csm-lab/core": "workspace:*",
+    "hono": "catalog:",
+    "@hono/node-server": "catalog:",
+    "commander": "catalog:",
+    "multiformats": "^13.3.1"
+  },
+  "devDependencies": {
+    "@csm-lab/config": "workspace:*",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "@types/node": "catalog:"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,24 @@
+# pnpm workspace definition — the four lifecycle buckets.
+# See docs/architecture.md for why apps/tools/fixtures/packages are split this way.
+packages:
+  - "apps/*" # long-running services (npm bin + Docker image + helm)
+  - "tools/*" # one-shot CLIs / pipelines (npm bin, run-and-exit)
+  - "fixtures/*" # versioned data, zero runtime (published as typed JSON)
+  - "packages/*" # shared internals consumed by the above
+
+# Single source of truth for shared dependency versions across all packages.
+# Reference in any package.json as e.g.  "hono": "catalog:".
+# This kills the version drift the seed repos show today (npm vs yarn, TS 5.8 vs ts-node).
+catalog:
+  # runtime / framework
+  hono: ^4.7.0
+  "@hono/node-server": ^1.14.0
+  commander: ^13.1.0
+  dotenv: ^16.5.0
+  # csm-specific
+  "@openzeppelin/merkle-tree": ^1.0.8
+  # tooling (also pinned at root, repeated here so packages can opt in)
+  typescript: ^5.8.2
+  tsdown: ^0.22.3
+  vitest: ^3.0.0
+  "@types/node": ^22.13.0

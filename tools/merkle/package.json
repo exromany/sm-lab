@@ -1,0 +1,50 @@
+{
+  "name": "@csm-lab/merkle",
+  "version": "1.1.0",
+  "type": "module",
+  "description": "Merkle tree builder for Lido CSM — ICS (vetted gate) and strikes pipelines",
+  "license": "MIT",
+  "keywords": [
+    "merkle",
+    "csm",
+    "lido",
+    "ics",
+    "strikes",
+    "testing"
+  ],
+  "bin": {
+    "csm-merkle": "dist/cli.mjs"
+  },
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@openzeppelin/merkle-tree": "catalog:",
+    "commander": "catalog:",
+    "dotenv": "catalog:"
+  },
+  "devDependencies": {
+    "@csm-lab/config": "workspace:*",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "@types/node": "catalog:"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
