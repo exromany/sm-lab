@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   extractAbis,
   abiHash,
@@ -61,13 +61,14 @@ export function runRefresh(opts: RefreshOptions): RefreshResult {
   fs.rmSync(abiDir, { recursive: true, force: true });
   const abiFiles: string[] = [];
   const abiHashes: Record<string, string> = {};
-  for (const name of Object.keys(abis) as ContractName[]) {
+  const names = Object.keys(abis) as ContractName[];
+  for (const name of names) {
     const file = path.join(abiDir, `${name}.ts`);
     writeFile(file, renderAbiModule(abiVarName(name), abis[name]));
     abiFiles.push(file);
     abiHashes[name] = abiHash(abis[name]);
   }
-  writeFile(path.join(abiDir, 'index.ts'), renderAbiIndex(Object.keys(abis)));
+  writeFile(path.join(abiDir, 'index.ts'), renderAbiIndex(names));
 
   // 3. Address snapshot copied verbatim → data/<chain>/<module>.json.
   const addressFile = path.join(pkgDir, 'data', chain, `${module}.json`);
@@ -91,6 +92,7 @@ function parseArgs(argv: string[]): {
   module: 'csm' | 'cm';
   contractsPath: string;
   force: boolean;
+  pkgDir: string;
 } {
   const get = (flag: string): string | undefined => {
     const i = argv.indexOf(flag);
@@ -101,17 +103,16 @@ function parseArgs(argv: string[]): {
   if (!chain) throw new Error('Missing --chain (e.g. --chain hoodi)');
   if (moduleArg !== 'csm' && moduleArg !== 'cm')
     throw new Error('Missing/invalid --module (csm|cm)');
-  const pkgDir = path.dirname(new URL('.', import.meta.url).pathname);
+  const pkgDir = path.dirname(fileURLToPath(new URL('.', import.meta.url)));
   const contractsPath = path.resolve(
     pkgDir,
     get('--contracts') ?? '../../../community-staking-module',
   );
-  return { chain, module: moduleArg, contractsPath, force: argv.includes('--force') };
+  return { chain, module: moduleArg, contractsPath, force: argv.includes('--force'), pkgDir };
 }
 
 function main(): void {
-  const { chain, module, contractsPath, force } = parseArgs(process.argv.slice(2));
-  const pkgDir = path.resolve(path.dirname(new URL('.', import.meta.url).pathname));
+  const { chain, module, contractsPath, force, pkgDir } = parseArgs(process.argv.slice(2));
   const headRef = execFileSync('git', ['-C', contractsPath, 'rev-parse', 'HEAD'], {
     encoding: 'utf8',
   }).trim();

@@ -57,24 +57,9 @@ export function abiHash(abi: unknown[]): string {
 }
 
 export function abiVarName(name: string): string {
-  // Handle consecutive uppercase letters followed by lowercase (e.g. CSModule -> csModule)
-  if (/^[A-Z]{2,}[a-z]/.test(name)) {
-    let i = 0;
-    while (i < name.length) {
-      const char = name[i];
-      if (!char || !/[A-Z]/.test(char)) break;
-      i++;
-    }
-    if (i > 1 && i < name.length) {
-      const char = name[i];
-      if (char && /[a-z]/.test(char)) {
-        i--;
-      }
-    }
-    return name.slice(0, i).toLowerCase() + name.slice(i) + 'Abi';
-  }
-  // For all-caps or simple names, just lowercase the first char (e.g. VEBO -> vEBO)
-  return name.charAt(0).toLowerCase() + name.slice(1) + 'Abi';
+  // Lowercase the leading run of capitals that begins a word (CSModule -> csModule),
+  // else just the first char (VEBO -> vEBO, Lido -> lido). Then suffix 'Abi'.
+  return name.replace(/^[A-Z]+(?=[A-Z][a-z])|^[A-Z]/, (m) => m.toLowerCase()) + 'Abi';
 }
 
 export function renderAbiModule(varName: string, abi: unknown[]): string {
@@ -137,9 +122,12 @@ export function mergeManifest(
   return {
     abiGitRef: next.abiGitRef,
     abiHashes: next.abiHashes,
-    snapshots: snapshots.toSorted((a, b) =>
-      `${a.chain}/${a.module}`.localeCompare(`${b.chain}/${b.module}`),
-    ),
+    // Codepoint sort (locale-independent) so the committed manifest is reproducible across machines.
+    snapshots: snapshots.toSorted((a, b) => {
+      const ka = `${a.chain}/${a.module}`;
+      const kb = `${b.chain}/${b.module}`;
+      return ka < kb ? -1 : ka > kb ? 1 : 0;
+    }),
     generatedAt: next.generatedAt,
   };
 }
