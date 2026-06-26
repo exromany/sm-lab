@@ -63,7 +63,8 @@ pnpm --filter @csm-lab/receipts refresh -- \
   [--force]
 ```
 
-`--contracts` defaults to `../community-staking-module` (sibling checkout). `--force` bypasses
+`--contracts` defaults to `../../../community-staking-module` — a sibling of the csm-lab repo root
+(i.e. the path resolves relative to `scripts/` inside the package). `--force` bypasses
 the git-ref guard (see below).
 
 After refreshing, commit the updated `data/` and `src/abi/` files together.

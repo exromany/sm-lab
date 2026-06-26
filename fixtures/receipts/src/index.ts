@@ -2,6 +2,13 @@
 export * from './abi';
 // Default address books per (chain, module); override at the call site in @csm-lab/recipes.
 export { addresses } from './addresses';
-export type { AddressBook, ChainName, ModuleName } from './types';
+export type {
+  AddressBook,
+  CsmAddressBook,
+  CmAddressBook,
+  Hex,
+  ChainName,
+  ModuleName,
+} from './types';
 // Provenance: contracts git-ref(s) + per-ABI sha256.
 export { default as manifest } from '../data/manifest.json';
