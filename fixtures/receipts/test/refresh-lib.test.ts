@@ -4,7 +4,6 @@ import * as path from 'node:path';
 import {
   CONTRACT_SOURCES,
   readAbi,
-  extractAbis,
   abiHash,
   abiVarName,
   renderAbiModule,
@@ -34,7 +33,9 @@ describe('CONTRACT_SOURCES', () => {
 describe('readAbi / extractAbis', () => {
   it('reads the .abi field from out/<src>.sol/<src>.json', () => {
     const abi = readAbi(outDir, 'Foo');
-    expect(abi).toEqual([{ type: 'function', name: 'foo', inputs: [], outputs: [], stateMutability: 'view' }]);
+    expect(abi).toEqual([
+      { type: 'function', name: 'foo', inputs: [], outputs: [], stateMutability: 'view' },
+    ]);
   });
   it('throws a path-bearing error when the artifact is missing', () => {
     expect(() => readAbi(outDir, 'Missing')).toThrow(/Missing\.sol\/Missing\.json/);
@@ -80,7 +81,10 @@ describe('readDeploySnapshot', () => {
 describe('mergeManifest', () => {
   const base = { abiGitRef: 'r1', abiHashes: { CSModule: 'h1' }, generatedAt: 't1' };
   it('creates a manifest from null', () => {
-    const m = mergeManifest(null, { ...base, snapshot: { chain: 'hoodi', module: 'csm', gitRef: 'r1' } });
+    const m = mergeManifest(null, {
+      ...base,
+      snapshot: { chain: 'hoodi', module: 'csm', gitRef: 'r1' },
+    });
     expect(m.snapshots).toEqual([{ chain: 'hoodi', module: 'csm', gitRef: 'r1' }]);
     expect(m.abiHashes).toEqual({ CSModule: 'h1' });
   });

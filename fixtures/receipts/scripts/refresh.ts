@@ -31,7 +31,8 @@ export interface RefreshResult {
 }
 
 function deployJsonPath(contractsPath: string, chain: string, module: 'csm' | 'cm'): string {
-  const sub = module === 'cm' ? path.join('curated', `deploy-${chain}.json`) : `deploy-${chain}.json`;
+  const sub =
+    module === 'cm' ? path.join('curated', `deploy-${chain}.json`) : `deploy-${chain}.json`;
   return path.join(contractsPath, 'artifacts', chain, sub);
 }
 
@@ -84,7 +85,12 @@ export function runRefresh(opts: RefreshOptions): RefreshResult {
   return { abiFiles, addressFile, manifestFile };
 }
 
-function parseArgs(argv: string[]): { chain: string; module: 'csm' | 'cm'; contractsPath: string; force: boolean } {
+function parseArgs(argv: string[]): {
+  chain: string;
+  module: 'csm' | 'cm';
+  contractsPath: string;
+  force: boolean;
+} {
   const get = (flag: string): string | undefined => {
     const i = argv.indexOf(flag);
     return i >= 0 ? argv[i + 1] : undefined;
@@ -92,16 +98,22 @@ function parseArgs(argv: string[]): { chain: string; module: 'csm' | 'cm'; contr
   const chain = get('--chain');
   const moduleArg = get('--module');
   if (!chain) throw new Error('Missing --chain (e.g. --chain hoodi)');
-  if (moduleArg !== 'csm' && moduleArg !== 'cm') throw new Error('Missing/invalid --module (csm|cm)');
+  if (moduleArg !== 'csm' && moduleArg !== 'cm')
+    throw new Error('Missing/invalid --module (csm|cm)');
   const pkgDir = path.dirname(new URL('.', import.meta.url).pathname);
-  const contractsPath = path.resolve(pkgDir, get('--contracts') ?? '../../../community-staking-module');
+  const contractsPath = path.resolve(
+    pkgDir,
+    get('--contracts') ?? '../../../community-staking-module',
+  );
   return { chain, module: moduleArg, contractsPath, force: argv.includes('--force') };
 }
 
 function main(): void {
   const { chain, module, contractsPath, force } = parseArgs(process.argv.slice(2));
   const pkgDir = path.resolve(path.dirname(new URL('.', import.meta.url).pathname));
-  const headRef = execFileSync('git', ['-C', contractsPath, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  const headRef = execFileSync('git', ['-C', contractsPath, 'rev-parse', 'HEAD'], {
+    encoding: 'utf8',
+  }).trim();
   const res = runRefresh({
     contractsPath,
     chain,

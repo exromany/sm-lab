@@ -45,7 +45,11 @@ describe('runRefresh', () => {
     const addr = JSON.parse(fs.readFileSync(res.addressFile, 'utf8'));
     expect(addr.CSModule).toBe('0x0000000000000000000000000000000000000001');
     const manifest = JSON.parse(fs.readFileSync(res.manifestFile, 'utf8'));
-    expect(manifest.snapshots).toContainEqual({ chain: 'hoodi', module: 'csm', gitRef: 'deadbeef' });
+    expect(manifest.snapshots).toContainEqual({
+      chain: 'hoodi',
+      module: 'csm',
+      gitRef: 'deadbeef',
+    });
     expect(manifest.abiGitRef).toBe('deadbeef');
     expect(Object.keys(manifest.abiHashes).length).toBeGreaterThan(0);
   });

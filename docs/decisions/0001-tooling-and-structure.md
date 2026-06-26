@@ -13,7 +13,7 @@ Decisions made while bootstrapping `csm-lab`, with the alternatives that were we
 | 5 | Bundler | **tsdown** (Rolldown+Oxc) | Bun/Bunup; unbuild; tsup (deprecated) | tsup successor; frictionless `tsc`/`ts-node` migration; auto dts; no runtime re-platform |
 | 6 | Linter | **oxlint** | Biome; eslint+prettier (org default) | all-Rust pairing with tsdown; single fast binary |
 | 7 | Distribution | **npm + Docker/helm** | npm-only; internal-only | preserves `npx` UX **and** test-infra deploys, from one source |
-| 8 | Receipts source of truth | **committed snapshots + refresh script** | generated from vendored contracts; hybrid | no Solidity toolchain in this repo; reproducible reads |
+| 8 | Receipts source of truth | **committed snapshots + refresh script** | generated from vendored contracts; hybrid | no Solidity toolchain in this repo; reproducible reads. Snapshots are extracted from a local contracts checkout's `out/` (ABIs) + `artifacts/` (addresses) and recorded with a provenance manifest (`data/manifest.json`: git-refs + per-ABI sha256). |
 | 9 | Shared internals | **harvested into `@csm-lab/core`, bundled** | design upfront; publish separately | extract only proven duplication; self-contained consumers |
 
 ## Open / revisit later

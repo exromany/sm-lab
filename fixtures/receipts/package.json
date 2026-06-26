@@ -4,7 +4,15 @@
   "type": "module",
   "description": "Versioned CSM anvil/deploy receipts — typed, importable contract addresses & ABIs",
   "license": "MIT",
-  "keywords": ["csm", "lido", "anvil", "deploy", "receipts", "fixtures", "testing"],
+  "keywords": [
+    "csm",
+    "lido",
+    "anvil",
+    "deploy",
+    "receipts",
+    "fixtures",
+    "testing"
+  ],
   "types": "./dist/index.d.mts",
   "exports": {
     ".": {
@@ -14,7 +22,11 @@
     },
     "./data/*": "./data/*"
   },
-  "files": ["dist", "data", "README.md"],
+  "files": [
+    "dist",
+    "data",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",

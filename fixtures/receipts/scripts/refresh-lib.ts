@@ -33,7 +33,9 @@ export type ContractName = keyof typeof CONTRACT_SOURCES;
 export function readAbi(outDir: string, source: string): unknown[] {
   const p = path.join(outDir, `${source}.sol`, `${source}.json`);
   if (!fs.existsSync(p)) {
-    throw new Error(`ABI artifact not found at ${p} (did you run \`forge build\` in the contracts repo?)`);
+    throw new Error(
+      `ABI artifact not found at ${p} (did you run \`forge build\` in the contracts repo?)`,
+    );
   }
   const artifact = JSON.parse(fs.readFileSync(p, 'utf8')) as { abi?: unknown[] };
   if (!Array.isArray(artifact.abi)) {
@@ -121,7 +123,12 @@ export interface Manifest {
 
 export function mergeManifest(
   prev: Manifest | null,
-  next: { abiGitRef: string; abiHashes: Record<string, string>; snapshot: SnapshotRef; generatedAt: string },
+  next: {
+    abiGitRef: string;
+    abiHashes: Record<string, string>;
+    snapshot: SnapshotRef;
+    generatedAt: string;
+  },
 ): Manifest {
   const snapshots = (prev?.snapshots ?? []).filter(
     (s) => !(s.chain === next.snapshot.chain && s.module === next.snapshot.module),
@@ -130,7 +137,9 @@ export function mergeManifest(
   return {
     abiGitRef: next.abiGitRef,
     abiHashes: next.abiHashes,
-    snapshots: snapshots.toSorted((a, b) => `${a.chain}/${a.module}`.localeCompare(`${b.chain}/${b.module}`)),
+    snapshots: snapshots.toSorted((a, b) =>
+      `${a.chain}/${a.module}`.localeCompare(`${b.chain}/${b.module}`),
+    ),
     generatedAt: next.generatedAt,
   };
 }
