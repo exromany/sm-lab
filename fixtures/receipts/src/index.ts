@@ -1,2 +1,7 @@
-// Public surface is populated in Task 5 once generated ABIs + addresses exist.
-export {};
+// Typed ABIs (abitype `as const` — full function-name/arg narrowing for viem consumers).
+export * from './abi';
+// Default address books per (chain, module); override at the call site in @csm-lab/recipes.
+export { addresses } from './addresses';
+export type { AddressBook, ChainName, ModuleName } from './types';
+// Provenance: contracts git-ref(s) + per-ABI sha256.
+export { default as manifest } from '../data/manifest.json';

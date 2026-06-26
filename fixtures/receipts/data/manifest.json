@@ -1,0 +1,39 @@
+{
+  "abiGitRef": "b8efc5695322f3b5064dec961888806633ad2419",
+  "abiHashes": {
+    "CSModule": "9cad8e9a5e8330e9ec0e4b045713a6bfa8b63eeebfe15cea5b5745a2c6c661a5",
+    "CuratedModule": "f5460a39f02e1221b515deb642ba36783758dfb5e59e703f407b034a735846b5",
+    "Accounting": "26039df3e117838bb86c035b106038cb746514e440007fc10683bada8b2117ce",
+    "FeeDistributor": "3631179853889acf2b35ecc727daa0289631442cbb1979f8a9e7eec3bd25eee1",
+    "FeeOracle": "bea2188e38e62f4f32efec379b2b4886b3a810dd2da726f629c8910dc157a401",
+    "HashConsensus": "c56bd6734d1de5c843d8af3eef132f2baf65157937d3fa640471407317403731",
+    "VettedGate": "fbd27dfaf50549ad081740998f54b199d694e642d97db285eaf9f3e6ac67ac5c",
+    "CuratedGate": "64cbffb05557fc80711fd310760f121c01f4a4920a49361c5c8c13f9cbcfc02f",
+    "PermissionlessGate": "3d2f6e54999af1bb8a14b284f10e7a89f67e4e0b41ed8a85c8991a71078eaff9",
+    "ParametersRegistry": "8c8e9ec98221320f46c4593bbbcf07fda252d8291894c43e5ee9f1bbc490000c",
+    "MetaRegistry": "8aa946bab44d8dfccf38a381c541628d8ab59d3831e5168d3f3534b0b2dbb6f1",
+    "Verifier": "b86b0ba3eda936e51026043652c33197d73a77b708dfc67b41e605e964bcdcee",
+    "VEBO": "7999bdb1db0520c141efdcc3be6e5e185ffefc74b928948feae9f209bec1b6df",
+    "StakingRouter": "5c167acfa7b7afbd18323bef94936c1e41b96d2a71a1562b08a8da6f6b2639d4",
+    "Lido": "5d0b9f1b8017e723505fdc8ade1516b2556891527c05bda13cccb4369b46e700",
+    "LidoLocator": "352bf71565e2f635d6a86e59ea1f5921c1f6bc7a04d76caadcbd475a51e3b9e3"
+  },
+  "snapshots": [
+    {
+      "chain": "hoodi",
+      "module": "cm",
+      "gitRef": "a6be775483e17d76718f8852428b5251a75c6429"
+    },
+    {
+      "chain": "hoodi",
+      "module": "csm",
+      "gitRef": "0e4b562719cca51070c9cede5e5a8505eca18684"
+    },
+    {
+      "chain": "mainnet",
+      "module": "csm",
+      "gitRef": "cc8409a8ac21d7816d572658077dd6cf5f61507f"
+    }
+  ],
+  "generatedAt": "2026-06-26T14:20:49.423Z"
+}
