@@ -60,12 +60,28 @@ pnpm --filter @csm-lab/receipts refresh -- \
   --chain <hoodi|mainnet> \
   --module <csm|cm> \
   [--contracts <path-to-community-staking-module>] \
+  [--config <relative-path-inside-contracts-repo>] \
   [--force]
 ```
 
 `--contracts` defaults to `../../../community-staking-module` — a sibling of the csm-lab repo root
 (relative paths resolve from the package root, `fixtures/receipts/`). `--force` bypasses
 the git-ref guard (see below).
+
+`--config` overrides which JSON file inside the contracts repo to read addresses from. Use it to
+point at the **latest** upgrade config per the contracts repo's `.env` `DEPLOY_CONFIG` value —
+CSM has been upgraded twice (v2, v3); proxy addresses are stable across upgrades but `*Impl`
+addresses change and new contracts are added. Current per-(chain, module) configs:
+
+| chain   | module | config path                                 | version |
+| ------- | ------ | ------------------------------------------- | ------- |
+| hoodi   | csm    | `artifacts/hoodi/upgrade-v3-hoodi.json`     | v3      |
+| hoodi   | cm     | `artifacts/hoodi/curated/deploy-hoodi.json` | —       |
+| mainnet | csm    | `artifacts/mainnet/deploy-mainnet.json`     | v2      |
+
+If `--config` is omitted, the default is `artifacts/<chain>/deploy-<chain>.json` (or
+`artifacts/<chain>/curated/deploy-<chain>.json` for cm). Only override when the authoritative
+config for that chain has moved to an upgrade file.
 
 After refreshing, commit the updated `data/` and `src/abi/` files together.
 

@@ -53,4 +53,27 @@ describe('runRefresh', () => {
     expect(manifest.abiGitRef).toBe('deadbeef');
     expect(Object.keys(manifest.abiHashes).length).toBeGreaterThan(0);
   });
+
+  it('uses --config override instead of default deploy-<chain>.json', () => {
+    // upgrade-test.json has CSModule=0x…beef and git-ref=cafebabe.
+    // headRef matches, so checkGitRef passes without force.
+    const res = runRefresh({
+      contractsPath: fixtures,
+      chain: 'hoodi',
+      module: 'csm',
+      pkgDir: tmpPkg,
+      headRef: 'cafebabe',
+      force: false,
+      generatedAt: '2026-06-26T00:00:00.000Z',
+      configPath: 'artifacts/hoodi/upgrade-test.json',
+    });
+    const addr = JSON.parse(fs.readFileSync(res.addressFile, 'utf8'));
+    expect(addr.CSModule).toBe('0x000000000000000000000000000000000000beef');
+    const manifest = JSON.parse(fs.readFileSync(res.manifestFile, 'utf8'));
+    expect(manifest.snapshots).toContainEqual({
+      chain: 'hoodi',
+      module: 'csm',
+      gitRef: 'cafebabe',
+    });
+  });
 });

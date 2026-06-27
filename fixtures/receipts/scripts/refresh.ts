@@ -23,6 +23,7 @@ export interface RefreshOptions {
   headRef: string;
   force: boolean;
   generatedAt: string;
+  configPath?: string;
 }
 
 export interface RefreshResult {
@@ -50,7 +51,9 @@ export function runRefresh(opts: RefreshOptions): RefreshResult {
   const { contractsPath, chain, module, pkgDir, headRef, force, generatedAt } = opts;
 
   // 1. git-ref guard: pair this run's ABIs (built from HEAD) with a matching deployment.
-  const snapPath = deployJsonPath(contractsPath, chain, module);
+  const snapPath = opts.configPath
+    ? path.resolve(contractsPath, opts.configPath)
+    : deployJsonPath(contractsPath, chain, module);
   const snapshot = readDeploySnapshot(snapPath);
   const deployRef = snapshot['git-ref'] ?? '';
   checkGitRef(headRef, deployRef, force);
@@ -93,6 +96,7 @@ function parseArgs(argv: string[]): {
   contractsPath: string;
   force: boolean;
   pkgDir: string;
+  configPath?: string;
 } {
   const get = (flag: string): string | undefined => {
     const i = argv.indexOf(flag);
@@ -108,11 +112,21 @@ function parseArgs(argv: string[]): {
     pkgDir,
     get('--contracts') ?? '../../../community-staking-module',
   );
-  return { chain, module: moduleArg, contractsPath, force: argv.includes('--force'), pkgDir };
+  const configPath = get('--config');
+  return {
+    chain,
+    module: moduleArg,
+    contractsPath,
+    force: argv.includes('--force'),
+    pkgDir,
+    configPath,
+  };
 }
 
 function main(): void {
-  const { chain, module, contractsPath, force, pkgDir } = parseArgs(process.argv.slice(2));
+  const { chain, module, contractsPath, force, pkgDir, configPath } = parseArgs(
+    process.argv.slice(2),
+  );
   const headRef = execFileSync('git', ['-C', contractsPath, 'rev-parse', 'HEAD'], {
     encoding: 'utf8',
   }).trim();
@@ -124,6 +138,7 @@ function main(): void {
     headRef,
     force,
     generatedAt: new Date().toISOString(),
+    configPath,
   });
   console.log(`refreshed ${chain}/${module}:`);
   console.log(`  ${res.abiFiles.length} abi modules`);

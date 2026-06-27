@@ -27,7 +27,7 @@
     {
       "chain": "hoodi",
       "module": "csm",
-      "gitRef": "0e4b562719cca51070c9cede5e5a8505eca18684"
+      "gitRef": "a6be775483e17d76718f8852428b5251a75c6429"
     },
     {
       "chain": "mainnet",
@@ -35,5 +35,5 @@
       "gitRef": "cc8409a8ac21d7816d572658077dd6cf5f61507f"
     }
   ],
-  "generatedAt": "2026-06-26T14:20:49.423Z"
+  "generatedAt": "2026-06-27T07:54:05.518Z"
 }

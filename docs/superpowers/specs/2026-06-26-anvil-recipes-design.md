@@ -32,7 +32,7 @@ Verification is the calling test's job.
 | 1 | **No Foundry in csm-lab** | No `forge`/`cast`/`solc` at build or runtime. `anvil` is the *target* chain only, reached over RPC. |
 | 2 | **Surface = TS API; CLI deferred** | Importable typed functions are the core. A thin CLI is a *later* increment (6g), only if a human consumer materializes — no named user today. |
 | 3 | **Module × recipe = context + flat functions** | `ctx = { client, module, addresses, abis, clMockUrl? }`; shared recipes resolve the module via `ctx.module`; module-specific recipes live in subpaths and guard on `ctx.module`. |
-| 4 | **Addresses: snapshot + locator-resolved** | Module-suite addresses come from an injectable snapshot (consumer-overridable). **Protocol addresses (`StakingRouter`, `VEBO`, `Lido`, …) are NOT in the snapshot — `connect()` resolves them from `LidoLocator` on-chain.** |
+| 4 | **Addresses: snapshot + locator-resolved** | Module-suite addresses come from an injectable snapshot (consumer-overridable). **Protocol addresses (`StakingRouter`, `VEBO`, `Lido`, …) are NOT in the snapshot — `connect()` resolves them from `LidoLocator` on-chain.** The snapshot must be sourced from the **latest per-chain upgrade config** (CSM has been upgraded twice; proxy addresses are stable across v2/v3, but `*Impl` addresses and added contracts — `VerifierV3`, `CircuitBreaker`, `IdentifiedDVTClusterGate` — are only present in the latest config). |
 | 5 | **ABIs vendored, not imported from the SDK** | Avoids the consumer→provider cycle (`architecture.md`: SDK/contracts are consumers of csm-lab). A cross-repo ABI parity check warns on divergence (see SDK boundary). |
 | 6 | **anvil `state.json` deferred** | Out of scope now. Recipes take an `rpcUrl`, so the fork source (`--fork-url` now, `--load-state` later) is a launch detail, not a recipe change. |
 
@@ -180,6 +180,21 @@ use their impl ABIs (present in `out/`). It extracts ABIs from the `.abi` field 
 `out/<C>.sol/<C>.json` (copying forge's *existing* build output, not compiling) and module-suite
 addresses from `artifacts/<chain>/`.
 
+**`refresh --config <path>`** overrides the address source file (relative to the contracts repo
+root). Always point it at the **latest** config per the contracts repo's `.env` `DEPLOY_CONFIG`
+value. Current per-(chain, module) configs:
+
+| chain   | module | config path                                   |
+| ------- | ------ | --------------------------------------------- |
+| hoodi   | csm    | `artifacts/hoodi/upgrade-v3-hoodi.json`       |
+| hoodi   | cm     | `artifacts/hoodi/curated/deploy-hoodi.json`   |
+| mainnet | csm    | `artifacts/mainnet/deploy-mainnet.json` (v2)  |
+
+**Contract upgrades.** CSM has been upgraded twice (v2 → v3 on hoodi; mainnet still at v2). Proxy
+addresses are stable across upgrades. `*Impl` addresses change on each upgrade; new contracts
+(`VerifierV3`, `CircuitBreaker`, `IdentifiedDVTClusterGate`/`idvtc`) appear only in the latest
+config. Always refresh from the latest config to avoid vendoring stale impls or missing v3 contracts.
+
 **Reconcile the stub README.** The committed `fixtures/receipts/README.md` says ABIs come from
 `broadcast/*/run-latest.json` — wrong. ABIs come from `out/`; addresses from `artifacts/`. Fix
 the README + ADR-0001 #8 wording in the receipts increment so they don't drift.
@@ -213,7 +228,7 @@ the README + ADR-0001 #8 wording in the receipts increment so they don't drift.
 | Subpath | Recipes | Source |
 | --- | --- | --- |
 | `@csm-lab/recipes/cm` | `createOperatorGroup`, `resetOperatorGroup`, `setBondCurveWeight`, `createCuratedOperator`, `seedCm`; curated gate selectors `po/pto/pgo/do/eeo/iodc/iodcp` (the `CuratedGates[0..6]` array) | `curated.just`, `MetaRegistryHelpers.s.sol`, `NodeOperators.s.sol` |
-| `@csm-lab/recipes/csm` | gate selector `ics`→VettedGate (**`idvtc` dropped** — `IdentifiedDVTClusterGate` has no address or ABI anywhere); lifecycle is shared | `fork.just` `_resolve-gate-addr` |
+| `@csm-lab/recipes/csm` | gate selectors: `ics`→VettedGate, `idvtc`→IdentifiedDVTClusterGate (present in hoodi v3 config; no dedicated ABI in `out/` — reuses an existing gate ABI, VettedGate or CuratedGate-type; available where chain is ≥v3: hoodi yes, mainnet not yet); lifecycle is shared | `fork.just` `_resolve-gate-addr` |
 
 `csm0x02` is **not** a package yet — its `csm0x02.just` has zero portable (non-deploy) recipes;
 add a subpath only when the module deploys (it will key off `CSModule`, like csm).
@@ -221,6 +236,10 @@ add a subpath only when the module deploys (it will key off `CSModule`, like csm
 **Per-chain divergence.** hoodi-csm and mainnet-csm share key shape. **cm exists only for hoodi**
 (no `artifacts/mainnet/curated/`) — no default cm snapshot can ship for mainnet. `ParametersRegistry`
 is reached via `module.PARAMETERS_REGISTRY()` at runtime (vendoring its ABI is harmless).
+
+**Version divergence.** mainnet is at CSM **v2** (no v3 config exists); hoodi is at **v3**. The
+"latest" config therefore differs per chain. v3-only contracts (`VerifierV3`, `CircuitBreaker`,
+`IdentifiedDVTClusterGate`/`idvtc`) are available on hoodi but not mainnet until mainnet upgrades.
 
 ## Increments (each independently shippable, per migration.md)
 
