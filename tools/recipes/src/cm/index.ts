@@ -1,9 +1,12 @@
 import { buildIcsTree } from '@csm-lab/merkle';
 import { curatedGateAbi, metaRegistryAbi } from '@csm-lab/receipts';
 import type { CmAddressBook, Hex } from '@csm-lab/receipts';
-import { keccak256, zeroAddress } from 'viem';
+import { concat, keccak256, toHex, zeroAddress } from 'viem';
 import { actAs, roleMember } from '../act-as';
 import { resolveGate, type Ctx, type CmGateSelector } from '../context';
+import { addKeys } from '../recipes/add-keys';
+import { deposit } from '../recipes/deposit';
+import { topUpActiveKeys } from '../recipes/topup';
 import { DEFAULT_ADMIN_ROLE, RESUME_ROLE, SET_TREE_ROLE } from '../roles';
 
 /** An empty MetaRegistry OperatorGroup — used to reset a group to its zero state. */
@@ -296,4 +299,91 @@ export async function setBondCurveWeight(
 function deriveExtra(operator: Hex): Hex {
   const h = keccak256(operator); // 0x + 64 hex chars
   return `0x${h.slice(-40)}` as Hex; // low 20 bytes → a valid, distinct address
+}
+
+export interface SeedCmOptions {
+  /** cm gate selector for the 3 created operators (default 'po' = CuratedGates[0]). */
+  selector?: CmGateSelector | string;
+  /** Deterministic seed for the operator addresses + key material. Omit → fresh random. */
+  seed?: Hex;
+}
+
+export interface SeedCmResult {
+  /** The 3 created operators' noIds, in creation order (a/b/c). */
+  noIds: [bigint, bigint, bigint];
+  /** The operator addresses generated for the gate, parallel to `noIds`. */
+  operators: [Hex, Hex, Hex];
+}
+
+/** A deterministic address from a seed + label (low 20 bytes of keccak — mirrors deriveExtra). */
+function deriveOperatorAddress(seed: Hex, i: number): Hex {
+  const h = keccak256(concat([seed, toHex(`cm-operator-${i}`)]));
+  return `0x${h.slice(-40)}` as Hex;
+}
+
+/** A deterministic key seed from a seed + label (so the 7 addKeys calls never collide on pubkeys). */
+function keySeed(seed: Hex, label: string): Hex {
+  return keccak256(concat([seed, toHex(label)]));
+}
+
+function freshSeed(): Hex {
+  const bytes = new Uint8Array(32);
+  globalThis.crypto.getRandomValues(bytes);
+  return toHex(bytes);
+}
+
+/**
+ * Seed a realistic cm fork in one call: create 3 gate operators, group them 34/33/33, then key /
+ * deposit / top-up across 3 rounds (and add a final key to two of them). Port of `fork.just
+ * seed-cm`. Composes already-tested recipes; uses the noIds returned by `createCuratedOperator`
+ * (not hardcoded 0/1/2) so it is correct on a non-fresh fork too. Deterministic when `seed` is set.
+ */
+export async function seedCm(ctx: Ctx, opts: SeedCmOptions = {}): Promise<SeedCmResult> {
+  if (ctx.module !== 'cm') {
+    throw new Error('@csm-lab/recipes/cm: seedCm requires ctx.module === "cm"');
+  }
+
+  const selector = opts.selector ?? 'po';
+  const seed = opts.seed ?? freshSeed();
+  const operators: [Hex, Hex, Hex] = [
+    deriveOperatorAddress(seed, 0),
+    deriveOperatorAddress(seed, 1),
+    deriveOperatorAddress(seed, 2),
+  ];
+
+  // Sequential by necessity: each createCuratedOperator installs/restores the gate temp tree and
+  // every later step reads fork state mutated by the prior ones.
+  const { noId: na } = await createCuratedOperator(ctx, { selector, operator: operators[0] });
+  const { noId: nb } = await createCuratedOperator(ctx, { selector, operator: operators[1] });
+  const { noId: nc } = await createCuratedOperator(ctx, { selector, operator: operators[2] });
+  const noIds: [bigint, bigint, bigint] = [na, nb, nc];
+
+  await createOperatorGroup(ctx, {
+    pairs: [
+      [na, 3400n],
+      [nb, 3300n],
+      [nc, 3300n],
+    ],
+  });
+
+  // 3 add/deposit/topup rounds, mapping the source's operator indices 0/1/0 to na/nb/na. Each
+  // addKeys uses a seed keyed by its CALL ORDINAL (na is keyed thrice — per-round labels would
+  // collide on duplicate pubkeys).
+  await addKeys(ctx, { noId: na, count: 4, seed: keySeed(seed, 'r0') });
+  await deposit(ctx, { count: 100 });
+  await topUpActiveKeys(ctx, { noId: na });
+
+  await addKeys(ctx, { noId: nb, count: 5, seed: keySeed(seed, 'r1') });
+  await deposit(ctx, { count: 100 });
+  await topUpActiveKeys(ctx, { noId: nb });
+
+  await addKeys(ctx, { noId: na, count: 6, seed: keySeed(seed, 'r2') });
+  await deposit(ctx, { count: 100 });
+  await topUpActiveKeys(ctx, { noId: na });
+
+  // Final keys, no deposit/topup.
+  await addKeys(ctx, { noId: na, count: 1, seed: keySeed(seed, 'r3') });
+  await addKeys(ctx, { noId: nb, count: 1, seed: keySeed(seed, 'r4') });
+
+  return { noIds, operators };
 }

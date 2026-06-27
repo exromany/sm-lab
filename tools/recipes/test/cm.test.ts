@@ -4,6 +4,7 @@ import {
   createCuratedOperator,
   createOperatorGroup,
   resetOperatorGroup,
+  seedCm,
   setBondCurveWeight,
 } from '../src/cm/index';
 import { SET_TREE_ROLE } from '../src/roles';
@@ -310,5 +311,129 @@ describe('setBondCurveWeight', () => {
     await expect(setBondCurveWeight(ctx, { curveId: 3n, weight: 250n })).rejects.toThrow(
       /requires ctx.module/,
     );
+  });
+});
+
+describe('seedCm', () => {
+  const GATE_ADMIN = A(0xd0);
+  const NO_MANAGER = A(0xe0);
+  const GATE0 = A(0x30); // CuratedGates[0] = selector 'po'
+  const TWO_PUBKEYS = `0x${'ab'.repeat(48 * 2)}` as const; // deposit hands back 2 keys
+  const TOPUP_PK = `0x${'cd'.repeat(48)}` as const;
+
+  /**
+   * Script every read/simulate the composed recipes need. `createNodeOperator` simulates return
+   * distinct noIds via the function-form simulate (5n/6n/7n); `obtainDepositData` reuses the same
+   * closure (its request is what `deposit` writes, so the result shape just needs the 2 pubkeys).
+   */
+  function seedScript(): Parameters<typeof makeFakeClient>[0] {
+    let noId = 5n;
+    return {
+      reads: {
+        // createCuratedOperator
+        treeRoot: `0x${'ab'.repeat(32)}`,
+        treeCid: 'orig-cid',
+        isPaused: false,
+        // createOperatorGroup
+        MANAGE_OPERATOR_GROUPS_ROLE: `0x${'11'.repeat(32)}`,
+        NO_GROUP_ID: 0n,
+        getNodeOperatorGroupId: () => 0n,
+        // getRoleMember serves both the gate admin and the group manager (args[1] === 0n always);
+        // either address works for these orchestration assertions.
+        getRoleMember: GATE_ADMIN,
+        // addKeys (managerAddress) + topUpActiveKeys (totalDepositedKeys) share one read.
+        getNodeOperator: { managerAddress: NO_MANAGER, totalDepositedKeys: 1 },
+        getRequiredBondForNextKeys: 0n,
+        // deposit
+        getStakingModuleSummary: [0n, 10n, 5n],
+        // topUpActiveKeys
+        getKeyAllocatedBalances: [0n],
+        isValidatorWithdrawn: false,
+        getSigningKeys: TOPUP_PK,
+      },
+      simulate: (a?: unknown) => {
+        const fn = (a as { functionName?: string } | undefined)?.functionName;
+        if (fn === 'createNodeOperator') {
+          const result = noId;
+          noId += 1n;
+          return { result, request: { isCreateReq: true } };
+        }
+        // obtainDepositData
+        return { result: [TWO_PUBKEYS, '0x'], request: { isDepositReq: true } };
+      },
+    };
+  }
+
+  it('guards on ctx.module (T10)', async () => {
+    const fc = makeFakeClient();
+    const ctx = fakeCtx('csm', fc.client);
+    await expect(seedCm(ctx)).rejects.toThrow(/requires ctx.module/);
+    expect(fc.byMethod('writeContract')).toHaveLength(0);
+    expect(fc.byMethod('simulateContract')).toHaveLength(0);
+  });
+
+  it('orchestrates create×3 / group / 3 rounds / final keys with returned noIds (T11)', async () => {
+    const fc = makeFakeClient(seedScript());
+    const ctx = fakeCtx('cm', fc.client, { CuratedGates: [GATE0] });
+
+    const res = await seedCm(ctx, { seed: `0x${'01'.repeat(32)}` });
+    expect(res.noIds).toEqual([5n, 6n, 7n]);
+
+    const sims = fc.byMethod('simulateContract') as any[];
+    const creates = sims.filter((s) => s.functionName === 'createNodeOperator');
+    const deposits = sims.filter((s) => s.functionName === 'obtainDepositData');
+    expect(creates).toHaveLength(3);
+    expect(deposits).toHaveLength(3);
+
+    const writes = fc.byMethod('writeContract') as any[];
+    // 5 addKeys calls (source `seed-cm`: add-keys 0/1/0 across the 3 rounds + a final pair 0/1)
+    expect(writes.filter((w) => w.functionName === 'addValidatorKeysETH')).toHaveLength(5);
+    // group write references the RETURNED noIds (5/6/7), not hardcoded 0/1/2
+    const group = writes.find((w) => w.functionName === 'createOrUpdateOperatorGroup');
+    expect(group.args[1].subNodeOperators).toEqual([
+      { nodeOperatorId: 5n, share: 3400 },
+      { nodeOperatorId: 6n, share: 3300 },
+      { nodeOperatorId: 7n, share: 3300 },
+    ]);
+    // ≥3 allocateDeposits writes (one per topup round, each with ≥1 key)
+    expect(
+      writes.filter((w) => w.functionName === 'allocateDeposits').length,
+    ).toBeGreaterThanOrEqual(3);
+
+    // the 3 topup rounds operate on na/nb/na = 5n/6n/5n (the source's 0/1/0 mapping)
+    const topupNoIds = writes
+      .filter((w) => w.functionName === 'allocateDeposits')
+      .map((w) => w.args[3][0]);
+    expect(topupNoIds).toEqual([5n, 6n, 5n]);
+  });
+
+  it('derives deterministic operator addresses from seed (T12)', async () => {
+    const a = makeFakeClient(seedScript());
+    const b = makeFakeClient(seedScript());
+    const c = makeFakeClient(seedScript());
+    const seed = `0x${'02'.repeat(32)}` as const;
+
+    const r1 = await seedCm(fakeCtx('cm', a.client, { CuratedGates: [GATE0] }), { seed });
+    const r2 = await seedCm(fakeCtx('cm', b.client, { CuratedGates: [GATE0] }), { seed });
+    const r3 = await seedCm(fakeCtx('cm', c.client, { CuratedGates: [GATE0] }), {
+      seed: `0x${'03'.repeat(32)}`,
+    });
+
+    expect(r1.operators).toEqual(r2.operators); // same seed → same operators
+    expect(r1.operators[0]).not.toBe(r3.operators[0]); // different seed → different operators
+    // the 3 derived addresses are distinct
+    expect(new Set(r1.operators).size).toBe(3);
+  });
+
+  it('defaults the gate selector to po → CuratedGates[0] (T13)', async () => {
+    const fc = makeFakeClient(seedScript());
+    const ctx = fakeCtx('cm', fc.client, { CuratedGates: [GATE0] });
+
+    await seedCm(ctx, { seed: `0x${'04'.repeat(32)}` });
+
+    const creates = (fc.byMethod('simulateContract') as any[]).filter(
+      (s) => s.functionName === 'createNodeOperator',
+    );
+    expect(creates.every((s) => s.address === GATE0)).toBe(true);
   });
 });

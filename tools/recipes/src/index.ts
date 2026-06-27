@@ -32,6 +32,7 @@ export {
 export { nodeOperatorIdBytes, keyCountBytes } from './encode';
 export { unvet, exit } from './recipes/vetting';
 export { deposit } from './recipes/deposit';
+export { increaseAllocatedBalance, topUpActiveKeys } from './recipes/topup';
 
 export { slash, withdraw } from './recipes/validators';
 export type { WithdrawnValidatorInfo } from './recipes/validators';

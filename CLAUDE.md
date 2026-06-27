@@ -77,7 +77,37 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   ctx) + the `actAs` impersonation engine + `addKeys`/`operatorInfo`/`warpBy`·`snapshot`·`revert`/
   cm `createCuratedOperator`/csm `setGateAddrs` (ics). Reuses receipts + merkle; hermetic fake-client
   tests + one `ANVIL_FORK_URL`-gated smoke.
+- **6c lifecycle families** ✅ — propose/confirm manager+reward (×4), `deposit`/`unvet`/`exit`,
+  `slash`/`withdraw` (Verifier-gated), penalty report/cancel/settle/compensate (×4), `addBond`/
+  `createBondDebt`. Mechanical once `actAs` was proven.
+- **6d cl-mock bridge** ✅ — `clActivate(ctx, { noId, keyIndex })` reads a key's pubkey
+  (`getPubkey`) + allocated balance (`getKeyBalance`) on-chain, then POSTs `active_ongoing` to a
+  running `@csm-lab/cl-mock` (`ctx.clMockUrl`) with effective balance = 32 ETH + allocated, in gwei
+  (full precision, diverging from the source's integer-ETH truncation). Thin `setClValidator` HTTP
+  client mirrors merkle's `ipfs.ts`; hermetic `fetch`-stub tests.
 
-Next: **6c** — operator-lifecycle recipe families (propose/confirm ×4, deposit/unvet/exit/slash/withdraw,
-penalty ×4, bond ops); then 6d cl-mock bridge, 6e rewards, 6f remaining selectors, 6g CLI.
-`docs/migration.md` tracks the increments.
+- **6e rewards** ✅ — shipped as two PRs (the spec's "hard one"). **makeRewards** (+ merkle
+  `buildRewardsTree`, `['uint256','uint256']` bigint leaves): reads active operators → seeded mock
+  reward per active key → cumulative carry-forward tree (pad a lone operator with `type(uint64).max`)
+  → pins tree+log to IPFS guarded (with `treeCid`/`logCid` escapes) → typed in-memory `RewardsReport`;
+  all-bigint + single JSON-replacer for the bigint-in-log hazard. **submitRewards** (+ internal
+  `warpTo`): funds the FeeDistributor (inline impersonation, not an `actAs` change), warps to the next
+  consensus frame, builds the `ReportData` tuple, reaches consensus across fast-lane members (with the
+  `getMembers` fallback for the empty-fast-lane fork bug), and submits. `reportHash` = `abi.encode` of
+  one tuple param (golden-vector verified against viem); empty report → `{ submitted: false }` skip.
+
+- **6f cm/csm specifics** ✅ (core) — csm `idvtc` selector: `resolveGate(ctx,'idvtc')` →
+  `IdentifiedDVTClusterGate` (new optional `CsmAddressBook` field; v3-only — throws on mainnet/v2
+  snapshots that lack it). cm group/curve recipes (`@csm-lab/recipes/cm`, port of
+  `MetaRegistryHelpers.s.sol`): `createOperatorGroup` (bps pairs sum to 10000, dedup-resets prior
+  memberships), `resetOperatorGroup`, `setBondCurveWeight` — role read from the MetaRegistry contract.
+  `resetOperatorGroup`/`setBondCurveWeight` role read from the MetaRegistry contract.
+- **6f-2 top-up + seedCm** ✅ — `increaseAllocatedBalance` + `topUpActiveKeys` (shared,
+  StakingRouter-gated `CSModule.allocateDeposits`; `topUpActiveKeys` reads per-key state up front then
+  writes sequentially in key-index order for the TopUpQueueOps FIFO head, 2016 ETH cap/key) complete
+  the operator-lifecycle family. cm `seedCm(ctx, { selector?, seed? })` composes
+  createCuratedOperator/createOperatorGroup/addKeys/deposit/topUpActiveKeys into the `seed-cm`
+  scenario — uses the returned noIds (not hardcoded indices) + deterministic operator addresses.
+
+Next: **6g** (thin CLI, only if a human consumer materializes) — on demand. The full importable
+recipe surface (6a–6f-2) is now complete. `docs/migration.md` tracks the increments.
