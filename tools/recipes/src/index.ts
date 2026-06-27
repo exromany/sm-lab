@@ -35,3 +35,14 @@ export { deposit } from './recipes/deposit';
 
 export { slash, withdraw } from './recipes/validators';
 export type { WithdrawnValidatorInfo } from './recipes/validators';
+
+export {
+  REPORT_GENERAL_DELAYED_PENALTY_ROLE,
+  SETTLE_GENERAL_DELAYED_PENALTY_ROLE,
+} from './roles';
+export {
+  reportPenalty,
+  cancelPenalty,
+  settlePenalty,
+  compensatePenalty,
+} from './recipes/penalties';
