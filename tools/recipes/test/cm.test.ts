@@ -13,7 +13,7 @@ describe('createCuratedOperator', () => {
     const GATE = A(0x30); // CuratedGates[0] = selector 'po'
     const ORIG_ROOT = `0x${'ab'.repeat(32)}`;
     const ORIG_CID = 'orig-cid';
-    const REQUEST = { address: GATE, functionName: 'createNodeOperator', __req: true };
+    const REQUEST = { address: GATE, functionName: 'createNodeOperator', isCreateReq: true };
 
     const { client, byMethod } = makeFakeClient({
       reads: { treeRoot: ORIG_ROOT, treeCid: ORIG_CID, getRoleMember: ADMIN, isPaused: false },
@@ -51,7 +51,7 @@ describe('createCuratedOperator', () => {
     expect(sim.args[4]).toEqual(tree.getProof([OPERATOR]));
 
     // the create write reused the simulate request
-    expect(writes.some((w) => w.__req === true)).toBe(true);
+    expect(writes.some((w) => w.isCreateReq === true)).toBe(true);
 
     // original tree restored (root + cid)
     expect(
@@ -62,7 +62,7 @@ describe('createCuratedOperator', () => {
     ).toBe(true);
 
     // the restore must come AFTER the create (operator created against the temp tree)
-    const createIdx = writes.findIndex((w) => w.__req === true);
+    const createIdx = writes.findIndex((w) => w.isCreateReq === true);
     const restoreIdx = writes.findIndex(
       (w) =>
         w.functionName === 'setTreeParams' && w.args[0] === ORIG_ROOT && w.args[1] === ORIG_CID,
