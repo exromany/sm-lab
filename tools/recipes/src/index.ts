@@ -45,3 +45,9 @@ export {
 } from './recipes/penalties';
 
 export { addBond, createBondDebt } from './recipes/bond';
+
+export { clActivate } from './recipes/cl-activate';
+export type { ClActivateResult } from './recipes/cl-activate';
+export { getPubkey, getKeyBalance } from './recipes/reads';
+export { setClValidator } from './cl-mock';
+export type { SetValidatorInput } from './cl-mock';

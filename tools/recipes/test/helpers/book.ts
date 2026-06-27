@@ -60,11 +60,14 @@ export function fakeCtx(
   module: ModuleName,
   client: RecipeClient,
   bookOverrides: Partial<CsmAddressBook & CmAddressBook> = {},
+  extra: { clMockUrl?: string } = {},
 ): Ctx {
   const book = module === 'cm' ? cmBook(bookOverrides) : csmBook(bookOverrides);
   return {
     client,
     module,
     addresses: { ...book, ...PROTOCOL } as ResolvedAddresses,
+    // Spread keeps `clMockUrl` absent unless supplied — the "throws when unset" test needs that.
+    ...(extra.clMockUrl !== undefined ? { clMockUrl: extra.clMockUrl } : {}),
   };
 }
