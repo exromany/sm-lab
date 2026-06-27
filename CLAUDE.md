@@ -7,12 +7,13 @@ Guidance for Claude Code working in this repo. See `docs/architecture.md` for th
 
 `csm-lab` — monorepo of **testing & emulation utilities** for Lido CSM. Not CSM itself: the
 contracts (`community-staking-module`), SDK (`lido-csm-sdk`), and widget (`csm-widget`) are
-*consumers*, not members.
+_consumers_, not members.
 
 Top level splits by **lifecycle**, not topic:
+
 - `apps/*` — long-running services (npm `bin` + Docker image): `cl-mock`, `ipfs-mock`
-- `tools/*` — run-and-exit CLIs: `merkle`
-- `fixtures/*` — versioned data, zero runtime: `receipts` (WIP)
+- `tools/*` — run-and-exit CLIs / libraries: `merkle`, `recipes`
+- `fixtures/*` — versioned data, zero runtime: `receipts`
 - `packages/*` — shared internals, bundled into consumers (not published): `core`, `config`
 
 ## Commands
@@ -29,8 +30,8 @@ pnpm changeset                            # add a changeset per user-facing chan
 ```
 
 Per-package gates before declaring done: `build` · `types` · `test` · `oxlint <dir>` ·
-`prettier --check "<dir>/**/*.{ts,json}"`. Don't run repo-wide `turbo run build` — the WIP
-`receipts` stub has no entry and fails it.
+`prettier --check "<dir>/**/*.{ts,json}"`. Repo-wide `pnpm turbo run build` now works (every
+package has a build entry); per-package gates above are still the fastest done-check loop.
 
 ## Toolchain gotchas (learned the hard way — don't rediscover)
 
@@ -47,7 +48,7 @@ Per-package gates before declaring done: `build` · `types` · `test` · `oxlint
 - **`@csm-lab/core` is bundled into consumers**, never published — via `deps.alwaysBundle` +
   `dts: { eager: true }` in `packages/config/tsdown.base.ts` (eager is required to inline a
   source-only dep's declarations). Verify after build: no runtime `import '@csm-lab/core'` in `dist/`.
-- **Runtime version read:** call `readPackageVersion(import.meta.url)` (from core) at the *consumer's*
+- **Runtime version read:** call `readPackageVersion(import.meta.url)` (from core) at the _consumer's_
   call site. It resolves `../package.json` because bundled output is flat in `dist/`.
 
 ## Conventions
@@ -61,11 +62,22 @@ Per-package gates before declaring done: `build` · `types` · `test` · `oxlint
   store, and core's `registerAdminRoutes` for `/admin/status` + `/admin/shutdown`. Each app ships a
   thin Dockerfile whose `CMD` runs the same published `bin`.
 - **Don't over-extract into `core` (YAGNI).** Domain validators and single-consumer helpers stay
-  local; promote to core only when a *second* consumer needs them.
+  local; promote to core only when a _second_ consumer needs them.
 - **Tests are hermetic** — no network, no chain. Test Hono handlers via `app.request(...)`; inject
   upstream fetchers / stores; pin deterministic outputs (e.g. merkle tree roots, CIDs).
 
 ## Status
 
-Migration steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Next: `@csm-lab/receipts`
-(typed deploy fixtures + the on-chain "set" work trimmed out of merkle). `docs/migration.md` tracks it.
+Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped into increments 6a–6g
+(see `docs/superpowers/specs/2026-06-26-anvil-recipes-design.md`):
+
+- **6a `@csm-lab/receipts`** ✅ — typed ABIs + module-suite addresses (from the _latest_ per-chain
+  upgrade config) + `manifest.json` + human-run `refresh.ts` (git-ref guard, `--config`).
+- **6b `@csm-lab/recipes`** ✅ — Foundry-free TS rewrite of `fork.just`: `connect` (LidoLocator-resolved
+  ctx) + the `actAs` impersonation engine + `addKeys`/`operatorInfo`/`warpBy`·`snapshot`·`revert`/
+  cm `createCuratedOperator`/csm `setGateAddrs` (ics). Reuses receipts + merkle; hermetic fake-client
+  tests + one `ANVIL_FORK_URL`-gated smoke.
+
+Next: **6c** — operator-lifecycle recipe families (propose/confirm ×4, deposit/unvet/exit/slash/withdraw,
+penalty ×4, bond ops); then 6d cl-mock bridge, 6e rewards, 6f remaining selectors, 6g CLI.
+`docs/migration.md` tracks the increments.
