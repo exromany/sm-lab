@@ -13,3 +13,9 @@ export type {
 
 export { actAs, roleMember } from './act-as';
 export { randomKeys } from './keys';
+
+export { addKeys } from './recipes/add-keys';
+export type { AddKeysOptions, AddKeysResult } from './recipes/add-keys';
+export { operatorInfo } from './recipes/operator-info';
+export type { OperatorInfo } from './recipes/operator-info';
+export { warpBy, snapshot, revert } from './recipes/chain';
