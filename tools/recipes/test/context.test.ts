@@ -1,6 +1,6 @@
 import { addresses } from '@csm-lab/receipts';
 import { describe, expect, it } from 'vitest';
-import { connect, resolveGate } from '../src/context';
+import { connect, contract, resolveGate } from '../src/context';
 import { makeFakeClient } from './helpers/fake-client';
 import { A, csmBook, fakeCtx } from './helpers/book';
 
@@ -53,5 +53,28 @@ describe('resolveGate', () => {
     expect(resolveGate(ctx, 'pto')).toBe(A(0x31));
     expect(resolveGate(ctx, '1')).toBe(A(0x31));
     expect(() => resolveGate(ctx, '5')).toThrow(/out of range/);
+  });
+
+  it('returns a raw 0x address verbatim for either module', () => {
+    const raw = A(0xabc);
+    expect(resolveGate(fakeCtx('csm', makeFakeClient().client), raw)).toBe(raw);
+    expect(resolveGate(fakeCtx('cm', makeFakeClient().client), raw)).toBe(raw);
+  });
+});
+
+describe('contract', () => {
+  it('resolves the module address by ctx.module (csModuleAbi anchors both)', () => {
+    const csm = contract(fakeCtx('csm', makeFakeClient().client, { CSModule: A(0x01) }), 'module');
+    expect(csm.address).toBe(A(0x01));
+    const cm = contract(fakeCtx('cm', makeFakeClient().client, { CuratedModule: A(0x21) }), 'module');
+    expect(cm.address).toBe(A(0x21));
+    // same ABI object for both modules
+    expect(csm.abi).toBe(cm.abi);
+  });
+
+  it('resolves a static-name contract to its address + const ABI', () => {
+    const acc = contract(fakeCtx('csm', makeFakeClient().client, { Accounting: A(0x02) }), 'Accounting');
+    expect(acc.address).toBe(A(0x02));
+    expect(Array.isArray(acc.abi)).toBe(true);
   });
 });

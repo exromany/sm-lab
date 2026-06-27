@@ -129,8 +129,13 @@ export function contract(ctx: Ctx, name: StaticName | 'module') {
   return { address: ctx.addresses[name] as Hex, abi: STATIC[name] };
 }
 
-/** Resolve a gate selector to an address from ctx.addresses (the `_resolve-gate-addr` port). */
+/**
+ * Resolve a gate selector to an address (the `_resolve-gate-addr` port). Accepted forms:
+ * a raw `0x…` 40-hex address (any module); for csm — `ics` → VettedGate (`idvtc` is 6f);
+ * for cm — `po|pto|pgo|do|eeo|iodc|iodcp` or a numeric index → `CuratedGates[0..6]`.
+ */
 export function resolveGate(ctx: Ctx, selector: string): Hex {
+  if (/^0x[0-9a-fA-F]{40}$/.test(selector)) return selector as Hex;
   if (ctx.module === 'cm') {
     const idx = CM_SELECTORS[selector] ?? (/^\d+$/.test(selector) ? Number(selector) : undefined);
     if (idx === undefined) throw new Error(`@csm-lab/recipes: unknown cm gate selector "${selector}"`);
@@ -142,6 +147,5 @@ export function resolveGate(ctx: Ctx, selector: string): Hex {
   if (selector === 'idvtc') {
     throw new Error('@csm-lab/recipes: idvtc gate selector is increment 6f');
   }
-  if (/^0x[0-9a-fA-F]{40}$/.test(selector)) return selector as Hex;
   throw new Error(`@csm-lab/recipes: unknown csm gate selector "${selector}"`);
 }
