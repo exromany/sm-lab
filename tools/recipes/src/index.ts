@@ -21,3 +21,10 @@ export type { OperatorInfo } from './recipes/operator-info';
 export { warpBy, snapshot, revert } from './recipes/chain';
 
 export { DEFAULT_ADMIN_ROLE, SET_TREE_ROLE, RESUME_ROLE } from './roles';
+
+export {
+  proposeManager,
+  confirmManager,
+  proposeReward,
+  confirmReward,
+} from './recipes/address-changes';
