@@ -28,7 +28,7 @@ export async function deposit(
       ...m,
       functionName: 'getStakingModuleSummary',
     });
-    const [, , depositable] = summary as [bigint, bigint, bigint];
+    const [, , depositable] = summary;
     const capped = requested < depositable ? requested : depositable;
     if (requested > 0n && capped === 0n) {
       throw new Error('@csm-lab/recipes: deposit found nothing depositable for this module');
@@ -42,7 +42,7 @@ export async function deposit(
     });
     await ctx.client.writeContract({ ...request, chain: null });
 
-    const [pubkeys] = result as [string, string];
-    return { deposited: BigInt(size(pubkeys as `0x${string}`) / 48) };
+    const [pubkeys] = result;
+    return { deposited: BigInt(size(pubkeys) / 48) };
   });
 }

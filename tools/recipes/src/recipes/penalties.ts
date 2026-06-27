@@ -42,7 +42,10 @@ export async function cancelPenalty(
   );
 }
 
-/** Settle (process) an operator's general delayed penalty (penalty-settler role). */
+/**
+ * Settle (process) an operator's general delayed penalty (penalty-settler role).
+ * The `maxAmount` option is the per-operator settlement cap passed as the contract's 2nd array arg (confusingly named `bondLockNonces` in the ABI); the default `maxUint256` settles the penalty fully.
+ */
 export async function settlePenalty(
   ctx: Ctx,
   opts: { noId: bigint; maxAmount?: bigint },
