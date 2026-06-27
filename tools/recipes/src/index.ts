@@ -10,3 +10,6 @@ export type {
   CsmGateSelector,
   CmGateSelector,
 } from './context';
+
+export { actAs, roleMember } from './act-as';
+export { randomKeys } from './keys';
