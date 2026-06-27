@@ -21,6 +21,8 @@ export interface CsmAddressBook {
   LidoLocator: Hex;
   VettedGate: Hex;
   PermissionlessGate: Hex;
+  /** v3-only; absent on mainnet/v2. */
+  IdentifiedDVTClusterGate?: Hex;
   ChainId: number;
   [key: string]: AddressBookExtra;
 }

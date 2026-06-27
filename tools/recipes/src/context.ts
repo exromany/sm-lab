@@ -132,7 +132,8 @@ export function contract(ctx: Ctx, name: StaticName | 'module') {
 
 /**
  * Resolve a gate selector to an address (the `_resolve-gate-addr` port). Accepted forms:
- * a raw `0x…` 40-hex address (any module); for csm — `ics` → VettedGate (`idvtc` is 6f);
+ * a raw `0x…` 40-hex address (any module); for csm — `ics` → VettedGate, `idvtc` →
+ * IdentifiedDVTClusterGate (v3-only; throws on snapshots lacking it, e.g. mainnet/v2);
  * for cm — `po|pto|pgo|do|eeo|iodc|iodcp` or a numeric index → `CuratedGates[0..6]`.
  */
 export function resolveGate(ctx: Ctx, selector: string): Hex {
@@ -147,7 +148,12 @@ export function resolveGate(ctx: Ctx, selector: string): Hex {
   }
   if (selector === 'ics') return (ctx.addresses as CsmAddressBook).VettedGate;
   if (selector === 'idvtc') {
-    throw new Error('@csm-lab/recipes: idvtc gate selector is increment 6f');
+    const g = (ctx.addresses as CsmAddressBook).IdentifiedDVTClusterGate;
+    if (!g)
+      throw new Error(
+        '@csm-lab/recipes: idvtc gate not in this snapshot (v3-only; absent on mainnet/v2)',
+      );
+    return g;
   }
   throw new Error(`@csm-lab/recipes: unknown csm gate selector "${selector}"`);
 }

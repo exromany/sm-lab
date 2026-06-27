@@ -40,11 +40,20 @@ describe('connect', () => {
 });
 
 describe('resolveGate', () => {
-  it('maps the csm ics selector to VettedGate and rejects idvtc/unknown', () => {
+  it('maps the csm ics selector to VettedGate and rejects unknown selectors', () => {
     const ctx = fakeCtx('csm', makeFakeClient().client, { VettedGate: A(0xd1) });
     expect(resolveGate(ctx, 'ics')).toBe(A(0xd1));
-    expect(() => resolveGate(ctx, 'idvtc')).toThrow(/6f/);
     expect(() => resolveGate(ctx, 'bogus')).toThrow(/unknown/);
+  });
+
+  it('resolves the csm idvtc selector to IdentifiedDVTClusterGate when present (T8)', () => {
+    const ctx = fakeCtx('csm', makeFakeClient().client, { IdentifiedDVTClusterGate: A(0x0f) });
+    expect(resolveGate(ctx, 'idvtc')).toBe(A(0x0f));
+  });
+
+  it('throws for csm idvtc on a snapshot lacking the field (mainnet/v2-like) (T9)', () => {
+    const ctx = fakeCtx('csm', makeFakeClient().client);
+    expect(() => resolveGate(ctx, 'idvtc')).toThrow(/v3-only|not in this snapshot/);
   });
 
   it('maps cm selectors and numeric indices to CuratedGates', () => {
