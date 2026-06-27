@@ -77,27 +77,30 @@ export async function createCuratedOperator(
   });
 
   // Capture the returned noId via simulate, then send the real tx as the operator.
-  const { result, request } = await ctx.client.simulateContract({
-    ...gate,
-    functionName: 'createNodeOperator',
-    args: [opts.name ?? 'fork-operator', opts.description ?? 'fork-test', zeroAddress, zeroAddress, proof],
-    account: opts.operator,
-  });
-  const noId = result as bigint;
-  await actAs(ctx, opts.operator, () => ctx.client.writeContract({ ...request, chain: null }));
-
-  // Restore the original tree as admin.
-  await actAs(ctx, admin, (from) =>
-    ctx.client.writeContract({
+  // The restore runs in `finally` so a failed create never leaves the gate with the
+  // temporary tree installed on the fork (matching actAs's stop-on-any-exit discipline).
+  try {
+    const { result, request } = await ctx.client.simulateContract({
       ...gate,
-      functionName: 'setTreeParams',
-      args: [origRoot, origCid],
-      account: from,
-      chain: null,
-    }),
-  );
-
-  return { noId };
+      functionName: 'createNodeOperator',
+      args: [opts.name ?? 'fork-operator', opts.description ?? 'fork-test', zeroAddress, zeroAddress, proof],
+      account: opts.operator,
+    });
+    const noId = result as bigint;
+    await actAs(ctx, opts.operator, () => ctx.client.writeContract({ ...request, chain: null }));
+    return { noId };
+  } finally {
+    // Restore the original tree as admin.
+    await actAs(ctx, admin, (from) =>
+      ctx.client.writeContract({
+        ...gate,
+        functionName: 'setTreeParams',
+        args: [origRoot, origCid],
+        account: from,
+        chain: null,
+      }),
+    );
+  }
 }
 
 /** A deterministic address distinct from `operator` (low 20 bytes of its keccak hash). */

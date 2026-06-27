@@ -56,6 +56,14 @@ describe('createCuratedOperator', () => {
       ),
     ).toBe(true);
 
+    // the restore must come AFTER the create (operator created against the temp tree)
+    const createIdx = writes.findIndex((w) => w.__req === true);
+    const restoreIdx = writes.findIndex(
+      (w) => w.functionName === 'setTreeParams' && w.args[0] === ORIG_ROOT && w.args[1] === ORIG_CID,
+    );
+    expect(createIdx).toBeGreaterThanOrEqual(0);
+    expect(restoreIdx).toBeGreaterThan(createIdx);
+
     // both privileged accounts impersonated
     const impersonated = byMethod('impersonateAccount');
     expect(impersonated).toContainEqual({ address: ADMIN });
