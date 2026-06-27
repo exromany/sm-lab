@@ -19,7 +19,7 @@ describe('bond recipes', () => {
   });
 
   it('createBondDebt: Accounting.penalize(noId, amount) impersonating the module; returns penaltyCovered', async () => {
-    const fc = makeFakeClient({ simulate: { result: true, request: { __pen: true } } });
+    const fc = makeFakeClient({ simulate: { result: true, request: { isPenalizeReq: true } } });
     const ctx = fakeCtx('csm', fc.client, { CSModule: A(0x01), Accounting: A(0x02) });
     const res = await createBondDebt(ctx, { noId: 5n, amount: 9n });
     expect(res.penaltyCovered).toBe(true);
@@ -29,7 +29,7 @@ describe('bond recipes', () => {
     expect(sim.args).toEqual([5n, 9n]);
     expect(sim.account).toBe(A(0x01)); // impersonating the module
     const writes = fc.byMethod('writeContract') as any[];
-    expect(writes.some((w) => w.__pen === true)).toBe(true);
+    expect(writes.some((w) => w.isPenalizeReq === true)).toBe(true);
     expect(fc.byMethod('impersonateAccount')[0]).toEqual({ address: A(0x01) });
   });
 });

@@ -7,8 +7,7 @@
     "perf": "warn"
   },
   "rules": {
-    "no-console": "off",
-    "no-underscore-dangle": ["warn", { "allow": ["__dep", "__pen"] }]
+    "no-console": "off"
   },
   "ignorePatterns": ["dist/**", "**/data/**", "node_modules/**"]
 }

@@ -10,7 +10,7 @@ describe('deposit', () => {
   it('flushes, caps to depositable, deposits, and returns the count from returned pubkeys', async () => {
     const fc = makeFakeClient({
       reads: { getStakingModuleSummary: [0n, 10n, 5n] }, // depositable = 5
-      simulate: { result: [TWO_PUBKEYS, '0x'], request: { __dep: true } },
+      simulate: { result: [TWO_PUBKEYS, '0x'], request: { isDepositReq: true } },
     });
     const ctx = fakeCtx('csm', fc.client, { CSModule: A(0x01) });
 
@@ -26,7 +26,7 @@ describe('deposit', () => {
     expect(sim.args).toEqual([2n, '0x']);
     expect(sim.account).toBe(ctx.addresses.stakingRouter);
     // the create write reused the simulate request
-    expect(writes.some((w) => w.__dep === true)).toBe(true);
+    expect(writes.some((w) => w.isDepositReq === true)).toBe(true);
     // impersonated the staking router
     expect(fc.byMethod('impersonateAccount')).toContainEqual({
       address: ctx.addresses.stakingRouter,
@@ -36,7 +36,7 @@ describe('deposit', () => {
   it('caps the requested count to depositableValidatorsCount', async () => {
     const fc = makeFakeClient({
       reads: { getStakingModuleSummary: [0n, 10n, 1n] }, // depositable = 1
-      simulate: { result: [`0x${'cd'.repeat(48)}`, '0x'], request: { __dep: true } }, // 1 pubkey
+      simulate: { result: [`0x${'cd'.repeat(48)}`, '0x'], request: { isDepositReq: true } }, // 1 pubkey
     });
     const ctx = fakeCtx('csm', fc.client, { CSModule: A(0x01) });
     const res = await deposit(ctx, { count: 9 });
