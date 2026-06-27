@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@csm-lab/config", "@csm-lab/core"]
+  "ignore": []
 }
