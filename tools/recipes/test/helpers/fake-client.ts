@@ -9,12 +9,26 @@ export interface RecordedCall {
 export interface FakeClientScript {
   /** value from getChainId() (default 560048 = hoodi) */
   chainId?: number;
-  /** functionName → value returned by readContract */
+  /**
+   * functionName → value returned by readContract, OR a function `(args) => value` for reads that
+   * must vary by call args (e.g. `getNodeOperator(0n)` vs `getNodeOperator(1n)`).
+   */
   reads?: Record<string, unknown>;
-  /** value returned by simulateContract */
-  simulate?: { result: unknown; request: unknown };
+  /**
+   * value returned by simulateContract, OR a function `(args) => value` for simulates that must
+   * vary by call (e.g. seedCm's 3 `createNodeOperator` calls returning distinct noIds).
+   */
+  simulate?:
+    | { result: unknown; request: unknown }
+    | ((a?: unknown) => { result: unknown; request: unknown });
   /** id returned by snapshot() (default '0x1') */
   snapshotId?: Hex;
+  /**
+   * unix seconds returned by getBlock().timestamp (default 1_700_000_000n). An array is
+   * ADVANCEABLE: each getBlock() pops the next entry, and the last entry sticks for further calls —
+   * lets a test assert a second warp against the post-first-warp timestamp.
+   */
+  blockTimestamp?: bigint | bigint[];
 }
 
 export interface FakeClient {
@@ -36,18 +50,27 @@ export function makeFakeClient(script: FakeClientScript = {}): FakeClient {
   const rec = (method: string, args: unknown): void => {
     calls.push({ method, args });
   };
+  // Advanceable block timestamps: pop per getBlock() call, last value sticky.
+  const timestamps = Array.isArray(script.blockTimestamp)
+    ? [...script.blockTimestamp]
+    : script.blockTimestamp !== undefined
+      ? [script.blockTimestamp]
+      : [1_700_000_000n];
+  const nextTimestamp = (): bigint =>
+    timestamps.length > 1 ? timestamps.shift()! : timestamps[0]!;
   const client = {
     getChainId: async () => {
       rec('getChainId', undefined);
       return script.chainId ?? 560048;
     },
-    readContract: async (a: { functionName: string }) => {
+    readContract: async (a: { functionName: string; args?: unknown[] }) => {
       rec('readContract', a);
-      return script.reads?.[a.functionName];
+      const r = script.reads?.[a.functionName];
+      return typeof r === 'function' ? r(a.args) : r;
     },
     simulateContract: async (a: unknown) => {
       rec('simulateContract', a);
-      return script.simulate;
+      return typeof script.simulate === 'function' ? script.simulate(a) : script.simulate;
     },
     writeContract: async (a: unknown) => {
       rec('writeContract', a);
@@ -64,6 +87,13 @@ export function makeFakeClient(script: FakeClientScript = {}): FakeClient {
     },
     increaseTime: async (a: unknown) => {
       rec('increaseTime', a);
+    },
+    setNextBlockTimestamp: async (a: unknown) => {
+      rec('setNextBlockTimestamp', a);
+    },
+    getBlock: async () => {
+      rec('getBlock', undefined);
+      return { timestamp: nextTimestamp() };
     },
     mine: async (a: unknown) => {
       rec('mine', a);

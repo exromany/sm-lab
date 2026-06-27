@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import type { Hex } from '@csm-lab/receipts';
+import { feeDistributorAbi } from '@csm-lab/receipts';
 import { connect } from '../src/context';
 import { operatorInfo } from '../src/recipes/operator-info';
 import { revert, snapshot, warpBy } from '../src/recipes/chain';
+import { makeRewards, submitRewards } from '../src/recipes/rewards';
 
 const FORK_URL = process.env.ANVIL_FORK_URL;
 
@@ -18,5 +21,23 @@ describe.skipIf(!FORK_URL)('fork smoke (ANVIL_FORK_URL)', () => {
     const snap = await snapshot(ctx);
     await warpBy(ctx, 86400);
     await revert(ctx, snap);
+  });
+
+  it('makeRewards → submitRewards round-trips an oracle report', async () => {
+    // Needs IPFS configured (IPFS_API_URL → local @csm-lab/ipfs-mock, or PINATA_*) OR escape cids.
+    const ctx = await connect({ module: 'csm', rpcUrl: FORK_URL as string });
+    const report = await makeRewards(ctx, { seed: '0x01', treeCid: 'cid-t', logCid: 'cid-l' });
+    const result = await submitRewards(ctx, report);
+
+    expect(typeof result.submitted).toBe('boolean');
+    if (result.submitted) {
+      expect(typeof result.refSlot).toBe('bigint');
+      const onChainRoot = await ctx.client.readContract({
+        address: ctx.addresses.FeeDistributor as Hex,
+        abi: feeDistributorAbi,
+        functionName: 'treeRoot',
+      });
+      expect(onChainRoot).toBe(report.treeRoot);
+    }
   });
 });

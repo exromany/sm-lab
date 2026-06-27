@@ -3,7 +3,14 @@
 // of shelling out to the `csm-merkle` binary (which lives in cli.ts).
 
 // Pure deterministic core
-export { buildIcsTree, buildStrikesTree, ICS_LEAF_ENCODING, STRIKES_LEAF_ENCODING } from './tree';
+export {
+  buildIcsTree,
+  buildStrikesTree,
+  buildRewardsTree,
+  ICS_LEAF_ENCODING,
+  STRIKES_LEAF_ENCODING,
+  REWARDS_LEAF_ENCODING,
+} from './tree';
 export type { StrikesEntry, TreeDump } from './tree';
 
 // File I/O helpers

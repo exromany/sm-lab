@@ -3,8 +3,10 @@ import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import {
   buildIcsTree,
   buildStrikesTree,
+  buildRewardsTree,
   ICS_LEAF_ENCODING,
   STRIKES_LEAF_ENCODING,
+  REWARDS_LEAF_ENCODING,
   type StrikesEntry,
 } from '../src/tree';
 
@@ -33,6 +35,13 @@ const STRIKES: StrikesEntry[] = [
 // algorithm change, never to "make the test pass".
 const ICS_ROOT = '0xff0cbba3ac8dfd35745552844b38c43c278b824d5bf0f52a51bc81d5e4e02931';
 const STRIKES_ROOT = '0x773efb050b1f9108d3f18adee2a21b71faa1d05c375230d639e31be0d9cd8d38';
+const REWARDS_ROOT = '0x1d08fbbe3c5d6f757c8eb1d8a1f1481ef3508fa7b8d8cdeeba724282918d61ba';
+
+const REWARDS: [bigint, bigint][] = [
+  [0n, 1000n],
+  [1n, 2000n],
+];
+const PAD_NO_ID = (1n << 64n) - 1n; // type(uint64).max — the FeeDistributor pad-leaf id
 
 describe('buildIcsTree', () => {
   it('produces a stable root for fixed addresses', () => {
@@ -78,5 +87,32 @@ describe('buildStrikesTree', () => {
     expect(
       StandardMerkleTree.verify(tree.root, ['uint256', 'string', 'uint256[]'], leaf, proof),
     ).toBe(true);
+  });
+});
+
+describe('buildRewardsTree', () => {
+  it('produces a stable root for a fixed [noId, cumulativeShares] input', () => {
+    expect(buildRewardsTree(REWARDS).root).toBe(REWARDS_ROOT);
+  });
+
+  it('uses the ["uint256","uint256"] leaf encoding', () => {
+    const tree = buildRewardsTree(REWARDS);
+    expect(REWARDS_LEAF_ENCODING).toEqual(['uint256', 'uint256']);
+    expect(tree.dump().leafEncoding).toEqual(['uint256', 'uint256']);
+  });
+
+  it('round-trips: a rewards leaf proof verifies against the root', () => {
+    const tree = buildRewardsTree(REWARDS);
+    const leaf = [0n, 1000n];
+    const proof = tree.getProof(leaf);
+    expect(StandardMerkleTree.verify(tree.root, ['uint256', 'uint256'], leaf, proof)).toBe(true);
+  });
+
+  it('accepts the uint64-max pad leaf (a lone real operator + pad)', () => {
+    const tree = buildRewardsTree([
+      [5n, 100n],
+      [PAD_NO_ID, 0n],
+    ]);
+    expect(tree.dump().values).toHaveLength(2);
   });
 });

@@ -7,6 +7,17 @@ export async function warpBy(ctx: Ctx, seconds: number | bigint): Promise<void> 
   await ctx.client.mine({ blocks: 1 });
 }
 
+/**
+ * Warp fork time to an absolute unix timestamp and mine a block
+ * (evm_setNextBlockTimestamp + evm_mine). The absolute counterpart of `warpBy` — used by
+ * `submitRewards`'s consensus-frame wait. Over RPC, `setNextBlockTimestamp` + `mine` reproduces
+ * Foundry's `vm.warp(ts)` (the post-warp `block.timestamp` settles automatically after mining).
+ */
+export async function warpTo(ctx: Ctx, timestamp: number | bigint): Promise<void> {
+  await ctx.client.setNextBlockTimestamp({ timestamp: BigInt(timestamp) });
+  await ctx.client.mine({ blocks: 1 });
+}
+
 /** Take an anvil state snapshot; returns the snapshot id (evm_snapshot). */
 export function snapshot(ctx: Ctx): Promise<Hex> {
   return ctx.client.snapshot();

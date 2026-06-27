@@ -4,9 +4,10 @@ import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
  * Pure, deterministic tree construction. No I/O, no network — given the same inputs these
  * functions always produce the same root, which is exactly what the Vitest suite pins.
  *
- * Two OZ StandardMerkleTree shapes, one per CSM pipeline:
+ * Three OZ StandardMerkleTree shapes, one per CSM pipeline:
  *   - ICS:     leaf type ["address"]                       → VettedGate.setTreeParams
  *   - strikes: leaf type ["uint256","string","uint256[]"]  → CSStrikes.processOracleReport
+ *   - rewards: leaf type ["uint256","uint256"]             → FeeDistributor cumulative tree
  */
 
 /** Leaf encoding for the ICS (vetted gate) tree: one address per leaf. */
@@ -14,6 +15,9 @@ export const ICS_LEAF_ENCODING = ['address'] as const;
 
 /** Leaf encoding for the strikes tree: (nodeOperatorId, pubkey, strikes[]). */
 export const STRIKES_LEAF_ENCODING = ['uint256', 'string', 'uint256[]'] as const;
+
+/** Leaf encoding for the rewards tree: (nodeOperatorId, cumulativeShares). */
+export const REWARDS_LEAF_ENCODING = ['uint256', 'uint256'] as const;
 
 /** A single node-operator strikes record, as stored in strikes.json. */
 export interface StrikesEntry {
@@ -41,4 +45,16 @@ export function buildStrikesTree(
     entries.map(({ nodeOperatorId, pubkey, strikes }) => [nodeOperatorId, pubkey, strikes]),
     [...STRIKES_LEAF_ENCODING],
   );
+}
+
+/**
+ * Build the cumulative rewards tree: one [nodeOperatorId, cumulativeShares] leaf per operator.
+ *
+ * Leaf values are `bigint` (not `number` like buildStrikesTree) because cumulative reward shares
+ * are wei amounts that routinely overflow `Number.MAX_SAFE_INTEGER`. OZ serializes them as decimal
+ * strings in `dump()` (JSON-safe). Callers shape the leaves — e.g. the FeeDistributor non-empty-proof
+ * pad leaf is appended by the caller, not here (same division of labor as the ICS/strikes builders).
+ */
+export function buildRewardsTree(leaves: [bigint, bigint][]): StandardMerkleTree<[bigint, bigint]> {
+  return StandardMerkleTree.of(leaves, [...REWARDS_LEAF_ENCODING]);
 }

@@ -18,7 +18,7 @@ export { addKeys } from './recipes/add-keys';
 export type { AddKeysOptions, AddKeysResult } from './recipes/add-keys';
 export { operatorInfo } from './recipes/operator-info';
 export type { OperatorInfo } from './recipes/operator-info';
-export { warpBy, snapshot, revert } from './recipes/chain';
+export { warpBy, warpTo, snapshot, revert } from './recipes/chain';
 
 export { DEFAULT_ADMIN_ROLE, SET_TREE_ROLE, RESUME_ROLE } from './roles';
 
@@ -45,6 +45,9 @@ export {
 } from './recipes/penalties';
 
 export { addBond, createBondDebt } from './recipes/bond';
+
+export { makeRewards, submitRewards } from './recipes/rewards';
+export type { RewardsReport, MakeRewardsOptions, SubmitRewardsResult } from './recipes/rewards';
 
 export { clActivate } from './recipes/cl-activate';
 export type { ClActivateResult } from './recipes/cl-activate';
