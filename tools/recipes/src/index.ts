@@ -28,3 +28,6 @@ export {
   proposeReward,
   confirmReward,
 } from './recipes/address-changes';
+
+export { nodeOperatorIdBytes, keyCountBytes } from './encode';
+export { unvet, exit } from './recipes/vetting';
