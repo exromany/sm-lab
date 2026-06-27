@@ -21,7 +21,11 @@ describe('createCuratedOperator', () => {
     });
     const ctx = fakeCtx('cm', client, { CuratedGates: [GATE] });
 
-    const res = await createCuratedOperator(ctx, { selector: 'po', operator: OPERATOR, extra: EXTRA });
+    const res = await createCuratedOperator(ctx, {
+      selector: 'po',
+      operator: OPERATOR,
+      extra: EXTRA,
+    });
     expect(res.noId).toBe(7n);
 
     const tree = buildIcsTree([OPERATOR, EXTRA]);
@@ -52,14 +56,16 @@ describe('createCuratedOperator', () => {
     // original tree restored (root + cid)
     expect(
       writes.some(
-        (w) => w.functionName === 'setTreeParams' && w.args[0] === ORIG_ROOT && w.args[1] === ORIG_CID,
+        (w) =>
+          w.functionName === 'setTreeParams' && w.args[0] === ORIG_ROOT && w.args[1] === ORIG_CID,
       ),
     ).toBe(true);
 
     // the restore must come AFTER the create (operator created against the temp tree)
     const createIdx = writes.findIndex((w) => w.__req === true);
     const restoreIdx = writes.findIndex(
-      (w) => w.functionName === 'setTreeParams' && w.args[0] === ORIG_ROOT && w.args[1] === ORIG_CID,
+      (w) =>
+        w.functionName === 'setTreeParams' && w.args[0] === ORIG_ROOT && w.args[1] === ORIG_CID,
     );
     expect(createIdx).toBeGreaterThanOrEqual(0);
     expect(restoreIdx).toBeGreaterThan(createIdx);
@@ -72,8 +78,8 @@ describe('createCuratedOperator', () => {
 
   it('guards on ctx.module', async () => {
     const ctx = fakeCtx('csm', makeFakeClient().client);
-    await expect(
-      createCuratedOperator(ctx, { selector: 'po', operator: A(0xc1) }),
-    ).rejects.toThrow(/requires ctx.module/);
+    await expect(createCuratedOperator(ctx, { selector: 'po', operator: A(0xc1) })).rejects.toThrow(
+      /requires ctx.module/,
+    );
   });
 });

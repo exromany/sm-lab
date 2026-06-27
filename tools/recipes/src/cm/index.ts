@@ -65,7 +65,12 @@ export async function createCuratedOperator(
         account: from,
         chain: null,
       });
-      await ctx.client.writeContract({ ...gate, functionName: 'resume', account: from, chain: null });
+      await ctx.client.writeContract({
+        ...gate,
+        functionName: 'resume',
+        account: from,
+        chain: null,
+      });
     }
     await ctx.client.writeContract({
       ...gate,
@@ -83,7 +88,13 @@ export async function createCuratedOperator(
     const { result, request } = await ctx.client.simulateContract({
       ...gate,
       functionName: 'createNodeOperator',
-      args: [opts.name ?? 'fork-operator', opts.description ?? 'fork-test', zeroAddress, zeroAddress, proof],
+      args: [
+        opts.name ?? 'fork-operator',
+        opts.description ?? 'fork-test',
+        zeroAddress,
+        zeroAddress,
+        proof,
+      ],
       account: opts.operator,
     });
     const noId = result as bigint;

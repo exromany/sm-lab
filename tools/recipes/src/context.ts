@@ -96,7 +96,8 @@ export async function connect(opts: ConnectOptions): Promise<Ctx> {
 }
 
 function requireRpcUrl(opts: ConnectOptions): string {
-  if (!opts.rpcUrl) throw new Error('@csm-lab/recipes: connect() needs rpcUrl (or an injected client)');
+  if (!opts.rpcUrl)
+    throw new Error('@csm-lab/recipes: connect() needs rpcUrl (or an injected client)');
   return opts.rpcUrl;
 }
 
@@ -138,7 +139,8 @@ export function resolveGate(ctx: Ctx, selector: string): Hex {
   if (/^0x[0-9a-fA-F]{40}$/.test(selector)) return selector as Hex;
   if (ctx.module === 'cm') {
     const idx = CM_SELECTORS[selector] ?? (/^\d+$/.test(selector) ? Number(selector) : undefined);
-    if (idx === undefined) throw new Error(`@csm-lab/recipes: unknown cm gate selector "${selector}"`);
+    if (idx === undefined)
+      throw new Error(`@csm-lab/recipes: unknown cm gate selector "${selector}"`);
     const gate = (ctx.addresses as CmAddressBook).CuratedGates[idx];
     if (!gate) throw new Error(`@csm-lab/recipes: cm gate index ${idx} out of range`);
     return gate;

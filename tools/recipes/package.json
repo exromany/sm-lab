@@ -4,7 +4,15 @@
   "type": "module",
   "description": "TypeScript recipes to prepare CSM on-chain state on an anvil fork (rewritten fork.just; no Foundry)",
   "license": "MIT",
-  "keywords": ["csm", "lido", "anvil", "fork", "recipes", "viem", "testing"],
+  "keywords": [
+    "csm",
+    "lido",
+    "anvil",
+    "fork",
+    "recipes",
+    "viem",
+    "testing"
+  ],
   "types": "./dist/index.d.mts",
   "exports": {
     ".": {
@@ -20,7 +28,10 @@
       "import": "./dist/csm.mjs"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
