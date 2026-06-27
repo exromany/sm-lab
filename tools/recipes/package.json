@@ -1,0 +1,45 @@
+{
+  "name": "@csm-lab/recipes",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "TypeScript recipes to prepare CSM on-chain state on an anvil fork (rewritten fork.just; no Foundry)",
+  "license": "MIT",
+  "keywords": ["csm", "lido", "anvil", "fork", "recipes", "viem", "testing"],
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./cm": {
+      "types": "./dist/cm.d.mts",
+      "import": "./dist/cm.mjs"
+    },
+    "./csm": {
+      "types": "./dist/csm.d.mts",
+      "import": "./dist/csm.mjs"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@csm-lab/merkle": "workspace:*",
+    "@csm-lab/receipts": "workspace:*",
+    "viem": "catalog:"
+  },
+  "devDependencies": {
+    "@csm-lab/config": "workspace:*",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "@types/node": "catalog:"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

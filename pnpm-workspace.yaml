@@ -17,6 +17,8 @@ catalog:
   dotenv: ^16.5.0
   # csm-specific
   "@openzeppelin/merkle-tree": ^1.0.8
+  # chain
+  viem: ^2.53.0
   # tooling (also pinned at root, repeated here so packages can opt in)
   typescript: ^5.8.2
   tsdown: ^0.22.3
