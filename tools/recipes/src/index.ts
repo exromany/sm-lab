@@ -31,3 +31,4 @@ export {
 
 export { nodeOperatorIdBytes, keyCountBytes } from './encode';
 export { unvet, exit } from './recipes/vetting';
+export { deposit } from './recipes/deposit';
