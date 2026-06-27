@@ -19,3 +19,5 @@ export type { AddKeysOptions, AddKeysResult } from './recipes/add-keys';
 export { operatorInfo } from './recipes/operator-info';
 export type { OperatorInfo } from './recipes/operator-info';
 export { warpBy, snapshot, revert } from './recipes/chain';
+
+export { DEFAULT_ADMIN_ROLE, SET_TREE_ROLE, RESUME_ROLE } from './roles';
