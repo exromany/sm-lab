@@ -28,7 +28,9 @@ describe('deposit', () => {
     // the create write reused the simulate request
     expect(writes.some((w) => w.__dep === true)).toBe(true);
     // impersonated the staking router
-    expect(fc.byMethod('impersonateAccount')).toContainEqual({ address: ctx.addresses.stakingRouter });
+    expect(fc.byMethod('impersonateAccount')).toContainEqual({
+      address: ctx.addresses.stakingRouter,
+    });
   });
 
   it('caps the requested count to depositableValidatorsCount', async () => {

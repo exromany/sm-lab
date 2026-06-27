@@ -18,7 +18,12 @@ describe('validator-report recipes', () => {
   it('withdraw: reportRegularWithdrawnValidators([info]) as the verifier; isSlashed = penalty>0', async () => {
     const fc = makeFakeClient();
     const ctx = fakeCtx('csm', fc.client, { CSModule: A(0x01), Verifier: A(0x08) });
-    await withdraw(ctx, { noId: 4n, keyIndex: 2n, exitBalance: 32_000_000_000n, slashingPenalty: 1_000_000n });
+    await withdraw(ctx, {
+      noId: 4n,
+      keyIndex: 2n,
+      exitBalance: 32_000_000_000n,
+      slashingPenalty: 1_000_000n,
+    });
     const w = fc.byMethod('writeContract')[0] as any;
     expect(w.functionName).toBe('reportRegularWithdrawnValidators');
     expect(w.args).toEqual([

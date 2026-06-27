@@ -8,7 +8,10 @@ import { contract, type Ctx } from '../context';
  * (derived from the keys `obtainDepositData` hands back). Throws if a positive request finds nothing
  * depositable — the Solidity helper silently no-ops there. (Port of `NodeOperators.deposit`.)
  */
-export async function deposit(ctx: Ctx, opts: { count: number | bigint }): Promise<{ deposited: bigint }> {
+export async function deposit(
+  ctx: Ctx,
+  opts: { count: number | bigint },
+): Promise<{ deposited: bigint }> {
   const m = contract(ctx, 'module');
   const requested = BigInt(opts.count);
 
@@ -21,7 +24,10 @@ export async function deposit(ctx: Ctx, opts: { count: number | bigint }): Promi
       chain: null,
     });
 
-    const summary = await ctx.client.readContract({ ...m, functionName: 'getStakingModuleSummary' });
+    const summary = await ctx.client.readContract({
+      ...m,
+      functionName: 'getStakingModuleSummary',
+    });
     const [, , depositable] = summary as [bigint, bigint, bigint];
     const capped = requested < depositable ? requested : depositable;
     if (requested > 0n && capped === 0n) {

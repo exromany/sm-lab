@@ -30,7 +30,9 @@ describe('address-change recipes', () => {
     expect(w.account).toBe(NODE_OP.managerAddress);
     expect(byMethod('impersonateAccount')[0]).toEqual({ address: NODE_OP.managerAddress });
     expect(order().indexOf('impersonateAccount')).toBeLessThan(order().indexOf('writeContract'));
-    expect(order().indexOf('writeContract')).toBeLessThan(order().indexOf('stopImpersonatingAccount'));
+    expect(order().indexOf('writeContract')).toBeLessThan(
+      order().indexOf('stopImpersonatingAccount'),
+    );
   });
 
   it('confirmManager: writes confirm… as the proposed manager', async () => {
