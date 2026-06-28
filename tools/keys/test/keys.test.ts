@@ -30,9 +30,7 @@ describe('makeDepositKeys', () => {
         amount: 32_000_000_000n,
       });
       // deposit_message_root must match the SDK's recomputation
-      expect(k.deposit_message_root).toBe(
-        `0x${Buffer.from(messageRoot).toString('hex')}`,
-      );
+      expect(k.deposit_message_root).toBe(`0x${Buffer.from(messageRoot).toString('hex')}`);
       const signingRoot = computeSigningRoot(messageRoot, domain);
       expect(bls.verify(pubkey, signingRoot, sig)).toBe(true);
       const recomputedDataRoot = DepositData.hashTreeRoot({
@@ -56,23 +54,41 @@ describe('makeDepositKeys', () => {
   });
 
   it('startIndex shifts the derived keys', async () => {
-    const a = await makeDepositKeys({ chain: 'hoodi', count: 1, mnemonic: MNEMONIC, startIndex: 0 });
-    const b = await makeDepositKeys({ chain: 'hoodi', count: 1, mnemonic: MNEMONIC, startIndex: 5 });
+    const a = await makeDepositKeys({
+      chain: 'hoodi',
+      count: 1,
+      mnemonic: MNEMONIC,
+      startIndex: 0,
+    });
+    const b = await makeDepositKeys({
+      chain: 'hoodi',
+      count: 1,
+      mnemonic: MNEMONIC,
+      startIndex: 5,
+    });
     expect(b.keys[0]!.pubkey).not.toBe(a.keys[0]!.pubkey);
   });
 
   it('binds withdrawal credentials to the Lido vault with the chosen type', async () => {
     const { keys } = await makeDepositKeys({ chain: 'hoodi', count: 1, mnemonic: MNEMONIC });
     const vault = CHAINS.hoodi.withdrawalVault.slice(2).toLowerCase();
-    expect(keys[0]!.withdrawal_credentials.toLowerCase()).toBe(
-      `0x01${'00'.repeat(11)}${vault}`,
-    );
+    expect(keys[0]!.withdrawal_credentials.toLowerCase()).toBe(`0x01${'00'.repeat(11)}${vault}`);
 
-    const comp = await makeDepositKeys({ chain: 'hoodi', count: 1, mnemonic: MNEMONIC, type: '0x02' });
+    const comp = await makeDepositKeys({
+      chain: 'hoodi',
+      count: 1,
+      mnemonic: MNEMONIC,
+      type: '0x02',
+    });
     expect(comp.keys[0]!.withdrawal_credentials.startsWith('0x02')).toBe(true);
 
     const custom = '0x000000000000000000000000000000000000dEaD';
-    const ov = await makeDepositKeys({ chain: 'hoodi', count: 1, mnemonic: MNEMONIC, withdrawalAddress: custom });
+    const ov = await makeDepositKeys({
+      chain: 'hoodi',
+      count: 1,
+      mnemonic: MNEMONIC,
+      withdrawalAddress: custom,
+    });
     expect(ov.keys[0]!.withdrawal_credentials.toLowerCase().endsWith('dead')).toBe(true);
   });
 
@@ -98,8 +114,6 @@ describe('withdrawalCredentials', () => {
     expect(wc.length).toBe(32);
     expect(wc[0]).toBe(0x01);
     expect(wc.slice(1, 12).every((b) => b === 0)).toBe(true);
-    expect([...wc.slice(12)]).toEqual([
-      ...hexToBytes('0x000000000000000000000000000000000000dEaD'),
-    ]);
+    expect(wc.slice(12)).toEqual(hexToBytes('0x000000000000000000000000000000000000dEaD'));
   });
 });

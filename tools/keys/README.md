@@ -1,0 +1,38 @@
+# @csm-lab/keys
+
+Real BLS12-381 validator **deposit-data** generator for Lido CSM (mainnet / hoodi).
+Pure TypeScript — no chain, no Foundry, no external binary. Replaces `eth-staking-smith`
+for csm-lab / consumer test suites.
+
+Keys are EIP-2333/2334 derived from a BIP-39 mnemonic and signed against the deposit
+domain, so they pass the CSM SDK's on-upload BLS validation.
+
+## CLI
+
+```bash
+csm-keys --count 5                       # hoodi, 0x01 (all defaults) → JSON to stdout
+csm-keys --chain mainnet --count 1
+csm-keys --count 1 --type 0x02           # compounding (CM)
+csm-keys --count 3 --mnemonic "..."      # reproducible
+csm-keys --count 2 --wc 0xCustomAddress  # withdrawal address override
+csm-keys --count 5 -o deposit_data.json  # write file (mnemonic → stderr)
+```
+
+| flag                       | default    | notes                                  |
+| -------------------------- | ---------- | -------------------------------------- |
+| `--chain <mainnet\|hoodi>` | `hoodi`    |                                        |
+| `--count <n>`              | `1`        |                                        |
+| `--type <0x01\|0x02>`      | `0x01`     | `0x02` = compounding                   |
+| `--mnemonic <phrase>`      | random     | BIP-39 (128-bit when omitted)          |
+| `--wc <address>`           | Lido vault | eth1 address override                  |
+| `--start-index <n>`        | `0`        | first validator index                  |
+| `-o, --out <path>`         | —          | write `deposit_data.json`; else stdout |
+
+## TS API
+
+```ts
+import { makeDepositKeys, writeDepositDataFile } from '@csm-lab/keys';
+
+const { mnemonic, keys } = await makeDepositKeys({ chain: 'hoodi', count: 5 });
+writeDepositDataFile('deposit_data.json', keys);
+```

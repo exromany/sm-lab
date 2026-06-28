@@ -1,17 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { CHAINS } from '../src/constants';
 import { hexToBytes } from '../src/hex';
-import {
-  DepositMessage,
-  computeDomain,
-  computeSigningRoot,
-} from '../src/ssz';
+import { DepositMessage, computeDomain, computeSigningRoot } from '../src/ssz';
 
 describe('ssz', () => {
   it('computeDomain returns 32 bytes prefixed with the deposit domain type', () => {
     const domain = computeDomain(hexToBytes(CHAINS.hoodi.forkVersion));
     expect(domain.length).toBe(32);
-    expect([...domain.slice(0, 4)]).toEqual([0x03, 0x00, 0x00, 0x00]);
+    expect(domain.slice(0, 4)).toEqual(new Uint8Array([0x03, 0x00, 0x00, 0x00]));
   });
 
   it('different fork versions produce different domains', () => {
