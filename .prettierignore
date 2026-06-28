@@ -3,3 +3,6 @@ fixtures/receipts/src/abi/*.ts
 
 # Test fixture forge artifacts — verbatim copies of upstream build output
 fixtures/receipts/test/fixtures/out/**/*.json
+
+# pnpm-generated lockfile — pnpm owns its format; prettier'd reflow reverts on next install
+pnpm-lock.yaml
