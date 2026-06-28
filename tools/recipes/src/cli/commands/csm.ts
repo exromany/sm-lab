@@ -9,12 +9,21 @@ export const csmCommands: RecipeCommand[] = [
     summary: 'build + install a gate address tree (pins to IPFS unless --cid)',
     module: 'csm',
     options: [
-      { flag: '--address <addr>', key: 'addresses', coerce: toAddresses, repeatable: true, required: true },
+      {
+        flag: '--address <addr>',
+        key: 'addresses',
+        coerce: toAddresses,
+        repeatable: true,
+        required: true,
+      },
       { flag: '--selector <name>', key: 'selector', coerce: identity },
       { flag: '--cid <cid>', key: 'cid', coerce: identity },
     ],
     run: (ctx, o: { addresses: Hex[]; selector?: 'ics'; cid?: string }) => setGateAddrs(ctx, o),
-    report: (r: { treeRoot: Hex; treeCid: string }) => [`tree root: ${r.treeRoot}`, `tree CID:  ${r.treeCid}`],
+    report: (r: { treeRoot: Hex; treeCid: string }) => [
+      `tree root: ${r.treeRoot}`,
+      `tree CID:  ${r.treeCid}`,
+    ],
   },
   {
     name: 'resolve-gate',

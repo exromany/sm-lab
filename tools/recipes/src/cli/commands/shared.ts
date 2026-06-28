@@ -72,22 +72,37 @@ export const sharedCommands: RecipeCommand[] = [
   {
     name: 'unvet',
     summary: 'set an operator vetted-keys count down (as the StakingRouter)',
-    options: [operatorId, { flag: '--vetted-keys <n>', key: 'vettedKeys', coerce: toBigInt, required: true }],
+    options: [
+      operatorId,
+      { flag: '--vetted-keys <n>', key: 'vettedKeys', coerce: toBigInt, required: true },
+    ],
     run: (ctx, o: { noId: bigint; vettedKeys: bigint }) => unvet(ctx, o),
-    report: (_r, o: { noId: bigint; vettedKeys: bigint }) => [`operator ${o.noId}: vetted=${o.vettedKeys}`],
+    report: (_r, o: { noId: bigint; vettedKeys: bigint }) => [
+      `operator ${o.noId}: vetted=${o.vettedKeys}`,
+    ],
   },
   {
     name: 'exit',
     summary: 'report exited keys for an operator (as the StakingRouter)',
-    options: [operatorId, { flag: '--exited-keys <n>', key: 'exitedKeys', coerce: toBigInt, required: true }],
+    options: [
+      operatorId,
+      { flag: '--exited-keys <n>', key: 'exitedKeys', coerce: toBigInt, required: true },
+    ],
     run: (ctx, o: { noId: bigint; exitedKeys: bigint }) => exit(ctx, o),
-    report: (_r, o: { noId: bigint; exitedKeys: bigint }) => [`operator ${o.noId}: exited=${o.exitedKeys}`],
+    report: (_r, o: { noId: bigint; exitedKeys: bigint }) => [
+      `operator ${o.noId}: exited=${o.exitedKeys}`,
+    ],
   },
   {
     name: 'increase-allocated-balance',
     summary: 'top up one deposited key’s allocated balance (ETH)',
-    options: [operatorId, keyIndex, { flag: '--amount <eth>', key: 'amountWei', coerce: toEth, required: true }],
-    run: (ctx, o: { noId: bigint; keyIndex: bigint; amountWei: bigint }) => increaseAllocatedBalance(ctx, o),
+    options: [
+      operatorId,
+      keyIndex,
+      { flag: '--amount <eth>', key: 'amountWei', coerce: toEth, required: true },
+    ],
+    run: (ctx, o: { noId: bigint; keyIndex: bigint; amountWei: bigint }) =>
+      increaseAllocatedBalance(ctx, o),
     report: (r: { amountWei: bigint }) => [`+${formatEther(r.amountWei)} ETH allocated`],
   },
   {
@@ -102,7 +117,9 @@ export const sharedCommands: RecipeCommand[] = [
     summary: 'slash a validator key (Verifier-gated)',
     options: [operatorId, keyIndex],
     run: (ctx, o: { noId: bigint; keyIndex: bigint }) => slash(ctx, o),
-    report: (_r, o: { noId: bigint; keyIndex: bigint }) => [`slashed operator ${o.noId} key ${o.keyIndex}`],
+    report: (_r, o: { noId: bigint; keyIndex: bigint }) => [
+      `slashed operator ${o.noId} key ${o.keyIndex}`,
+    ],
   },
   {
     name: 'withdraw',
@@ -113,9 +130,13 @@ export const sharedCommands: RecipeCommand[] = [
       { flag: '--exit-balance <eth>', key: 'exitBalance', coerce: toEth, required: true },
       { flag: '--slashing-penalty <eth>', key: 'slashingPenalty', coerce: toEth },
     ],
-    run: (ctx, o: { noId: bigint; keyIndex: bigint; exitBalance: bigint; slashingPenalty?: bigint }) =>
-      withdraw(ctx, o),
-    report: (_r, o: { noId: bigint; keyIndex: bigint }) => [`withdrew operator ${o.noId} key ${o.keyIndex}`],
+    run: (
+      ctx,
+      o: { noId: bigint; keyIndex: bigint; exitBalance: bigint; slashingPenalty?: bigint },
+    ) => withdraw(ctx, o),
+    report: (_r, o: { noId: bigint; keyIndex: bigint }) => [
+      `withdrew operator ${o.noId} key ${o.keyIndex}`,
+    ],
   },
   {
     name: 'report-penalty',
@@ -158,7 +179,9 @@ export const sharedCommands: RecipeCommand[] = [
     summary: 'add bond to an operator (ETH)',
     options: [operatorId, { flag: '--amount <eth>', key: 'amount', coerce: toEth, required: true }],
     run: (ctx, o: { noId: bigint; amount: bigint }) => addBond(ctx, o),
-    report: (_r, o: { noId: bigint; amount: bigint }) => [`added ${formatEther(o.amount)} ETH bond to operator ${o.noId}`],
+    report: (_r, o: { noId: bigint; amount: bigint }) => [
+      `added ${formatEther(o.amount)} ETH bond to operator ${o.noId}`,
+    ],
   },
   {
     name: 'create-bond-debt',
@@ -172,9 +195,14 @@ export const sharedCommands: RecipeCommand[] = [
   {
     name: 'propose-manager',
     summary: 'propose a new manager address (as current manager)',
-    options: [operatorId, { flag: '--proposed <address>', key: 'proposed', coerce: toAddressValue, required: true }],
+    options: [
+      operatorId,
+      { flag: '--proposed <address>', key: 'proposed', coerce: toAddressValue, required: true },
+    ],
     run: (ctx, o: { noId: bigint; proposed: Hex }) => proposeManager(ctx, o),
-    report: (_r, o: { noId: bigint; proposed: Hex }) => [`operator ${o.noId}: proposed manager ${o.proposed}`],
+    report: (_r, o: { noId: bigint; proposed: Hex }) => [
+      `operator ${o.noId}: proposed manager ${o.proposed}`,
+    ],
   },
   {
     name: 'confirm-manager',
@@ -186,9 +214,14 @@ export const sharedCommands: RecipeCommand[] = [
   {
     name: 'propose-reward',
     summary: 'propose a new reward address (as current manager)',
-    options: [operatorId, { flag: '--proposed <address>', key: 'proposed', coerce: toAddressValue, required: true }],
+    options: [
+      operatorId,
+      { flag: '--proposed <address>', key: 'proposed', coerce: toAddressValue, required: true },
+    ],
     run: (ctx, o: { noId: bigint; proposed: Hex }) => proposeReward(ctx, o),
-    report: (_r, o: { noId: bigint; proposed: Hex }) => [`operator ${o.noId}: proposed reward ${o.proposed}`],
+    report: (_r, o: { noId: bigint; proposed: Hex }) => [
+      `operator ${o.noId}: proposed reward ${o.proposed}`,
+    ],
   },
   {
     name: 'confirm-reward',

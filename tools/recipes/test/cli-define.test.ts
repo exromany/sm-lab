@@ -35,7 +35,10 @@ describe('coercers', () => {
     expect(() => toAddressValue('0x123')).toThrow();
   });
   it('toPairs / toAddresses map repeatable input', () => {
-    expect(toPairs(['0:3400', '1:6600'])).toEqual([[0n, 3400n], [1n, 6600n]]);
+    expect(toPairs(['0:3400', '1:6600'])).toEqual([
+      [0n, 3400n],
+      [1n, 6600n],
+    ]);
     expect(toAddresses(['0x' + '1'.repeat(40)])).toEqual(['0x' + '1'.repeat(40)]);
   });
 });
@@ -84,7 +87,11 @@ describe('defineCommand', () => {
       ['--rpc-url', 'http://x', '--module', 'csm', 'demo', '--operator-id', '7'],
       { from: 'user' },
     );
-    expect(fakeConnect).toHaveBeenCalledWith({ module: 'csm', rpcUrl: 'http://x', clMockUrl: undefined });
+    expect(fakeConnect).toHaveBeenCalledWith({
+      module: 'csm',
+      rpcUrl: 'http://x',
+      clMockUrl: undefined,
+    });
     expect(log).toHaveBeenCalledWith('ok 7');
     log.mockRestore();
   });

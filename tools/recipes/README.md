@@ -22,6 +22,27 @@ Peer runtime: a running anvil fork with CSM already deployed (`anvil --fork-url 
 `burner`) from `LidoLocator` on-chain and merges them onto a module-suite snapshot from
 `@csm-lab/receipts`. Override the snapshot per call: `connect({ module, rpcUrl, addresses })`.
 
+## CLI (`csm-recipes`)
+
+A run-and-exit CLI over the recipe surface. Same `bin` underpins every route:
+
+```bash
+npx @csm-lab/recipes seed-cm --rpc-url http://127.0.0.1:8545   # published
+npm i -g @csm-lab/recipes && csm-recipes --help                # global install
+node tools/recipes/dist/cli.mjs --help                         # built dist (repo dev)
+```
+
+Global flags: `--rpc-url` (or `RPC_URL`), `--module <csm|cm>`, `--cl-mock-url` (or
+`CL_MOCK_URL`), `--json`. Amounts (`--amount`, `--exit-balance`, …) are in **ETH**
+(`0.000000000000000001` = 1 wei). cm-/csm-only recipes live under the `cm`/`csm` groups:
+
+```bash
+csm-recipes --module csm add-keys --operator-id 0 --count 3
+csm-recipes --module csm make-rewards --json
+csm-recipes cm seed --seed 0x01
+csm-recipes csm set-gate --address 0xabc... --address 0xdef...
+```
+
 ## The `actAs` model
 
 Every privileged write runs through `actAs(ctx, who, fn)` — it funds `who`

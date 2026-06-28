@@ -1,5 +1,12 @@
 import type { Hex } from '@csm-lab/receipts';
-import { identity, toAddressValue, toBigInt, toHexValue, toPairs, type RecipeCommand } from '../define';
+import {
+  identity,
+  toAddressValue,
+  toBigInt,
+  toHexValue,
+  toPairs,
+  type RecipeCommand,
+} from '../define';
 import {
   createCuratedOperator,
   createOperatorGroup,
@@ -40,9 +47,20 @@ export const cmCommands: RecipeCommand[] = [
     name: 'create-operator-group',
     summary: 'create a MetaRegistry operator group (--pair noId:bps, must sum to 10000)',
     module: 'cm',
-    options: [{ flag: '--pair <noId:bps>', key: 'pairs', coerce: toPairs, repeatable: true, required: true }],
+    options: [
+      {
+        flag: '--pair <noId:bps>',
+        key: 'pairs',
+        coerce: toPairs,
+        repeatable: true,
+        required: true,
+      },
+    ],
     run: (ctx, o: { pairs: [bigint, bigint][] }) => createOperatorGroup(ctx, o),
-    report: (r: { subNodeOperators: { nodeOperatorId: bigint; share: number }[]; resetGroupIds: bigint[] }) => [
+    report: (r: {
+      subNodeOperators: { nodeOperatorId: bigint; share: number }[];
+      resetGroupIds: bigint[];
+    }) => [
       `group created: ${r.subNodeOperators.length} member(s)`,
       `members: ${r.subNodeOperators.map((s) => `${s.nodeOperatorId}@${s.share}bps`).join(', ')}`,
       ...(r.resetGroupIds.length ? [`reset prior groups: ${r.resetGroupIds.join(', ')}`] : []),

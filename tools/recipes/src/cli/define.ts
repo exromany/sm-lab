@@ -119,7 +119,9 @@ export function defineCommand(desc: RecipeCommand, connectImpl: typeof connect =
       const ctx = await connectImpl({ module: moduleName, rpcUrl, clMockUrl });
       const result = await desc.run(ctx, opts);
       if (g.json) {
-        console.log(JSON.stringify(result === undefined ? { ok: true } : result, bigintReplacer, 2));
+        console.log(
+          JSON.stringify(result === undefined ? { ok: true } : result, bigintReplacer, 2),
+        );
       } else {
         for (const line of desc.report(result, opts)) console.log(line);
       }
