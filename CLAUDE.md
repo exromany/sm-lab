@@ -109,5 +109,16 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   createCuratedOperator/createOperatorGroup/addKeys/deposit/topUpActiveKeys into the `seed-cm`
   scenario — uses the returned noIds (not hardcoded indices) + deterministic operator addresses.
 
-Next: **6g** (thin CLI, only if a human consumer materializes) — on demand. The full importable
-recipe surface (6a–6f-2) is now complete. `docs/migration.md` tracks the increments.
+- **6g `csm-recipes` CLI** ✅ — run-and-exit CLI over the recipe surface (merkle's shape, not a
+  server). Declarative command registry: each recipe is a `RecipeCommand` data descriptor;
+  one `defineCommand(desc, connectImpl)` factory (`src/cli/define.ts`) generates the commander
+  wiring (per-field coercion, `connect()` once, `--json` vs human output, `run()` error-exit).
+  `buildProgram(connectImpl)` wires ~34 commands — shared at top level (`--module`), cm/csm-only
+  under nested `cm`/`csm` groups that force `ctx.module`. ETH amounts via viem `parseEther`
+  (1-wei exact); `noId`→`--operator-id` (commander `--no-*` is negation, decoupled via `flagProp`).
+  `bin: csm-recipes → dist/cli.mjs`, v0.1.0, changeset added. Hermetic tests via the `connectImpl`
+  seam. **Published-for-npx is wired but the actual coordinated first publish of
+  recipes+merkle+receipts is a deferred release action** (none are on npm yet).
+
+Steps 1–6 (cl-mock, ipfs-mock, merkle, core, receipts, recipes + CLI) are complete.
+`docs/migration.md` tracks the increments.
