@@ -1,6 +1,6 @@
 {
   "name": "@csm-lab/recipes",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "TypeScript recipes to prepare CSM on-chain state on an anvil fork (rewritten fork.just; no Foundry)",
   "license": "MIT",
@@ -32,9 +32,13 @@
     "dist",
     "README.md"
   ],
+  "bin": {
+    "csm-recipes": "dist/cli.mjs"
+  },
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
+    "start": "node dist/cli.mjs",
     "test": "vitest run",
     "types": "tsc --noEmit"
   },
@@ -42,6 +46,7 @@
     "@csm-lab/merkle": "workspace:*",
     "@csm-lab/receipts": "workspace:*",
     "commander": "catalog:",
+    "dotenv": "catalog:",
     "viem": "catalog:"
   },
   "devDependencies": {

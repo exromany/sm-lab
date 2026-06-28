@@ -12,6 +12,7 @@ export default libConfig({
     index: 'src/index.ts',
     cm: 'src/cm/index.ts',
     csm: 'src/csm/index.ts',
+    cli: 'src/cli/index.ts',
   },
   format: ['esm'],
   platform: 'node',

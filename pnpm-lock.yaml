@@ -218,6 +218,9 @@ importers:
       commander:
         specifier: 'catalog:'
         version: 13.1.0
+      dotenv:
+        specifier: 'catalog:'
+        version: 16.6.1
       viem:
         specifier: 'catalog:'
         version: 2.53.1(typescript@5.9.3)
