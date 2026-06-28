@@ -9,8 +9,10 @@ export interface OptionSpec {
   flag: string;
   /** the recipe opts property this maps to, e.g. 'noId' (decoupled from the flag). */
   key: string;
-  // Single-value coercers receive string; repeatable coercers receive string[].
-  coerce: (raw: any) => unknown;
+  // Method form (params are checked bivariantly under strictFunctionTypes) so that a
+  // narrow coercer like toBigInt(s: string) stays assignable. Single-value coercers
+  // receive string; repeatable coercers receive string[].
+  coerce(raw: string | string[]): unknown;
   required?: boolean;
   repeatable?: boolean;
   description?: string;
@@ -20,8 +22,10 @@ export interface RecipeCommand<O = Record<string, unknown>, R = unknown> {
   name: string;
   summary: string;
   options: OptionSpec[];
-  run: (ctx: Ctx, opts: O) => Promise<R> | R;
-  report: (result: R, opts: O) => string[];
+  // Method form (bivariant params) so descriptors with narrowed opts/result types —
+  // e.g. run(ctx, o: { noId: bigint }) — remain assignable to RecipeCommand[].
+  run(ctx: Ctx, opts: O): Promise<R> | R;
+  report(result: R, opts: O): string[];
   /** cm/csm-only commands set this; it forces ctx.module and overrides global --module. */
   module?: 'cm' | 'csm';
   needsClMock?: boolean;
@@ -84,13 +88,14 @@ export function run(fn: () => Promise<void>): void {
 
 const collect = (v: string, acc: string[]): string[] => [...acc, v];
 
-export function defineCommand(desc: RecipeCommand<any, any>, connectImpl: typeof connect = connect): Command {
+export function defineCommand(desc: RecipeCommand, connectImpl: typeof connect = connect): Command {
   const cmd = new Command(desc.name).description(desc.summary);
   for (const o of desc.options) {
     if (o.repeatable) cmd.option(o.flag, o.description ?? '', collect, []);
     else cmd.option(o.flag, o.description ?? '');
   }
-  cmd.action((_local: unknown, command: Command) => {
+  // First arg is commander's local opts; we ignore it and read merged globals via optsWithGlobals().
+  cmd.action((_localOpts: unknown, command: Command) => {
     run(async () => {
       const g = command.optsWithGlobals() as Record<string, unknown>;
       const opts: Record<string, unknown> = {};
