@@ -40,7 +40,7 @@
     "hono": "catalog:",
     "@hono/node-server": "catalog:",
     "commander": "catalog:",
-    "multiformats": "^13.3.1"
+    "multiformats": "^14.0.2"
   },
   "devDependencies": {
     "@csm-lab/config": "workspace:*",

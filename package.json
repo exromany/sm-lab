@@ -8,6 +8,12 @@
   "engines": {
     "node": ">=20"
   },
+  "pnpm": {
+    "overrides": {
+      "ws@>=8.0.0 <8.21.0": "^8.21.0",
+      "@metamask/utils>uuid": "^11.1.1"
+    }
+  },
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -26,10 +32,10 @@
   "devDependencies": {
     "@changesets/cli": "^2.28.1",
     "oxlint": "^1.0.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.9.1",
     "tsdown": "^0.22.3",
     "turbo": "^2.4.0",
-    "typescript": "^5.8.2",
-    "vitest": "^3.0.0"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
   }
 }
