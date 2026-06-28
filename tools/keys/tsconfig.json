@@ -1,0 +1,5 @@
+{
+  "comment": "Relative extends (not the @csm-lab/config subpath) — tsdown's Rust tsconfig loader can't follow package-exports extends. tsc here is typecheck-only.",
+  "extends": "../../packages/config/tsconfig.lib.json",
+  "include": ["src/**/*"]
+}
