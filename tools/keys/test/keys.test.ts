@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CHAINS } from '../src/constants';
 import { hexToBytes } from '../src/hex';
 import { makeDepositKeys, withdrawalCredentials } from '../src/keys';
-import { DepositMessage, computeDomain, computeSigningRoot } from '../src/ssz';
+import { DepositData, DepositMessage, computeDomain, computeSigningRoot } from '../src/ssz';
 
 const MNEMONIC =
   'impact exit example acquire drastic cement usage float mesh source private bulb twenty guitar neglect';
@@ -35,6 +35,13 @@ describe('makeDepositKeys', () => {
       );
       const signingRoot = computeSigningRoot(messageRoot, domain);
       expect(bls.verify(pubkey, signingRoot, sig)).toBe(true);
+      const recomputedDataRoot = DepositData.hashTreeRoot({
+        pubkey,
+        withdrawal_credentials: wc,
+        amount: 32_000_000_000n,
+        signature: sig,
+      });
+      expect(k.deposit_data_root).toBe(`0x${Buffer.from(recomputedDataRoot).toString('hex')}`);
     }
   });
 
@@ -91,5 +98,8 @@ describe('withdrawalCredentials', () => {
     expect(wc.length).toBe(32);
     expect(wc[0]).toBe(0x01);
     expect(wc.slice(1, 12).every((b) => b === 0)).toBe(true);
+    expect([...wc.slice(12)]).toEqual([
+      ...hexToBytes('0x000000000000000000000000000000000000dEaD'),
+    ]);
   });
 });
