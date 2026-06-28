@@ -41,6 +41,7 @@
   "dependencies": {
     "@csm-lab/merkle": "workspace:*",
     "@csm-lab/receipts": "workspace:*",
+    "commander": "catalog:",
     "viem": "catalog:"
   },
   "devDependencies": {
