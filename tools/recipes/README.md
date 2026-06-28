@@ -27,7 +27,7 @@ Peer runtime: a running anvil fork with CSM already deployed (`anvil --fork-url 
 A run-and-exit CLI over the recipe surface. Same `bin` underpins every route:
 
 ```bash
-npx @csm-lab/recipes seed-cm --rpc-url http://127.0.0.1:8545   # published
+npx @csm-lab/recipes cm seed --rpc-url http://127.0.0.1:8545   # published
 npm i -g @csm-lab/recipes && csm-recipes --help                # global install
 node tools/recipes/dist/cli.mjs --help                         # built dist (repo dev)
 ```

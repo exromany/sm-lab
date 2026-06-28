@@ -1,4 +1,3 @@
-// tools/recipes/src/cli/define.ts
 import { Command } from 'commander';
 import { isAddress, isHex, parseEther } from 'viem';
 import type { Hex } from '@csm-lab/receipts';

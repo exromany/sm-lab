@@ -1,4 +1,3 @@
-// tools/recipes/src/cli/program.ts
 import { Command } from 'commander';
 import { connect } from '../context';
 import { defineCommand } from './define';

@@ -68,7 +68,7 @@ export const cmCommands: RecipeCommand[] = [
   },
   {
     name: 'reset-operator-group',
-    summary: 'reset an operator’s group membership',
+    summary: "reset an operator's group membership",
     module: 'cm',
     options: [operatorId],
     run: (ctx, o: { noId: bigint }) => resetOperatorGroup(ctx, o),

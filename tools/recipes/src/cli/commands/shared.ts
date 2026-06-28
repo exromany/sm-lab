@@ -1,4 +1,3 @@
-// tools/recipes/src/cli/commands/shared.ts
 import { formatEther } from 'viem';
 import type { Hex } from '@csm-lab/receipts';
 import {
@@ -95,7 +94,7 @@ export const sharedCommands: RecipeCommand[] = [
   },
   {
     name: 'increase-allocated-balance',
-    summary: 'top up one deposited key’s allocated balance (ETH)',
+    summary: "top up one deposited key's allocated balance (ETH)",
     options: [
       operatorId,
       keyIndex,
@@ -162,14 +161,14 @@ export const sharedCommands: RecipeCommand[] = [
   },
   {
     name: 'settle-penalty',
-    summary: 'settle an operator’s general delayed penalty (optional ETH cap)',
+    summary: "settle an operator's general delayed penalty (optional ETH cap)",
     options: [operatorId, { flag: '--max-amount <eth>', key: 'maxAmount', coerce: toEth }],
     run: (ctx, o: { noId: bigint; maxAmount?: bigint }) => settlePenalty(ctx, o),
     report: (_r, o: { noId: bigint }) => [`settled penalty on operator ${o.noId}`],
   },
   {
     name: 'compensate-penalty',
-    summary: 'compensate (pay off) an operator’s penalty (as manager)',
+    summary: "compensate (pay off) an operator's penalty (as manager)",
     options: [operatorId],
     run: (ctx, o: { noId: bigint }) => compensatePenalty(ctx, o),
     report: (_r, o: { noId: bigint }) => [`compensated penalty on operator ${o.noId}`],
@@ -273,14 +272,14 @@ export const sharedCommands: RecipeCommand[] = [
   },
   {
     name: 'get-pubkey',
-    summary: 'read a key’s pubkey',
+    summary: "read a key's pubkey",
     options: [operatorId, keyIndex],
     run: (ctx, o: { noId: bigint; keyIndex: bigint }) => getPubkey(ctx, o),
     report: (r: Hex) => [r],
   },
   {
     name: 'get-key-balance',
-    summary: 'read a key’s allocated balance',
+    summary: "read a key's allocated balance",
     options: [operatorId, keyIndex],
     run: (ctx, o: { noId: bigint; keyIndex: bigint }) => getKeyBalance(ctx, o),
     report: (r: bigint) => [`${formatEther(r)} ETH (${r} wei)`],
