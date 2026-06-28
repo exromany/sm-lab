@@ -40,11 +40,11 @@ Tree leaf encodings: ICS `["address"]` · strikes `["uint256", "string", "uint25
 
 ## Environment
 
-| Var | Purpose |
-| --- | --- |
-| `IPFS_API_URL` | Pinning endpoint. **Unset → real Pinata** (`https://api.pinata.cloud`). Point at `@csm-lab/ipfs-mock` for local runs (e.g. `http://127.0.0.1:3000`) — a custom endpoint pins **without** Pinata credentials. |
-| `PINATA_API_KEY` / `PINATA_API_SECRET` | Pinata credentials (`pinata_api_key` / `pinata_secret_api_key` headers). |
-| `PINATA_JWT` | Alternative to key/secret (`Authorization: Bearer …`). |
+| Var                                    | Purpose                                                                                                                                                                                                      |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `IPFS_API_URL`                         | Pinning endpoint. **Unset → real Pinata** (`https://api.pinata.cloud`). Point at `@csm-lab/ipfs-mock` for local runs (e.g. `http://127.0.0.1:3000`) — a custom endpoint pins **without** Pinata credentials. |
+| `PINATA_API_KEY` / `PINATA_API_SECRET` | Pinata credentials (`pinata_api_key` / `pinata_secret_api_key` headers).                                                                                                                                     |
+| `PINATA_JWT`                           | Alternative to key/secret (`Authorization: Bearer …`).                                                                                                                                                       |
 
 Copy `.env` from your own values; never commit secrets (`.env*` is gitignored).
 
@@ -62,7 +62,11 @@ tsdown (ESM, bundled) via the shared `@csm-lab/config` preset:
 ```ts
 // tsdown.config.ts
 import { libConfig } from '@csm-lab/config/tsdown';
-export default libConfig({ entry: { index: 'src/index.ts', cli: 'src/cli.ts' }, format: ['esm'], platform: 'node' });
+export default libConfig({
+  entry: { index: 'src/index.ts', cli: 'src/cli.ts' },
+  format: ['esm'],
+  platform: 'node',
+});
 ```
 
 ## Migration notes (from `csm-test-tree`)

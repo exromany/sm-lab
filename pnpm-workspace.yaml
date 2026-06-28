@@ -1,10 +1,10 @@
 # pnpm workspace definition — the four lifecycle buckets.
 # See docs/architecture.md for why apps/tools/fixtures/packages are split this way.
 packages:
-  - "apps/*" # long-running services (npm bin + Docker image + helm)
-  - "tools/*" # one-shot CLIs / pipelines (npm bin, run-and-exit)
-  - "fixtures/*" # versioned data, zero runtime (published as typed JSON)
-  - "packages/*" # shared internals consumed by the above
+  - 'apps/*' # long-running services (npm bin + Docker image + helm)
+  - 'tools/*' # one-shot CLIs / pipelines (npm bin, run-and-exit)
+  - 'fixtures/*' # versioned data, zero runtime (published as typed JSON)
+  - 'packages/*' # shared internals consumed by the above
 
 # Single source of truth for shared dependency versions across all packages.
 # Reference in any package.json as e.g.  "hono": "catalog:".
@@ -12,21 +12,21 @@ packages:
 catalog:
   # runtime / framework
   hono: ^4.7.0
-  "@hono/node-server": ^2.0.6
+  '@hono/node-server': ^2.0.6
   commander: ^15.0.0
   dotenv: ^17.4.2
   # csm-specific
-  "@openzeppelin/merkle-tree": ^1.0.8
+  '@openzeppelin/merkle-tree': ^1.0.8
   # bls / deposit-key generation
-  "@chainsafe/bls": ^8.2.0
-  "@chainsafe/bls-keygen": ^0.4.0
-  "@chainsafe/ssz": ^1.3.0
-  "@scure/bip39": ^2.0.0
+  '@chainsafe/bls': ^8.2.0
+  '@chainsafe/bls-keygen': ^0.4.0
+  '@chainsafe/ssz': ^1.3.0
+  '@scure/bip39': ^2.0.0
   # chain
   viem: ^2.53.0
   # tooling (also pinned at root, repeated here so packages can opt in)
   typescript: ^6.0.3
   tsdown: ^0.22.3
   vitest: ^4.1.9
-  "@types/node": ^26.0.1
+  '@types/node': ^26.0.1
   tsx: ^4.19.0

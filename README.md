@@ -14,14 +14,14 @@ pnpm stack:up       # cl-mock + ipfs-mock + anvil — a full offline CSM test be
 
 ## Layout
 
-| Path | Package | What | From |
-| --- | --- | --- | --- |
-| `apps/cl-mock` | `@csm-lab/cl-mock` | Consensus Layer (Beacon API) mock | `csm-test-cl` |
-| `apps/ipfs-mock` | `@csm-lab/ipfs-mock` | Pinata/IPFS emulator, deterministic CIDs | new |
-| `tools/merkle` | `@csm-lab/merkle` | ICS + strikes merkle tree builder | `csm-test-tree` |
-| `fixtures/receipts` | `@csm-lab/receipts` | typed anvil/deploy snapshots | contracts repo |
-| `packages/core` | `@csm-lab/core` | shared internals (bundled, not published) | — |
-| `packages/config` | `@csm-lab/config` | tsconfig + tsdown + oxlint presets | — |
+| Path                | Package              | What                                      | From            |
+| ------------------- | -------------------- | ----------------------------------------- | --------------- |
+| `apps/cl-mock`      | `@csm-lab/cl-mock`   | Consensus Layer (Beacon API) mock         | `csm-test-cl`   |
+| `apps/ipfs-mock`    | `@csm-lab/ipfs-mock` | Pinata/IPFS emulator, deterministic CIDs  | new             |
+| `tools/merkle`      | `@csm-lab/merkle`    | ICS + strikes merkle tree builder         | `csm-test-tree` |
+| `fixtures/receipts` | `@csm-lab/receipts`  | typed anvil/deploy snapshots              | contracts repo  |
+| `packages/core`     | `@csm-lab/core`      | shared internals (bundled, not published) | —               |
+| `packages/config`   | `@csm-lab/config`    | tsconfig + tsdown + oxlint presets        | —               |
 
 The four-bucket split (`apps` / `tools` / `fixtures` / `packages`) is by **lifecycle**, not
 topic — see [`docs/architecture.md`](./docs/architecture.md).

@@ -24,10 +24,12 @@
 ### Task 1: The `define.ts` core — coercers + factory
 
 **Files:**
+
 - Create: `tools/recipes/src/cli/define.ts`
 - Test: `tools/recipes/test/cli-define.test.ts`
 
 **Interfaces:**
+
 - Consumes: `connect`, `Ctx` from `../context` (existing).
 - Produces:
   - `interface OptionSpec { flag: string; key: string; coerce: (raw: string | string[]) => unknown; required?: boolean; repeatable?: boolean; description?: string }`
@@ -76,7 +78,10 @@ describe('coercers', () => {
     expect(() => toAddressValue('0x123')).toThrow();
   });
   it('toPairs / toAddresses map repeatable input', () => {
-    expect(toPairs(['0:3400', '1:6600'])).toEqual([[0n, 3400n], [1n, 6600n]]);
+    expect(toPairs(['0:3400', '1:6600'])).toEqual([
+      [0n, 3400n],
+      [1n, 6600n],
+    ]);
     expect(toAddresses(['0x' + '1'.repeat(40)])).toEqual(['0x' + '1'.repeat(40)]);
   });
 });
@@ -125,7 +130,11 @@ describe('defineCommand', () => {
       ['--rpc-url', 'http://x', '--module', 'csm', 'demo', '--operator-id', '7'],
       { from: 'user' },
     );
-    expect(fakeConnect).toHaveBeenCalledWith({ module: 'csm', rpcUrl: 'http://x', clMockUrl: undefined });
+    expect(fakeConnect).toHaveBeenCalledWith({
+      module: 'csm',
+      rpcUrl: 'http://x',
+      clMockUrl: undefined,
+    });
     expect(log).toHaveBeenCalledWith('ok 7');
     log.mockRestore();
   });
@@ -276,7 +285,9 @@ export function defineCommand(desc: RecipeCommand, connectImpl: typeof connect =
       const ctx = await connectImpl({ module: moduleName, rpcUrl, clMockUrl });
       const result = await desc.run(ctx, opts);
       if (g.json) {
-        console.log(JSON.stringify(result === undefined ? { ok: true } : result, bigintReplacer, 2));
+        console.log(
+          JSON.stringify(result === undefined ? { ok: true } : result, bigintReplacer, 2),
+        );
       } else {
         for (const line of desc.report(result, opts)) console.log(line);
       }
@@ -303,16 +314,19 @@ git commit -m "feat(recipes): cli command-registry core (define.ts)"
 ### Task 2: Shared command descriptors
 
 **Files:**
+
 - Create: `tools/recipes/src/cli/commands/shared.ts`
 - Test: `tools/recipes/test/cli-shared.test.ts`
 
 **Interfaces:**
+
 - Consumes: `OptionSpec`, `RecipeCommand`, coercers from `../define`; recipe functions from `../../recipes/*` and `../../recipes/reads`/`chain`.
 - Produces: `export const sharedCommands: RecipeCommand[]` — 27 descriptors.
 
 **Notes (resolved design points):**
+
 - `warp`/`snapshot`/`revert` have non-`(ctx, opts)` recipe signatures, so their `run` is a thin adapter (`(ctx, opts) => warpBy(ctx, opts.by)`).
-- `submit-rewards` composes `submitRewards(ctx, await makeRewards(ctx, opts))` — the one deliberate non-1:1 ergonomic (the *recipe* `submitRewards` takes a `RewardsReport`; the *command* builds-then-submits with the same `--seed`/`--tree-cid`/`--log-cid` flags). `previousCumulatives`/`now` are out of CLI scope.
+- `submit-rewards` composes `submitRewards(ctx, await makeRewards(ctx, opts))` — the one deliberate non-1:1 ergonomic (the _recipe_ `submitRewards` takes a `RewardsReport`; the _command_ builds-then-submits with the same `--seed`/`--tree-cid`/`--log-cid` flags). `previousCumulatives`/`now` are out of CLI scope.
 - `--by` is **seconds** (1:1 with `warpBy(ctx, seconds)`); duration sugar (`7d`) is out of scope.
 
 - [ ] **Step 1: Write the failing test**
@@ -328,12 +342,33 @@ describe('sharedCommands', () => {
     const names = sharedCommands.map((c) => c.name).toSorted();
     expect(names).toEqual(
       [
-        'add-bond', 'add-keys', 'cancel-penalty', 'cl-activate', 'compensate-penalty',
-        'confirm-manager', 'confirm-reward', 'create-bond-debt', 'deposit', 'exit',
-        'get-key-balance', 'get-pubkey', 'increase-allocated-balance', 'make-rewards',
-        'operator-info', 'propose-manager', 'propose-reward', 'report-penalty', 'revert',
-        'settle-penalty', 'slash', 'snapshot', 'submit-rewards', 'top-up-active-keys',
-        'unvet', 'warp', 'withdraw',
+        'add-bond',
+        'add-keys',
+        'cancel-penalty',
+        'cl-activate',
+        'compensate-penalty',
+        'confirm-manager',
+        'confirm-reward',
+        'create-bond-debt',
+        'deposit',
+        'exit',
+        'get-key-balance',
+        'get-pubkey',
+        'increase-allocated-balance',
+        'make-rewards',
+        'operator-info',
+        'propose-manager',
+        'propose-reward',
+        'report-penalty',
+        'revert',
+        'settle-penalty',
+        'slash',
+        'snapshot',
+        'submit-rewards',
+        'top-up-active-keys',
+        'unvet',
+        'warp',
+        'withdraw',
       ].toSorted(),
     );
   });
@@ -440,22 +475,37 @@ export const sharedCommands: RecipeCommand[] = [
   {
     name: 'unvet',
     summary: 'set an operator vetted-keys count down (as the StakingRouter)',
-    options: [operatorId, { flag: '--vetted-keys <n>', key: 'vettedKeys', coerce: toBigInt, required: true }],
+    options: [
+      operatorId,
+      { flag: '--vetted-keys <n>', key: 'vettedKeys', coerce: toBigInt, required: true },
+    ],
     run: (ctx, o: { noId: bigint; vettedKeys: bigint }) => unvet(ctx, o),
-    report: (_r, o: { noId: bigint; vettedKeys: bigint }) => [`operator ${o.noId}: vetted=${o.vettedKeys}`],
+    report: (_r, o: { noId: bigint; vettedKeys: bigint }) => [
+      `operator ${o.noId}: vetted=${o.vettedKeys}`,
+    ],
   },
   {
     name: 'exit',
     summary: 'report exited keys for an operator (as the StakingRouter)',
-    options: [operatorId, { flag: '--exited-keys <n>', key: 'exitedKeys', coerce: toBigInt, required: true }],
+    options: [
+      operatorId,
+      { flag: '--exited-keys <n>', key: 'exitedKeys', coerce: toBigInt, required: true },
+    ],
     run: (ctx, o: { noId: bigint; exitedKeys: bigint }) => exit(ctx, o),
-    report: (_r, o: { noId: bigint; exitedKeys: bigint }) => [`operator ${o.noId}: exited=${o.exitedKeys}`],
+    report: (_r, o: { noId: bigint; exitedKeys: bigint }) => [
+      `operator ${o.noId}: exited=${o.exitedKeys}`,
+    ],
   },
   {
     name: 'increase-allocated-balance',
     summary: 'top up one deposited key’s allocated balance (ETH)',
-    options: [operatorId, keyIndex, { flag: '--amount <eth>', key: 'amountWei', coerce: toEth, required: true }],
-    run: (ctx, o: { noId: bigint; keyIndex: bigint; amountWei: bigint }) => increaseAllocatedBalance(ctx, o),
+    options: [
+      operatorId,
+      keyIndex,
+      { flag: '--amount <eth>', key: 'amountWei', coerce: toEth, required: true },
+    ],
+    run: (ctx, o: { noId: bigint; keyIndex: bigint; amountWei: bigint }) =>
+      increaseAllocatedBalance(ctx, o),
     report: (r: { amountWei: bigint }) => [`+${formatEther(r.amountWei)} ETH allocated`],
   },
   {
@@ -470,7 +520,9 @@ export const sharedCommands: RecipeCommand[] = [
     summary: 'slash a validator key (Verifier-gated)',
     options: [operatorId, keyIndex],
     run: (ctx, o: { noId: bigint; keyIndex: bigint }) => slash(ctx, o),
-    report: (_r, o: { noId: bigint; keyIndex: bigint }) => [`slashed operator ${o.noId} key ${o.keyIndex}`],
+    report: (_r, o: { noId: bigint; keyIndex: bigint }) => [
+      `slashed operator ${o.noId} key ${o.keyIndex}`,
+    ],
   },
   {
     name: 'withdraw',
@@ -481,9 +533,13 @@ export const sharedCommands: RecipeCommand[] = [
       { flag: '--exit-balance <eth>', key: 'exitBalance', coerce: toEth, required: true },
       { flag: '--slashing-penalty <eth>', key: 'slashingPenalty', coerce: toEth },
     ],
-    run: (ctx, o: { noId: bigint; keyIndex: bigint; exitBalance: bigint; slashingPenalty?: bigint }) =>
-      withdraw(ctx, o),
-    report: (_r, o: { noId: bigint; keyIndex: bigint }) => [`withdrew operator ${o.noId} key ${o.keyIndex}`],
+    run: (
+      ctx,
+      o: { noId: bigint; keyIndex: bigint; exitBalance: bigint; slashingPenalty?: bigint },
+    ) => withdraw(ctx, o),
+    report: (_r, o: { noId: bigint; keyIndex: bigint }) => [
+      `withdrew operator ${o.noId} key ${o.keyIndex}`,
+    ],
   },
   {
     name: 'report-penalty',
@@ -526,7 +582,9 @@ export const sharedCommands: RecipeCommand[] = [
     summary: 'add bond to an operator (ETH)',
     options: [operatorId, { flag: '--amount <eth>', key: 'amount', coerce: toEth, required: true }],
     run: (ctx, o: { noId: bigint; amount: bigint }) => addBond(ctx, o),
-    report: (_r, o: { noId: bigint; amount: bigint }) => [`added ${formatEther(o.amount)} ETH bond to operator ${o.noId}`],
+    report: (_r, o: { noId: bigint; amount: bigint }) => [
+      `added ${formatEther(o.amount)} ETH bond to operator ${o.noId}`,
+    ],
   },
   {
     name: 'create-bond-debt',
@@ -540,9 +598,14 @@ export const sharedCommands: RecipeCommand[] = [
   {
     name: 'propose-manager',
     summary: 'propose a new manager address (as current manager)',
-    options: [operatorId, { flag: '--proposed <address>', key: 'proposed', coerce: toAddressValue, required: true }],
+    options: [
+      operatorId,
+      { flag: '--proposed <address>', key: 'proposed', coerce: toAddressValue, required: true },
+    ],
     run: (ctx, o: { noId: bigint; proposed: Hex }) => proposeManager(ctx, o),
-    report: (_r, o: { noId: bigint; proposed: Hex }) => [`operator ${o.noId}: proposed manager ${o.proposed}`],
+    report: (_r, o: { noId: bigint; proposed: Hex }) => [
+      `operator ${o.noId}: proposed manager ${o.proposed}`,
+    ],
   },
   {
     name: 'confirm-manager',
@@ -554,9 +617,14 @@ export const sharedCommands: RecipeCommand[] = [
   {
     name: 'propose-reward',
     summary: 'propose a new reward address (as current manager)',
-    options: [operatorId, { flag: '--proposed <address>', key: 'proposed', coerce: toAddressValue, required: true }],
+    options: [
+      operatorId,
+      { flag: '--proposed <address>', key: 'proposed', coerce: toAddressValue, required: true },
+    ],
     run: (ctx, o: { noId: bigint; proposed: Hex }) => proposeReward(ctx, o),
-    report: (_r, o: { noId: bigint; proposed: Hex }) => [`operator ${o.noId}: proposed reward ${o.proposed}`],
+    report: (_r, o: { noId: bigint; proposed: Hex }) => [
+      `operator ${o.noId}: proposed reward ${o.proposed}`,
+    ],
   },
   {
     name: 'confirm-reward',
@@ -661,10 +729,12 @@ git commit -m "feat(recipes): cli shared command descriptors"
 ### Task 3: cm + csm command descriptors
 
 **Files:**
+
 - Create: `tools/recipes/src/cli/commands/cm.ts`, `tools/recipes/src/cli/commands/csm.ts`
 - Test: `tools/recipes/test/cli-modules.test.ts`
 
 **Interfaces:**
+
 - Consumes: coercers/types from `../define`; `createCuratedOperator`, `createOperatorGroup`, `resetOperatorGroup`, `setBondCurveWeight`, `seedCm` from `../../cm`; `setGateAddrs` from `../../csm`; `resolveGate` from `../../context`.
 - Produces: `export const cmCommands: RecipeCommand[]` (module `'cm'`), `export const csmCommands: RecipeCommand[]` (module `'csm'`).
 
@@ -679,19 +749,30 @@ import { csmCommands } from '../src/cli/commands/csm';
 describe('cm/csm commands', () => {
   it('cm commands all force module cm', () => {
     expect(cmCommands.map((c) => c.name).toSorted()).toEqual(
-      ['create-curated-operator', 'create-operator-group', 'reset-operator-group', 'seed', 'set-bond-curve-weight'].toSorted(),
+      [
+        'create-curated-operator',
+        'create-operator-group',
+        'reset-operator-group',
+        'seed',
+        'set-bond-curve-weight',
+      ].toSorted(),
     );
     expect(cmCommands.every((c) => c.module === 'cm')).toBe(true);
   });
   it('csm commands all force module csm', () => {
-    expect(csmCommands.map((c) => c.name).toSorted()).toEqual(['resolve-gate', 'set-gate'].toSorted());
+    expect(csmCommands.map((c) => c.name).toSorted()).toEqual(
+      ['resolve-gate', 'set-gate'].toSorted(),
+    );
     expect(csmCommands.every((c) => c.module === 'csm')).toBe(true);
   });
   it('create-operator-group uses a repeatable --pair', () => {
     const g = cmCommands.find((c) => c.name === 'create-operator-group')!;
     const pair = g.options.find((o) => o.key === 'pairs')!;
     expect(pair.repeatable).toBe(true);
-    expect(pair.coerce(['0:5000', '1:5000'])).toEqual([[0n, 5000n], [1n, 5000n]]);
+    expect(pair.coerce(['0:5000', '1:5000'])).toEqual([
+      [0n, 5000n],
+      [1n, 5000n],
+    ]);
   });
   it('resolve-gate reports the resolved address', () => {
     const rg = csmCommands.find((c) => c.name === 'resolve-gate')!;
@@ -710,7 +791,14 @@ Expected: FAIL — cannot resolve `../src/cli/commands/cm`.
 ```ts
 // tools/recipes/src/cli/commands/cm.ts
 import type { Hex } from '@csm-lab/receipts';
-import { identity, toAddressValue, toBigInt, toHexValue, toPairs, type RecipeCommand } from '../define';
+import {
+  identity,
+  toAddressValue,
+  toBigInt,
+  toHexValue,
+  toPairs,
+  type RecipeCommand,
+} from '../define';
 import {
   createCuratedOperator,
   createOperatorGroup,
@@ -751,9 +839,20 @@ export const cmCommands: RecipeCommand[] = [
     name: 'create-operator-group',
     summary: 'create a MetaRegistry operator group (--pair noId:bps, must sum to 10000)',
     module: 'cm',
-    options: [{ flag: '--pair <noId:bps>', key: 'pairs', coerce: toPairs, repeatable: true, required: true }],
+    options: [
+      {
+        flag: '--pair <noId:bps>',
+        key: 'pairs',
+        coerce: toPairs,
+        repeatable: true,
+        required: true,
+      },
+    ],
     run: (ctx, o: { pairs: [bigint, bigint][] }) => createOperatorGroup(ctx, o),
-    report: (r: { subNodeOperators: { nodeOperatorId: bigint; share: number }[]; resetGroupIds: bigint[] }) => [
+    report: (r: {
+      subNodeOperators: { nodeOperatorId: bigint; share: number }[];
+      resetGroupIds: bigint[];
+    }) => [
       `group created: ${r.subNodeOperators.length} member(s)`,
       `members: ${r.subNodeOperators.map((s) => `${s.nodeOperatorId}@${s.share}bps`).join(', ')}`,
       ...(r.resetGroupIds.length ? [`reset prior groups: ${r.resetGroupIds.join(', ')}`] : []),
@@ -794,12 +893,21 @@ export const csmCommands: RecipeCommand[] = [
     summary: 'build + install a gate address tree (pins to IPFS unless --cid)',
     module: 'csm',
     options: [
-      { flag: '--address <addr>', key: 'addresses', coerce: toAddresses, repeatable: true, required: true },
+      {
+        flag: '--address <addr>',
+        key: 'addresses',
+        coerce: toAddresses,
+        repeatable: true,
+        required: true,
+      },
       { flag: '--selector <name>', key: 'selector', coerce: identity },
       { flag: '--cid <cid>', key: 'cid', coerce: identity },
     ],
     run: (ctx, o: { addresses: Hex[]; selector?: 'ics'; cid?: string }) => setGateAddrs(ctx, o),
-    report: (r: { treeRoot: Hex; treeCid: string }) => [`tree root: ${r.treeRoot}`, `tree CID:  ${r.treeCid}`],
+    report: (r: { treeRoot: Hex; treeCid: string }) => [
+      `tree root: ${r.treeRoot}`,
+      `tree CID:  ${r.treeCid}`,
+    ],
   },
   {
     name: 'resolve-gate',
@@ -829,11 +937,13 @@ git commit -m "feat(recipes): cli cm/csm command descriptors"
 ### Task 4: Program assembly, entrypoint, package wiring
 
 **Files:**
+
 - Create: `tools/recipes/src/cli/program.ts`, `tools/recipes/src/cli/index.ts`
 - Modify: `tools/recipes/package.json`, `tools/recipes/tsdown.config.ts`
 - Test: `tools/recipes/test/cli-program.test.ts`
 
 **Interfaces:**
+
 - Consumes: `defineCommand` from `./define`; `sharedCommands`, `cmCommands`, `csmCommands` from `./commands/*`; `connect` from `../context`.
 - Produces: `buildProgram(connectImpl?): Command` (in `program.ts`). `index.ts` is the `#!/usr/bin/env node` shebang that loads dotenv and runs `buildProgram().parseAsync()`.
 
@@ -848,7 +958,9 @@ describe('buildProgram', () => {
   const p = buildProgram();
   it('registers global options', () => {
     const longs = p.options.map((o) => o.long);
-    expect(longs).toEqual(expect.arrayContaining(['--rpc-url', '--module', '--cl-mock-url', '--json']));
+    expect(longs).toEqual(
+      expect.arrayContaining(['--rpc-url', '--module', '--cl-mock-url', '--json']),
+    );
   });
   it('registers all shared commands at the top level plus cm/csm groups', () => {
     const names = p.commands.map((c) => c.name());
@@ -856,7 +968,9 @@ describe('buildProgram', () => {
   });
   it('the cm group nests its commands', () => {
     const cm = p.commands.find((c) => c.name() === 'cm')!;
-    expect(cm.commands.map((c) => c.name())).toEqual(expect.arrayContaining(['seed', 'create-operator-group']));
+    expect(cm.commands.map((c) => c.name())).toEqual(
+      expect.arrayContaining(['seed', 'create-operator-group']),
+    );
   });
 });
 ```
@@ -959,6 +1073,7 @@ git commit -m "feat(recipes): cli program assembly + bin wiring"
 ### Task 5: Docs, changeset, full gates
 
 **Files:**
+
 - Modify: `tools/recipes/README.md`
 - Create: `.changeset/recipes-cli.md`
 
@@ -1007,6 +1122,7 @@ EOF
 - [ ] **Step 3: Run the full per-package gates**
 
 Run:
+
 ```bash
 pnpm --filter @csm-lab/recipes build
 pnpm --filter @csm-lab/recipes types
@@ -1014,6 +1130,7 @@ pnpm --filter @csm-lab/recipes test
 pnpm exec oxlint tools/recipes
 pnpm exec prettier --check "tools/recipes/**/*.{ts,json}"
 ```
+
 Expected: all green. If prettier flags files, run `pnpm exec prettier --write "tools/recipes/**/*.{ts,json,md}"` and re-check.
 
 - [ ] **Step 4: Commit**

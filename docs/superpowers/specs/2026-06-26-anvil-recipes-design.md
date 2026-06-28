@@ -27,18 +27,18 @@ Verification is the calling test's job.
 
 ## Constraints (decided)
 
-| # | Decision | Notes |
-| --- | --- | --- |
-| 1 | **No Foundry in csm-lab** | No `forge`/`cast`/`solc` at build or runtime. `anvil` is the *target* chain only, reached over RPC. |
-| 2 | **Surface = TS API; CLI deferred** | Importable typed functions are the core. A thin CLI is a *later* increment (6g), only if a human consumer materializes — no named user today. |
-| 3 | **Module × recipe = context + flat functions** | `ctx = { client, module, addresses, abis, clMockUrl? }`; shared recipes resolve the module via `ctx.module`; module-specific recipes live in subpaths and guard on `ctx.module`. |
-| 4 | **Addresses: snapshot + locator-resolved** | Module-suite addresses come from an injectable snapshot (consumer-overridable). **Protocol addresses (`StakingRouter`, `VEBO`, `Lido`, …) are NOT in the snapshot — `connect()` resolves them from `LidoLocator` on-chain.** The snapshot must be sourced from the **latest per-chain upgrade config** (CSM has been upgraded twice; proxy addresses are stable across v2/v3, but `*Impl` addresses and added contracts — `VerifierV3`, `CircuitBreaker`, `IdentifiedDVTClusterGate` — are only present in the latest config). |
-| 5 | **ABIs vendored, not imported from the SDK** | Avoids the consumer→provider cycle (`architecture.md`: SDK/contracts are consumers of csm-lab). A cross-repo ABI parity check warns on divergence (see SDK boundary). |
-| 6 | **anvil `state.json` deferred** | Out of scope now. Recipes take an `rpcUrl`, so the fork source (`--fork-url` now, `--load-state` later) is a launch detail, not a recipe change. |
+| #   | Decision                                       | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | **No Foundry in csm-lab**                      | No `forge`/`cast`/`solc` at build or runtime. `anvil` is the _target_ chain only, reached over RPC.                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 2   | **Surface = TS API; CLI deferred**             | Importable typed functions are the core. A thin CLI is a _later_ increment (6g), only if a human consumer materializes — no named user today.                                                                                                                                                                                                                                                                                                                                                                                  |
+| 3   | **Module × recipe = context + flat functions** | `ctx = { client, module, addresses, abis, clMockUrl? }`; shared recipes resolve the module via `ctx.module`; module-specific recipes live in subpaths and guard on `ctx.module`.                                                                                                                                                                                                                                                                                                                                               |
+| 4   | **Addresses: snapshot + locator-resolved**     | Module-suite addresses come from an injectable snapshot (consumer-overridable). **Protocol addresses (`StakingRouter`, `VEBO`, `Lido`, …) are NOT in the snapshot — `connect()` resolves them from `LidoLocator` on-chain.** The snapshot must be sourced from the **latest per-chain upgrade config** (CSM has been upgraded twice; proxy addresses are stable across v2/v3, but `*Impl` addresses and added contracts — `VerifierV3`, `CircuitBreaker`, `IdentifiedDVTClusterGate` — are only present in the latest config). |
+| 5   | **ABIs vendored, not imported from the SDK**   | Avoids the consumer→provider cycle (`architecture.md`: SDK/contracts are consumers of csm-lab). A cross-repo ABI parity check warns on divergence (see SDK boundary).                                                                                                                                                                                                                                                                                                                                                          |
+| 6   | **anvil `state.json` deferred**                | Out of scope now. Recipes take an `rpcUrl`, so the fork source (`--fork-url` now, `--load-state` later) is a launch detail, not a recipe change.                                                                                                                                                                                                                                                                                                                                                                               |
 
 ## Scope
 
-**In** — state manipulation against an *already-deployed* fork: operator lifecycle, gate-tree
+**In** — state manipulation against an _already-deployed_ fork: operator lifecycle, gate-tree
 set, `warp`/`snapshot`/`revert`/`topup`, cl-mock wiring, `createCuratedOperator`, cm's
 `createOperatorGroup`/bond-curve, the `seedCm` composite, and rewards (deferred to increment 6e).
 
@@ -52,7 +52,7 @@ assertions.
 ## Architecture — two packages
 
 The "receipts vs recipes" naming names two real things, split by lifecycle per the repo's
-bucket model. The existing `fixtures/receipts` stub is *already* scoped for the data half
+bucket model. The existing `fixtures/receipts` stub is _already_ scoped for the data half
 (its `package.json`: "typed, importable contract addresses & ABIs"); ADR-0001 #8 already ratified
 its "committed snapshots + refresh, no solc" design.
 
@@ -112,16 +112,36 @@ viem — no bespoke mini-framework:
 
 ```ts
 // contract(ctx, 'module') → { address, abi } picked by ctx.module (CSModule | CuratedModule)
-const contract = (ctx, name) => ({ address: ctx.addresses[resolveName(ctx, name)], abi: ctx.abis[name] })
+const contract = (ctx, name) => ({
+  address: ctx.addresses[resolveName(ctx, name)],
+  abi: ctx.abis[name],
+});
 
-export async function addKeys(ctx, { noId, count }) {                 // was broadcastManager(noId)
-  const m = contract(ctx, 'module'), acc = contract(ctx, 'Accounting')
-  const { managerAddress } = await ctx.client.readContract({ ...m, functionName: 'getNodeOperator', args: [noId] })
-  const value = await ctx.client.readContract({ ...acc, functionName: 'getRequiredBondForNextKeys', args: [noId, count] })
-  const keys = randomBytes(48 * count), signatures = randomBytes(96 * count)
+export async function addKeys(ctx, { noId, count }) {
+  // was broadcastManager(noId)
+  const m = contract(ctx, 'module'),
+    acc = contract(ctx, 'Accounting');
+  const { managerAddress } = await ctx.client.readContract({
+    ...m,
+    functionName: 'getNodeOperator',
+    args: [noId],
+  });
+  const value = await ctx.client.readContract({
+    ...acc,
+    functionName: 'getRequiredBondForNextKeys',
+    args: [noId, count],
+  });
+  const keys = randomBytes(48 * count),
+    signatures = randomBytes(96 * count);
   return actAs(ctx, managerAddress, (from) =>
-    ctx.client.writeContract({ ...m, functionName: 'addValidatorKeysETH',
-      args: [managerAddress, noId, count, keys, signatures], account: from, value }))
+    ctx.client.writeContract({
+      ...m,
+      functionName: 'addValidatorKeysETH',
+      args: [managerAddress, noId, count, keys, signatures],
+      account: from,
+      value,
+    }),
+  );
 }
 ```
 
@@ -146,16 +166,16 @@ contract address itself**, not via `getRoleMember` — `actAs` must accept a raw
 The review found the "near-mechanical transcription" framing optimistic in these spots; each
 needs a deliberate decision, not a copy:
 
-| Hazard | Source | Decision |
-| --- | --- | --- |
-| **`warp` is two semantics** | `fork.just:147` `warp days` (relative `evm_increaseTime`) vs `Common.sol:42` `_warp(ts)` (absolute `evm_setNextBlockTimestamp`) | Ship `warpBy(seconds)` (user-facing) + internal `warpTo(ts)` (used by consensus-frame helpers). Drop `vm.warp`'s third effect — automatic over RPC after mining. |
-| **`submitRewards` fast-lane bug** | `OracleReport.s.sol:64-73` indexes `getFastLaneMembers()[0]` with no empty-guard; can be empty on a real fork | Port `Fixtures.sol:1030`'s fallback `if (members.length == 0) members = getMembers()` — do not copy the `.s.sol`. |
-| **`deposit` silent no-op** | `NodeOperators.s.sol:143` assert disabled; `deposit(100)` on empty state deposits 0, no throw | Return deposited count; throw if `requested > 0 && deposited == 0`. |
-| **Rewards bigint JSON** | `mock-rewards.mjs:56-73` hand-rolls a bigint codec; plain `JSON.stringify` corrupts `distributed`/`rebate` | `makeRewards` returns typed `{ treeRoot: Hex, treeCid, logCid, distributed: bigint, rebate: bigint }` in-memory; `submitRewards` consumes it directly — no file, no JSON hazard. |
-| **`getSigningKeys` packed bytes** | `IBaseModule.sol:388` returns `48·n` concatenated bytes, not `bytes[]` | Slice per-48 in JS (the Solidity does too). Affects `operatorKeys`/`exitRequest`/`increaseAllocatedBalance`. |
-| **`createCuratedOperator` temp-tree** | `NodeOperators.s.sol:387-401` builds a 2-leaf on-chain tree, proves index 0, sets gate, creates, **restores** | Reproducible by `tools/merkle` (`StandardMerkleTree.of([[op],[extra]], ['address'])`) **only** as N=2 + `getProof([op])` by value (OZ sorts leaves). Preserve the `setTreeParams(origRoot, origCid)` restore and the `isPaused()→resume()` dance. |
-| **`nextAddress`/`randomBytes` determinism** | `Utilities.sol` is a stateful keccak chain; `addKeys` re-seeds on `block.prevrandao` | Intentionally diverge — keys only need to be unique/well-formed. Generate fresh random keys + addresses and **return** them; do not reproduce the Solidity byte sequence. Take an injectable seed for test reproducibility. |
-| **`getRoleMember(role, 0)`** | sound on a *real* deploy (governance at index 0); `SimulateVote.s.sol:296` shows index 0 is occasionally wrong | Fine for in-scope recipes. Keep a lookup-by-membership fallback available if a recipe ever targets a role where index 0 isn't guaranteed. |
+| Hazard                                      | Source                                                                                                                          | Decision                                                                                                                                                                                                                                          |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`warp` is two semantics**                 | `fork.just:147` `warp days` (relative `evm_increaseTime`) vs `Common.sol:42` `_warp(ts)` (absolute `evm_setNextBlockTimestamp`) | Ship `warpBy(seconds)` (user-facing) + internal `warpTo(ts)` (used by consensus-frame helpers). Drop `vm.warp`'s third effect — automatic over RPC after mining.                                                                                  |
+| **`submitRewards` fast-lane bug**           | `OracleReport.s.sol:64-73` indexes `getFastLaneMembers()[0]` with no empty-guard; can be empty on a real fork                   | Port `Fixtures.sol:1030`'s fallback `if (members.length == 0) members = getMembers()` — do not copy the `.s.sol`.                                                                                                                                 |
+| **`deposit` silent no-op**                  | `NodeOperators.s.sol:143` assert disabled; `deposit(100)` on empty state deposits 0, no throw                                   | Return deposited count; throw if `requested > 0 && deposited == 0`.                                                                                                                                                                               |
+| **Rewards bigint JSON**                     | `mock-rewards.mjs:56-73` hand-rolls a bigint codec; plain `JSON.stringify` corrupts `distributed`/`rebate`                      | `makeRewards` returns typed `{ treeRoot: Hex, treeCid, logCid, distributed: bigint, rebate: bigint }` in-memory; `submitRewards` consumes it directly — no file, no JSON hazard.                                                                  |
+| **`getSigningKeys` packed bytes**           | `IBaseModule.sol:388` returns `48·n` concatenated bytes, not `bytes[]`                                                          | Slice per-48 in JS (the Solidity does too). Affects `operatorKeys`/`exitRequest`/`increaseAllocatedBalance`.                                                                                                                                      |
+| **`createCuratedOperator` temp-tree**       | `NodeOperators.s.sol:387-401` builds a 2-leaf on-chain tree, proves index 0, sets gate, creates, **restores**                   | Reproducible by `tools/merkle` (`StandardMerkleTree.of([[op],[extra]], ['address'])`) **only** as N=2 + `getProof([op])` by value (OZ sorts leaves). Preserve the `setTreeParams(origRoot, origCid)` restore and the `isPaused()→resume()` dance. |
+| **`nextAddress`/`randomBytes` determinism** | `Utilities.sol` is a stateful keccak chain; `addKeys` re-seeds on `block.prevrandao`                                            | Intentionally diverge — keys only need to be unique/well-formed. Generate fresh random keys + addresses and **return** them; do not reproduce the Solidity byte sequence. Take an injectable seed for test reproducibility.                       |
+| **`getRoleMember(role, 0)`**                | sound on a _real_ deploy (governance at index 0); `SimulateVote.s.sol:296` shows index 0 is occasionally wrong                  | Fine for in-scope recipes. Keep a lookup-by-membership fallback available if a recipe ever targets a role where index 0 isn't guaranteed.                                                                                                         |
 
 ## Data: the receipts package, refresh & drift
 
@@ -177,18 +197,18 @@ fixtures/receipts/
 (`out/IVEBO.sol/IVEBO.json`, not `VEBO.sol`). `refresh.ts` maps `VEBO→IVEBO`,
 `StakingRouter→IStakingRouter`, `Lido→ILido`, `LidoLocator→ILidoLocator`; module/suite contracts
 use their impl ABIs (present in `out/`). It extracts ABIs from the `.abi` field of
-`out/<C>.sol/<C>.json` (copying forge's *existing* build output, not compiling) and module-suite
+`out/<C>.sol/<C>.json` (copying forge's _existing_ build output, not compiling) and module-suite
 addresses from `artifacts/<chain>/`.
 
 **`refresh --config <path>`** overrides the address source file (relative to the contracts repo
 root). Always point it at the **latest** config per the contracts repo's `.env` `DEPLOY_CONFIG`
 value. Current per-(chain, module) configs:
 
-| chain   | module | config path                                   |
-| ------- | ------ | --------------------------------------------- |
-| hoodi   | csm    | `artifacts/hoodi/upgrade-v3-hoodi.json`       |
-| hoodi   | cm     | `artifacts/hoodi/curated/deploy-hoodi.json`   |
-| mainnet | csm    | `artifacts/mainnet/deploy-mainnet.json` (v2)  |
+| chain   | module | config path                                  |
+| ------- | ------ | -------------------------------------------- |
+| hoodi   | csm    | `artifacts/hoodi/upgrade-v3-hoodi.json`      |
+| hoodi   | cm     | `artifacts/hoodi/curated/deploy-hoodi.json`  |
+| mainnet | csm    | `artifacts/mainnet/deploy-mainnet.json` (v2) |
 
 **Contract upgrades.** CSM has been upgraded twice (v2 → v3 on hoodi; mainnet still at v2). Proxy
 addresses are stable across upgrades. `*Impl` addresses change on each upgrade; new contracts
@@ -214,21 +234,21 @@ the README + ADR-0001 #8 wording in the receipts increment so they don't drift.
 
 **Shared core** — `@csm-lab/recipes`, resolve the module via `ctx.module`:
 
-| Group | Recipes | Source |
-| --- | --- | --- |
-| Operator lifecycle | propose/confirm manager+reward (×4), `addKeys`, `removeKey`, `deposit`, `unvet`, `exit`, `slash`, `withdraw`, `targetLimit` (+forced/off), penalty report/cancel/settle/compensate (×4), `addBond`, `createBondDebt`, `exitRequest` (VEBO 2-step), `activateKeys`, `reportBalance`, `increaseAllocatedBalance`, `topUpActiveKeys` | `NodeOperators.s.sol` |
-| Reads (typed objects) | `operatorsCount`, `operatorKey(s)`, `operatorInfo`, `bondInfo`, `keyAllocatedBalance(s)`, `getCurveInfo` (cast-only in source); thin derivations `getLastOperator`, `getPubkey`, `getKeyBalance` (needed by `clActivate`) | `NodeOperators.s.sol`, `fork.just` |
-| Chain ops (pure anvil RPC) | `warpBy` (+ internal `warpTo`), `snapshot`, `revert`, `topup` | `fork.just`, `Common.sol` |
-| Gate tree (→ `@csm-lab/merkle`) | `setGateTree` (root+cid), `setGateAddrs` (build then set), `getGateTree` | `fork.just` (`update-gate-tree`/`set-gate-addrs`) |
-| Rewards (→ `merkle` + `ipfs-mock`) — **increment 6e** | `makeRewards` + `submitRewards` | `mock-rewards.mjs`, `OracleReport.s.sol` |
-| CL bridge (→ `@csm-lab/cl-mock`) — **increment 6d** | `clActivate` (read pubkey+balance on-chain → set CL status) | `cl-mock.just` |
+| Group                                                 | Recipes                                                                                                                                                                                                                                                                                                                           | Source                                            |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Operator lifecycle                                    | propose/confirm manager+reward (×4), `addKeys`, `removeKey`, `deposit`, `unvet`, `exit`, `slash`, `withdraw`, `targetLimit` (+forced/off), penalty report/cancel/settle/compensate (×4), `addBond`, `createBondDebt`, `exitRequest` (VEBO 2-step), `activateKeys`, `reportBalance`, `increaseAllocatedBalance`, `topUpActiveKeys` | `NodeOperators.s.sol`                             |
+| Reads (typed objects)                                 | `operatorsCount`, `operatorKey(s)`, `operatorInfo`, `bondInfo`, `keyAllocatedBalance(s)`, `getCurveInfo` (cast-only in source); thin derivations `getLastOperator`, `getPubkey`, `getKeyBalance` (needed by `clActivate`)                                                                                                         | `NodeOperators.s.sol`, `fork.just`                |
+| Chain ops (pure anvil RPC)                            | `warpBy` (+ internal `warpTo`), `snapshot`, `revert`, `topup`                                                                                                                                                                                                                                                                     | `fork.just`, `Common.sol`                         |
+| Gate tree (→ `@csm-lab/merkle`)                       | `setGateTree` (root+cid), `setGateAddrs` (build then set), `getGateTree`                                                                                                                                                                                                                                                          | `fork.just` (`update-gate-tree`/`set-gate-addrs`) |
+| Rewards (→ `merkle` + `ipfs-mock`) — **increment 6e** | `makeRewards` + `submitRewards`                                                                                                                                                                                                                                                                                                   | `mock-rewards.mjs`, `OracleReport.s.sol`          |
+| CL bridge (→ `@csm-lab/cl-mock`) — **increment 6d**   | `clActivate` (read pubkey+balance on-chain → set CL status)                                                                                                                                                                                                                                                                       | `cl-mock.just`                                    |
 
 **Module-specific** — subpaths, guard on `ctx.module`:
 
-| Subpath | Recipes | Source |
-| --- | --- | --- |
-| `@csm-lab/recipes/cm` | `createOperatorGroup`, `resetOperatorGroup`, `setBondCurveWeight`, `createCuratedOperator`, `seedCm`; curated gate selectors `po/pto/pgo/do/eeo/iodc/iodcp` (the `CuratedGates[0..6]` array) | `curated.just`, `MetaRegistryHelpers.s.sol`, `NodeOperators.s.sol` |
-| `@csm-lab/recipes/csm` | gate selectors: `ics`→VettedGate, `idvtc`→IdentifiedDVTClusterGate (present in hoodi v3 config; no dedicated ABI in `out/` — reuses an existing gate ABI, VettedGate or CuratedGate-type; available where chain is ≥v3: hoodi yes, mainnet not yet); lifecycle is shared | `fork.just` `_resolve-gate-addr` |
+| Subpath                | Recipes                                                                                                                                                                                                                                                                  | Source                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `@csm-lab/recipes/cm`  | `createOperatorGroup`, `resetOperatorGroup`, `setBondCurveWeight`, `createCuratedOperator`, `seedCm`; curated gate selectors `po/pto/pgo/do/eeo/iodc/iodcp` (the `CuratedGates[0..6]` array)                                                                             | `curated.just`, `MetaRegistryHelpers.s.sol`, `NodeOperators.s.sol` |
+| `@csm-lab/recipes/csm` | gate selectors: `ics`→VettedGate, `idvtc`→IdentifiedDVTClusterGate (present in hoodi v3 config; no dedicated ABI in `out/` — reuses an existing gate ABI, VettedGate or CuratedGate-type; available where chain is ≥v3: hoodi yes, mainnet not yet); lifecycle is shared | `fork.just` `_resolve-gate-addr`                                   |
 
 `csm0x02` is **not** a package yet — its `csm0x02.just` has zero portable (non-deploy) recipes;
 add a subpath only when the module deploys (it will key off `CSModule`, like csm).
@@ -243,11 +263,11 @@ is reached via `module.PARAMETERS_REGISTRY()` at runtime (vendoring its ABI is h
 
 ## Increments (each independently shippable, per migration.md)
 
-- **6a — `@csm-lab/receipts`** (the *actual* current step 6). ABIs (impl + interface map) +
+- **6a — `@csm-lab/receipts`** (the _actual_ current step 6). ABIs (impl + interface map) +
   module-suite addresses + `manifest.json` + `refresh.ts` (git-ref guard) + typed `index.ts`.
   Reconcile the README/ADR paths. Absorbs merkle's trimmed on-chain "set" work's address needs.
   No recipes. Ships green alone; unblocks the address-book consumer that isn't recipes.
-- **6b — `recipes` MVP (TS API only)** — ~5 recipes exercising *every* seam end-to-end:
+- **6b — `recipes` MVP (TS API only)** — ~5 recipes exercising _every_ seam end-to-end:
   `connect` (chainId→snapshot + locator resolution), `createCuratedOperator` (cm; `actAs` +
   merkle N=2 + returns `noId`), `addKeys` (on-chain role resolve + value write + seed hook),
   `setGateAddrs` (merkle integration + gate-set write, `ics` selector only), `operatorInfo`
@@ -260,7 +280,7 @@ is reached via `module.PARAMETERS_REGISTRY()` at runtime (vendoring its ABI is h
   stable. Treat as a careful integration spike (warp-to-frame, fast-lane fallback, bigint,
   merkle, ipfs-mock), not a verbatim transcription.
 - **6f** — remaining cm/csm specifics + the other gate selectors, on demand.
-- **6g** — thin CLI + table formatters, *only if* a human consumer materializes.
+- **6g** — thin CLI + table formatters, _only if_ a human consumer materializes.
 
 ## SDK overlap & boundary
 
@@ -289,7 +309,7 @@ release cadence and risks the cycle). Mitigations:
   cl-mock's own CLI.
 - **Testing (hermetic, per CLAUDE.md):** unit tests inject a **fake viem client** — assert calls,
   encodings, and `impersonate → send → stop` per recipe; pin deterministic merkle roots/CIDs.
-  A single opt-in integration smoke (compose anvil forked off hoodi) stays *out* of the default
+  A single opt-in integration smoke (compose anvil forked off hoodi) stays _out_ of the default
   `test` run. Determinism hook: injectable seed/clock for `addKeys` keys and `makeRewards`.
 
 ## Open questions / deferred

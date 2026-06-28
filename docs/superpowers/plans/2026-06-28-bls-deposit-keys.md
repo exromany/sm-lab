@@ -25,6 +25,7 @@
 ### Task 1: Scaffold package + deps + `hex.ts` + `constants.ts`
 
 **Files:**
+
 - Modify: `pnpm-workspace.yaml` (add catalog entries)
 - Create: `tools/keys/package.json`
 - Create: `tools/keys/tsconfig.json`
@@ -35,17 +36,18 @@
 - Test: `tools/keys/test/constants.test.ts`
 
 **Interfaces:**
+
 - Produces (`hex.ts`): `type Hex = \`0x${string}\``; `hexToBytes(hex: string): Uint8Array`; `bytesToHex(bytes: Uint8Array): Hex`.
 - Produces (`constants.ts`): `type ChainName = 'mainnet' | 'hoodi'`; `type WcType = '0x01' | '0x02'`; `interface ChainConfig { chainId: number; forkVersion: Hex; networkName: ChainName; withdrawalVault: Hex }`; `const CHAINS: Record<ChainName, ChainConfig>`; `const DOMAIN_DEPOSIT: Hex`; `const DEPOSIT_AMOUNT_GWEI: number`; `const DEPOSIT_CLI_VERSION: string`.
 
 - [ ] **Step 1: Add catalog entries** — in `pnpm-workspace.yaml`, under `catalog:`, add a block (alphabetical-ish, after `@openzeppelin/merkle-tree`):
 
 ```yaml
-  # bls / deposit-key generation
-  "@chainsafe/bls": ^7.1.3
-  "@chainsafe/bls-keygen": ^0.4.0
-  "@chainsafe/ssz": ^1.3.0
-  "@scure/bip39": ^2.0.0
+# bls / deposit-key generation
+'@chainsafe/bls': ^7.1.3
+'@chainsafe/bls-keygen': ^0.4.0
+'@chainsafe/ssz': ^1.3.0
+'@scure/bip39': ^2.0.0
 ```
 
 - [ ] **Step 2: Create `tools/keys/package.json`**
@@ -251,10 +253,12 @@ git commit -m "feat(keys): scaffold @csm-lab/keys — constants + hex utils"
 ### Task 2: SSZ containers + deposit domain (`ssz.ts`)
 
 **Files:**
+
 - Create: `tools/keys/src/ssz.ts`
 - Test: `tools/keys/test/ssz.test.ts`
 
 **Interfaces:**
+
 - Consumes: `DOMAIN_DEPOSIT` from `./constants`; `hexToBytes` from `./hex`.
 - Produces: `DepositMessage`, `DepositData`, `ForkData`, `SigningData` (ssz `ContainerType`s); `computeForkDataRoot(currentVersion: Uint8Array, genesisValidatorsRoot: Uint8Array): Uint8Array`; `computeDomain(forkVersion: Uint8Array): Uint8Array`; `computeSigningRoot(objectRoot: Uint8Array, domain: Uint8Array): Uint8Array`.
 
@@ -264,11 +268,7 @@ git commit -m "feat(keys): scaffold @csm-lab/keys — constants + hex utils"
 import { describe, expect, it } from 'vitest';
 import { CHAINS } from '../src/constants';
 import { hexToBytes } from '../src/hex';
-import {
-  DepositMessage,
-  computeDomain,
-  computeSigningRoot,
-} from '../src/ssz';
+import { DepositMessage, computeDomain, computeSigningRoot } from '../src/ssz';
 
 describe('ssz', () => {
   it('computeDomain returns 32 bytes prefixed with the deposit domain type', () => {
@@ -379,10 +379,12 @@ git commit -m "feat(keys): SSZ containers + deposit domain (mirrors SDK verify p
 ### Task 3: Key generation core (`keys.ts`)
 
 **Files:**
+
 - Create: `tools/keys/src/keys.ts`
 - Test: `tools/keys/test/keys.test.ts`
 
 **Interfaces:**
+
 - Consumes: `CHAINS`, `DEPOSIT_AMOUNT_GWEI`, `DEPOSIT_CLI_VERSION`, `ChainName`, `WcType` from `./constants`; `DepositMessage`, `DepositData`, `computeDomain`, `computeSigningRoot` from `./ssz`; `bytesToHex`, `hexToBytes`, `Hex` from `./hex`.
 - Produces:
   - `interface MakeDepositKeysOptions { chain?: ChainName; count?: number; mnemonic?: string; type?: WcType; withdrawalAddress?: Hex; startIndex?: number }`
@@ -426,9 +428,7 @@ describe('makeDepositKeys', () => {
         amount: 32_000_000_000n,
       });
       // deposit_message_root must match the SDK's recomputation
-      expect(k.deposit_message_root).toBe(
-        `0x${Buffer.from(messageRoot).toString('hex')}`,
-      );
+      expect(k.deposit_message_root).toBe(`0x${Buffer.from(messageRoot).toString('hex')}`);
       const signingRoot = computeSigningRoot(messageRoot, domain);
       expect(bls.verify(pubkey, signingRoot, sig)).toBe(true);
     }
@@ -445,23 +445,41 @@ describe('makeDepositKeys', () => {
   });
 
   it('startIndex shifts the derived keys', async () => {
-    const a = await makeDepositKeys({ chain: 'hoodi', count: 1, mnemonic: MNEMONIC, startIndex: 0 });
-    const b = await makeDepositKeys({ chain: 'hoodi', count: 1, mnemonic: MNEMONIC, startIndex: 5 });
+    const a = await makeDepositKeys({
+      chain: 'hoodi',
+      count: 1,
+      mnemonic: MNEMONIC,
+      startIndex: 0,
+    });
+    const b = await makeDepositKeys({
+      chain: 'hoodi',
+      count: 1,
+      mnemonic: MNEMONIC,
+      startIndex: 5,
+    });
     expect(b.keys[0]!.pubkey).not.toBe(a.keys[0]!.pubkey);
   });
 
   it('binds withdrawal credentials to the Lido vault with the chosen type', async () => {
     const { keys } = await makeDepositKeys({ chain: 'hoodi', count: 1, mnemonic: MNEMONIC });
     const vault = CHAINS.hoodi.withdrawalVault.slice(2).toLowerCase();
-    expect(keys[0]!.withdrawal_credentials.toLowerCase()).toBe(
-      `0x01${'00'.repeat(11)}${vault}`,
-    );
+    expect(keys[0]!.withdrawal_credentials.toLowerCase()).toBe(`0x01${'00'.repeat(11)}${vault}`);
 
-    const comp = await makeDepositKeys({ chain: 'hoodi', count: 1, mnemonic: MNEMONIC, type: '0x02' });
+    const comp = await makeDepositKeys({
+      chain: 'hoodi',
+      count: 1,
+      mnemonic: MNEMONIC,
+      type: '0x02',
+    });
     expect(comp.keys[0]!.withdrawal_credentials.startsWith('0x02')).toBe(true);
 
     const custom = '0x000000000000000000000000000000000000dEaD';
-    const ov = await makeDepositKeys({ chain: 'hoodi', count: 1, mnemonic: MNEMONIC, withdrawalAddress: custom });
+    const ov = await makeDepositKeys({
+      chain: 'hoodi',
+      count: 1,
+      mnemonic: MNEMONIC,
+      withdrawalAddress: custom,
+    });
     expect(ov.keys[0]!.withdrawal_credentials.toLowerCase().endsWith('dead')).toBe(true);
   });
 
@@ -638,10 +656,12 @@ git commit -m "feat(keys): makeDepositKeys — EIP-2333 derivation + BLS deposit
 ### Task 4: deposit_data.json serializer (`io.ts`)
 
 **Files:**
+
 - Create: `tools/keys/src/io.ts`
 - Test: `tools/keys/test/io.test.ts`
 
 **Interfaces:**
+
 - Consumes: `DepositKey` from `./keys`.
 - Produces: `toDepositDataJson(keys: DepositKey[]): string`; `writeDepositDataFile(path: string, keys: DepositKey[]): void`.
 
@@ -727,12 +747,14 @@ git commit -m "feat(keys): deposit_data.json serializer (eth-staking-smith shape
 ### Task 5: CLI + final public surface + README + changeset
 
 **Files:**
+
 - Create/replace: `tools/keys/src/cli.ts` (replaces the Task 1 stub)
 - Replace: `tools/keys/src/index.ts` (final public surface)
 - Create: `tools/keys/README.md`
 - Create: `.changeset/csm-lab-keys.md`
 
 **Interfaces:**
+
 - Consumes: `makeDepositKeys`, `ChainName`, `WcType`, `Hex`, `DepositKey` from `./index`/`./keys`; `toDepositDataJson`, `writeDepositDataFile` from `./io`.
 - Produces: the `csm-keys` bin; the final `@csm-lab/keys` export surface.
 
@@ -826,15 +848,15 @@ csm-keys --count 2 --wc 0xCustomAddress  # withdrawal address override
 csm-keys --count 5 -o deposit_data.json  # write file (mnemonic → stderr)
 ```
 
-| flag | default | notes |
-| --- | --- | --- |
-| `--chain <mainnet\|hoodi>` | `hoodi` | |
-| `--count <n>` | `1` | |
-| `--type <0x01\|0x02>` | `0x01` | `0x02` = compounding |
-| `--mnemonic <phrase>` | random | BIP-39 (128-bit when omitted) |
-| `--wc <address>` | Lido vault | eth1 address override |
-| `--start-index <n>` | `0` | first validator index |
-| `-o, --out <path>` | — | write `deposit_data.json`; else stdout |
+| flag                       | default    | notes                                  |
+| -------------------------- | ---------- | -------------------------------------- |
+| `--chain <mainnet\|hoodi>` | `hoodi`    |                                        |
+| `--count <n>`              | `1`        |                                        |
+| `--type <0x01\|0x02>`      | `0x01`     | `0x02` = compounding                   |
+| `--mnemonic <phrase>`      | random     | BIP-39 (128-bit when omitted)          |
+| `--wc <address>`           | Lido vault | eth1 address override                  |
+| `--start-index <n>`        | `0`        | first validator index                  |
+| `-o, --out <path>`         | —          | write `deposit_data.json`; else stdout |
 
 ## TS API
 
@@ -850,7 +872,7 @@ writeDepositDataFile('deposit_data.json', keys);
 
 ```markdown
 ---
-"@csm-lab/keys": minor
+'@csm-lab/keys': minor
 ---
 
 feat: @csm-lab/keys — real BLS12-381 deposit-key generator (csm-keys bin + TS API) for mainnet/hoodi, replacing the eth-staking-smith binary
@@ -859,15 +881,18 @@ feat: @csm-lab/keys — real BLS12-381 deposit-key generator (csm-keys bin + TS 
 - [ ] **Step 5: Build, then smoke-test the bin**
 
 Run:
+
 ```bash
 pnpm --filter @csm-lab/keys build
 node tools/keys/dist/cli.mjs --count 1 --chain hoodi
 ```
+
 Expected: a one-element JSON array on stdout (no-0x hex fields), and `mnemonic: <12 words>` on stderr.
 
 - [ ] **Step 6: Full per-package gates**
 
 Run:
+
 ```bash
 pnpm --filter @csm-lab/keys build \
   && pnpm --filter @csm-lab/keys types \
@@ -875,6 +900,7 @@ pnpm --filter @csm-lab/keys build \
   && pnpm exec oxlint tools/keys \
   && pnpm exec prettier --check "tools/keys/**/*.{ts,json,md}"
 ```
+
 Expected: all pass. Fix any lint/format issues (`pnpm exec prettier --write "tools/keys/**/*.{ts,json,md}"`) and re-run.
 
 - [ ] **Step 7: Commit**
@@ -898,4 +924,7 @@ git commit -m "feat(keys): csm-keys CLI + public API + README + changeset"
 - Wiring `@csm-lab/recipes` `addKeys` to call `makeDepositKeys` (replaces `randomKeys`; enables real on-fork `deposit`). Needs its own verification of the CSM deposit-amount path.
 - csm-widget e2e adoption (different repo): replace `tests/shared/services/keysGenerator.service.ts` + delete `tests/scripts/set_up_keys_generator.sh`.
 - Optional `eth-staking-smith` cross-check fixture and a live `--rpc` withdrawal-vault resolver.
+
+```
+
 ```

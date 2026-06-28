@@ -18,12 +18,12 @@ Broader CSM dev/ops tooling stays in its own repos.
 A flat `packages/` would force every package to be treated identically. But this repo holds
 **three kinds of artifact with three different lifecycles**, so the top level splits by that:
 
-| Bucket | Lifecycle | Artifacts | Members |
-| --- | --- | --- | --- |
-| `apps/*` | **deployed** (long-running service) | npm `bin` **+** Docker image **+** helm | `cl-mock`, `ipfs-mock` |
-| `tools/*` | **invoked** (run-and-exit CLI) | npm `bin` | `merkle` |
-| `fixtures/*` | **data** (refreshed, zero runtime) | published typed JSON | `receipts` |
-| `packages/*` | **internal** (consumed by the above) | bundled in, not published | `core`, `config` |
+| Bucket       | Lifecycle                            | Artifacts                               | Members                |
+| ------------ | ------------------------------------ | --------------------------------------- | ---------------------- |
+| `apps/*`     | **deployed** (long-running service)  | npm `bin` **+** Docker image **+** helm | `cl-mock`, `ipfs-mock` |
+| `tools/*`    | **invoked** (run-and-exit CLI)       | npm `bin`                               | `merkle`               |
+| `fixtures/*` | **data** (refreshed, zero runtime)   | published typed JSON                    | `receipts`             |
+| `packages/*` | **internal** (consumed by the above) | bundled in, not published               | `core`, `config`       |
 
 The payoff: Turbo filters, Dockerfiles, and release rules target a whole bucket
 (`turbo run build --filter=./apps/*`) instead of special-casing each package.
@@ -45,29 +45,29 @@ csm-lab/
 
 ## Toolchain
 
-| Concern | Choice | Rationale |
-| --- | --- | --- |
-| Package manager | **pnpm** workspaces | strict `node_modules` (no phantom deps) suits mixed service/CLI/data packages; `catalog:` pins shared versions |
-| Task runner | **Turborepo** | task graph + caching; bucket-level `--filter` |
-| Build | **tsdown** (Rolldown + Oxc) | tsup's successor; frictionless migration from `tsc`/`ts-node`; auto `.d.ts`; ESM+CJS |
-| Lint | **oxlint** (Oxc) | all-Rust stack with tsdown; one fast binary |
-| Format | **prettier** | mature; swap to `oxfmt` once stable |
-| Tests | **Vitest** | neither seed repo had tests — added here |
-| Versioning | **Changesets** | curated public releases of `@csm-lab/*` |
-| Runtime | **Node ≥ 20** | keeps `@hono/node-server` and existing Docker/helm; no re-platform |
+| Concern         | Choice                      | Rationale                                                                                                      |
+| --------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Package manager | **pnpm** workspaces         | strict `node_modules` (no phantom deps) suits mixed service/CLI/data packages; `catalog:` pins shared versions |
+| Task runner     | **Turborepo**               | task graph + caching; bucket-level `--filter`                                                                  |
+| Build           | **tsdown** (Rolldown + Oxc) | tsup's successor; frictionless migration from `tsc`/`ts-node`; auto `.d.ts`; ESM+CJS                           |
+| Lint            | **oxlint** (Oxc)            | all-Rust stack with tsdown; one fast binary                                                                    |
+| Format          | **prettier**                | mature; swap to `oxfmt` once stable                                                                            |
+| Tests           | **Vitest**                  | neither seed repo had tests — added here                                                                       |
+| Versioning      | **Changesets**              | curated public releases of `@csm-lab/*`                                                                        |
+| Runtime         | **Node ≥ 20**               | keeps `@hono/node-server` and existing Docker/helm; no re-platform                                             |
 
 All tooling config lives in **`@csm-lab/config`** — change the build/type/lint strategy in
 one package and every other inherits it. See its README for the `extends` / import pattern.
 
 ## Two patterns worth calling out
 
-**One source, two artifacts.** Every `apps/*` service publishes a `bin` for `npx` *and*
+**One source, two artifacts.** Every `apps/*` service publishes a `bin` for `npx` _and_
 ships a Docker image. The Dockerfile is a ~6-line wrapper whose `CMD` runs that same `bin` —
 not a parallel build. `cl-mock` → `npx @csm-lab/cl-mock` (binary stays `csm-cl-mock`) for
 local/SDK use; the image is what test-infra/helm runs.
 
 **Harvest, don't pre-build, `@csm-lab/core`.** The shared lib is extracted from the
-duplication migration *exposes* (pubkey normalization, the `cast` wrapper, the Hono +
+duplication migration _exposes_ (pubkey normalization, the `cast` wrapper, the Hono +
 commander scaffold cl-mock already perfected), not designed speculatively up front. It's
 bundled into consumers (`noExternal`), so it never ships as its own package.
 

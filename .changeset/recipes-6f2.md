@@ -1,5 +1,5 @@
 ---
-"@csm-lab/recipes": minor
+'@csm-lab/recipes': minor
 ---
 
 Add the operator top-up recipes and the cm seed composite. `increaseAllocatedBalance(ctx, { noId,

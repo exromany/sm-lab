@@ -15,7 +15,7 @@ keys (csm-lab's existing `recipes/randomKeys`) cannot be used. Today the suite s
 version-/SHA-pinned, **amd64-only** `eth-staking-smith` binary (Rosetta on Apple Silicon), behind a
 setup script and a per-call subprocess that writes/reads a temp file.
 
-**Key discovery:** the SDK already ships the *entire* crypto pipeline in pure TS
+**Key discovery:** the SDK already ships the _entire_ crypto pipeline in pure TS
 (`deposit-data-sdk/signature.mjs`: `@chainsafe/ssz` containers + domain math + `bls-eth-wasm`
 verify) — it just runs it in the **verify** direction. Generation is the documented inverse. We can
 produce keys in-process, hermetically, deterministically, reusing the same primitives — and pin
@@ -28,15 +28,15 @@ batches the specs use.
 
 ## Constraints (decided)
 
-| # | Decision | Notes |
-| --- | --- | --- |
-| 1 | **Standalone `@csm-lab/keys`, merkle-shaped** | `tools/keys` with `bin: csm-keys` + a TS API. Pure crypto — **no viem, no chain, no `Ctx`**. It does *not* belong inside `@csm-lab/recipes` (a chain/viem library); it is a pure data tool like `@csm-lab/merkle`. Two consumers justify its own package (csm-lab's "promote on a second consumer" rule). |
-| 2 | **EIP-2333 / BIP-39 mnemonic derivation** | Generate (or accept) a BIP-39 mnemonic; derive each validator **signing** key via EIP-2333/2334 at `m/12381/3600/{i}/0/0`. Byte-for-byte parity with `eth-staking-smith`; keys are recoverable; the mnemonic is returned. The withdrawal-key derivation path is **not** used (WC is an eth1 address for 0x01/0x02). |
-| 3 | **Crypto stack: `@chainsafe/bls` + `bls-keygen` + `ssz`** | `@chainsafe/bls-keygen` (EIP-2333 derivation) → `@chainsafe/bls` (sign/pubkey; **handles SK endianness**, removing the BE→LE footgun) over the `bls-eth-wasm` backend (same crypto as the SDK verifier) → `@chainsafe/ssz` (roots). `@scure/bip39` for the mnemonic. |
-| 4 | **Baked-in Lido WC + override** | A small, **sourced** per-chain constant map → Lido `WithdrawalVault` address. Default binds keys to the Lido vault (so they pass widget validation out of the box). Override with `--wc <eth1 address>` / `withdrawalAddress`. WC type byte **`0x01` default, `0x02`** (compounding, for CM). Stays pure — no `@csm-lab/receipts` dep. |
-| 5 | **Lean output: `{ mnemonic, keys[] }`** | No raw private keys, no EIP-2335 keystores, no packed helper. The `deposit_data.json` array (eth-staking-smith shape) + the mnemonic. A consumer that needs packed pubkeys/signatures (recipes/addKeys) concatenates `keys[].pubkey` / `keys[].signature` itself. |
-| 6 | **Chains: mainnet + hoodi only** | Matches the SDK's supported set (`FIXED_NETWORK` / `FIXED_FORK_VERSION`). `--chain hoodi` is the default. |
-| 7 | **Constants mirrored, not imported** | The SSZ containers, domain math, and chain constants are **copied** from the SDK's `signature.mjs` (with a sourcing comment), not imported — csm-lab must not depend on its own consumer (`@lidofinance/lido-csm-sdk`). Drift is caught by the round-trip + golden-vector tests. |
+| #   | Decision                                                  | Notes                                                                                                                                                                                                                                                                                                                                  |
+| --- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Standalone `@csm-lab/keys`, merkle-shaped**             | `tools/keys` with `bin: csm-keys` + a TS API. Pure crypto — **no viem, no chain, no `Ctx`**. It does _not_ belong inside `@csm-lab/recipes` (a chain/viem library); it is a pure data tool like `@csm-lab/merkle`. Two consumers justify its own package (csm-lab's "promote on a second consumer" rule).                              |
+| 2   | **EIP-2333 / BIP-39 mnemonic derivation**                 | Generate (or accept) a BIP-39 mnemonic; derive each validator **signing** key via EIP-2333/2334 at `m/12381/3600/{i}/0/0`. Byte-for-byte parity with `eth-staking-smith`; keys are recoverable; the mnemonic is returned. The withdrawal-key derivation path is **not** used (WC is an eth1 address for 0x01/0x02).                    |
+| 3   | **Crypto stack: `@chainsafe/bls` + `bls-keygen` + `ssz`** | `@chainsafe/bls-keygen` (EIP-2333 derivation) → `@chainsafe/bls` (sign/pubkey; **handles SK endianness**, removing the BE→LE footgun) over the `bls-eth-wasm` backend (same crypto as the SDK verifier) → `@chainsafe/ssz` (roots). `@scure/bip39` for the mnemonic.                                                                   |
+| 4   | **Baked-in Lido WC + override**                           | A small, **sourced** per-chain constant map → Lido `WithdrawalVault` address. Default binds keys to the Lido vault (so they pass widget validation out of the box). Override with `--wc <eth1 address>` / `withdrawalAddress`. WC type byte **`0x01` default, `0x02`** (compounding, for CM). Stays pure — no `@csm-lab/receipts` dep. |
+| 5   | **Lean output: `{ mnemonic, keys[] }`**                   | No raw private keys, no EIP-2335 keystores, no packed helper. The `deposit_data.json` array (eth-staking-smith shape) + the mnemonic. A consumer that needs packed pubkeys/signatures (recipes/addKeys) concatenates `keys[].pubkey` / `keys[].signature` itself.                                                                      |
+| 6   | **Chains: mainnet + hoodi only**                          | Matches the SDK's supported set (`FIXED_NETWORK` / `FIXED_FORK_VERSION`). `--chain hoodi` is the default.                                                                                                                                                                                                                              |
+| 7   | **Constants mirrored, not imported**                      | The SSZ containers, domain math, and chain constants are **copied** from the SDK's `signature.mjs` (with a sourcing comment), not imported — csm-lab must not depend on its own consumer (`@lidofinance/lido-csm-sdk`). Drift is caught by the round-trip + golden-vector tests.                                                       |
 
 ## Scope
 
@@ -45,13 +45,14 @@ test suite. **Adopted by the csm-widget e2e suite** to replace `KeysGeneratorSer
 `set_up_keys_generator.sh` + the binary.
 
 **Out (v1)** —
-- Wiring `@csm-lab/recipes` `addKeys` to consume it (a documented *second consumer* / follow-up;
+
+- Wiring `@csm-lab/recipes` `addKeys` to consume it (a documented _second consumer_ / follow-up;
   it is the lever that later closes the "real-deposit on a fork" gap, since the beacon
   `DepositContract` validates `deposit_data_root`). `addKeys` keeps using `randomKeys` until then.
 - EIP-2335 keystores (validator-client import — not csm-lab's use case).
 - Chains beyond mainnet/hoodi.
 - A `verify <file>` CLI command (cheap to add later — the verify pipeline already exists for tests —
-  and *that* is when subcommands would earn their place; flat CLI until then).
+  and _that_ is when subcommands would earn their place; flat CLI until then).
 
 ## Package layout (mirrors `tools/merkle`)
 
@@ -84,22 +85,23 @@ export type ChainName = 'mainnet' | 'hoodi';
 export type WcType = '0x01' | '0x02';
 
 export interface MakeDepositKeysOptions {
-  chain?: ChainName;            // default 'hoodi'
-  count?: number;               // default 1, must be >= 1
-  mnemonic?: string;            // omitted → fresh random BIP-39 (128-bit)
-  type?: WcType;                // default '0x01'; '0x02' = compounding (CM)
-  withdrawalAddress?: Hex;      // override; default = LIDO_WITHDRAWAL_VAULT[chain]
-  startIndex?: number;          // default 0 → derive validators [startIndex .. startIndex+count)
+  chain?: ChainName; // default 'hoodi'
+  count?: number; // default 1, must be >= 1
+  mnemonic?: string; // omitted → fresh random BIP-39 (128-bit)
+  type?: WcType; // default '0x01'; '0x02' = compounding (CM)
+  withdrawalAddress?: Hex; // override; default = LIDO_WITHDRAWAL_VAULT[chain]
+  startIndex?: number; // default 0 → derive validators [startIndex .. startIndex+count)
 }
 
-export interface DepositKey {   // API objects use 0x-prefixed Hex
-  pubkey: Hex;                  // 48 bytes
-  withdrawal_credentials: Hex;  // 32 bytes
-  amount: 32_000_000_000;       // gwei (32 ETH), the only value the SDK validator accepts
-  signature: Hex;              // 96 bytes
-  deposit_message_root: Hex;   // 32 bytes
-  deposit_data_root: Hex;      // 32 bytes
-  fork_version: Hex;           // 4 bytes
+export interface DepositKey {
+  // API objects use 0x-prefixed Hex
+  pubkey: Hex; // 48 bytes
+  withdrawal_credentials: Hex; // 32 bytes
+  amount: 32_000_000_000; // gwei (32 ETH), the only value the SDK validator accepts
+  signature: Hex; // 96 bytes
+  deposit_message_root: Hex; // 32 bytes
+  deposit_data_root: Hex; // 32 bytes
+  fork_version: Hex; // 4 bytes
   network_name: ChainName;
   deposit_cli_version: string; // "csm-keys/<package version>"
 }
@@ -142,10 +144,10 @@ definitions are transcribed from `deposit-data-sdk/signature.mjs` (with `Deposit
 Per-chain — **addresses to be verified at build time against `LidoLocator.withdrawalVault()`**
 before first publish:
 
-| chain | chainId | fork_version | network_name | Lido WithdrawalVault (verify) |
-| --- | --- | --- | --- | --- |
-| `mainnet` | 1 | `0x00000000` | `mainnet` | `0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f` |
-| `hoodi` | 560048 | `0x10000910` | `hoodi` | `0x4473dCDDbf77679A643BdB654dbd86D67F8d32f2` |
+| chain     | chainId | fork_version | network_name | Lido WithdrawalVault (verify)                |
+| --------- | ------- | ------------ | ------------ | -------------------------------------------- |
+| `mainnet` | 1       | `0x00000000` | `mainnet`    | `0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f` |
+| `hoodi`   | 560048  | `0x10000910` | `hoodi`      | `0x4473dCDDbf77679A643BdB654dbd86D67F8d32f2` |
 
 Shared: `DOMAIN_DEPOSIT = 0x03000000`, `genesis_validators_root = 32 × 0x00`, `amount =
 32_000_000_000` gwei, EIP-2333 signing path `m/12381/3600/{i}/0/0`. (Hoodi vault sourced from the
@@ -165,14 +167,14 @@ csm-keys --count 5 -o deposit_data.json  # also write file
 csm-keys --help
 ```
 
-| flag | default | notes |
-| --- | --- | --- |
-| `--chain <mainnet\|hoodi>` | `hoodi` | |
-| `--count <n>` | `1` | must be ≥ 1 |
-| `--type <0x01\|0x02>` | `0x01` | same vocabulary as the TS API `type` (no `--compounding`) |
-| `--mnemonic <phrase>` | random | BIP-39, 128-bit when omitted |
-| `--wc <address>` | Lido vault | eth1 address override |
-| `-o, --out <path>` | — | write `deposit_data.json`; otherwise stdout |
+| flag                       | default    | notes                                                     |
+| -------------------------- | ---------- | --------------------------------------------------------- |
+| `--chain <mainnet\|hoodi>` | `hoodi`    |                                                           |
+| `--count <n>`              | `1`        | must be ≥ 1                                               |
+| `--type <0x01\|0x02>`      | `0x01`     | same vocabulary as the TS API `type` (no `--compounding`) |
+| `--mnemonic <phrase>`      | random     | BIP-39, 128-bit when omitted                              |
+| `--wc <address>`           | Lido vault | eth1 address override                                     |
+| `-o, --out <path>`         | —          | write `deposit_data.json`; otherwise stdout               |
 
 Deposit data → **stdout / `-o`** (clean JSON). The mnemonic → **stderr** (so piping stays clean).
 Actions are wrapped like merkle's `run()` helper: print a clean message and `process.exit(1)` on
@@ -186,7 +188,7 @@ Validate before any crypto (precise errors beat opaque BLS/SSZ failures): unknow
 
 ## Testing (hermetic, the crux)
 
-1. **Golden vector** — generate one key from a *fixed* mnemonic + chain + index; assert byte-for-byte
+1. **Golden vector** — generate one key from a _fixed_ mnemonic + chain + index; assert byte-for-byte
    against an `eth-staking-smith` reference fixture. Pins the BE→LE endianness handling and SSZ
    correctness.
 2. **Round-trip verify** — re-verify **every** generated signature with the SDK's exact verify

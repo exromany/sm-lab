@@ -18,18 +18,18 @@ Point `@pinata/sdk` (or any fetch client) at `http://127.0.0.1:3000` — no code
 
 ### Pinata-compatible pinning API
 
-| Method | Route | Notes |
-| --- | --- | --- |
-| POST | `/pinning/pinJSONToIPFS` | JSON body (bare, or `{ pinataContent, pinataMetadata }`); returns `{ IpfsHash, PinSize, Timestamp }` |
-| POST | `/pinning/pinFileToIPFS` | `multipart/form-data`, field `file`; same response shape |
-| GET | `/data/pinList` | `{ count, rows: [{ ipfs_pin_hash, size, date_pinned, ... }] }` |
-| DELETE | `/pinning/unpin/:cid` | remove a pin (`404` if absent) |
+| Method | Route                    | Notes                                                                                                |
+| ------ | ------------------------ | ---------------------------------------------------------------------------------------------------- |
+| POST   | `/pinning/pinJSONToIPFS` | JSON body (bare, or `{ pinataContent, pinataMetadata }`); returns `{ IpfsHash, PinSize, Timestamp }` |
+| POST   | `/pinning/pinFileToIPFS` | `multipart/form-data`, field `file`; same response shape                                             |
+| GET    | `/data/pinList`          | `{ count, rows: [{ ipfs_pin_hash, size, date_pinned, ... }] }`                                       |
+| DELETE | `/pinning/unpin/:cid`    | remove a pin (`404` if absent)                                                                       |
 
 ### IPFS gateway (read-back)
 
-| Method | Route | Behavior |
-| --- | --- | --- |
-| GET | `/ipfs/:cid` | store **HIT** → serve stored bytes; store **MISS** → proxy to upstream gateway |
+| Method | Route        | Behavior                                                                       |
+| ------ | ------------ | ------------------------------------------------------------------------------ |
+| GET    | `/ipfs/:cid` | store **HIT** → serve stored bytes; store **MISS** → proxy to upstream gateway |
 
 A store-miss on a valid CID is proxied to a real upstream IPFS gateway via global `fetch`
 (with an `AbortController` timeout — never hangs). Successfully-proxied content is cached
@@ -38,10 +38,10 @@ CID → `400`, upstream unreachable → `502`, upstream timeout → `504`.
 
 ### Admin (parity with cl-mock)
 
-| Method | Route | |
-| --- | --- | --- |
-| GET | `/admin/status` | `{ ok, version, startedAt, uptimeSeconds, gateway, pins: { total, totalBytes } }` |
-| POST | `/admin/shutdown` | graceful shutdown |
+| Method | Route             |                                                                                   |
+| ------ | ----------------- | --------------------------------------------------------------------------------- |
+| GET    | `/admin/status`   | `{ ok, version, startedAt, uptimeSeconds, gateway, pins: { total, totalBytes } }` |
+| POST   | `/admin/shutdown` | graceful shutdown                                                                 |
 
 ## Upstream gateway (for store-miss CIDs)
 

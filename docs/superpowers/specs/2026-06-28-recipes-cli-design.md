@@ -14,30 +14,30 @@ recipe output — the recipes themselves return structured, typed data and never
 
 ## Decisions
 
-| # | Decision | Rationale |
-| --- | --- | --- |
-| 1 | **Distribution: published-for-npx, via a `bin`** | `@csm-lab/recipes` is published with a `bin`; an external human runs it with zero clone. |
-| 2 | **All invocation routes, not npx-only** | The single `bin` field underpins every route — npx, global install, local install, and the built dist. None is privileged. See *Invocation routes* below. |
-| 3 | **Surface: full 1:1 with the recipe API (~34 commands)** | Every exported *action recipe* gets a command. "1:1" means the recipe surface — **not** the plumbing (`connect`, `contract`, `makeClient`, `actAs`, `roleMember`, `encode` helpers, role constants), which is a library concern. `setClValidator` is also excluded: raw `cl-set`/`cl-list` stay in cl-mock's own CLI (only `cl-activate` bridges). Kept maintainable by the declarative registry (decision 5), not by trimming the surface. |
-| 4 | **Layout: mirror the import subpaths** | Shared recipes top-level (`--module` global); cm-only under a `cm` group, csm-only under a `csm` group — 1:1 with `src/index.ts` // `/cm` // `/csm`. Zero invented taxonomy; trivial to keep in sync. |
-| 5 | **Architecture: declarative command registry** | Each command is a *data descriptor*; one factory generates the commander wiring. Adding a recipe = a ~6-line descriptor, not a commander block. The API and CLI cannot drift. |
-| 6 | **Output: human default + `--json`** | Pretty/tabulated for the interactive human; `--json` (bigint→string) for csm-lab's own integration-test harnesses to capture fork state. |
+| #   | Decision                                                 | Rationale                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Distribution: published-for-npx, via a `bin`**         | `@csm-lab/recipes` is published with a `bin`; an external human runs it with zero clone.                                                                                                                                                                                                                                                                                                                                                    |
+| 2   | **All invocation routes, not npx-only**                  | The single `bin` field underpins every route — npx, global install, local install, and the built dist. None is privileged. See _Invocation routes_ below.                                                                                                                                                                                                                                                                                   |
+| 3   | **Surface: full 1:1 with the recipe API (~34 commands)** | Every exported _action recipe_ gets a command. "1:1" means the recipe surface — **not** the plumbing (`connect`, `contract`, `makeClient`, `actAs`, `roleMember`, `encode` helpers, role constants), which is a library concern. `setClValidator` is also excluded: raw `cl-set`/`cl-list` stay in cl-mock's own CLI (only `cl-activate` bridges). Kept maintainable by the declarative registry (decision 5), not by trimming the surface. |
+| 4   | **Layout: mirror the import subpaths**                   | Shared recipes top-level (`--module` global); cm-only under a `cm` group, csm-only under a `csm` group — 1:1 with `src/index.ts` // `/cm` // `/csm`. Zero invented taxonomy; trivial to keep in sync.                                                                                                                                                                                                                                       |
+| 5   | **Architecture: declarative command registry**           | Each command is a _data descriptor_; one factory generates the commander wiring. Adding a recipe = a ~6-line descriptor, not a commander block. The API and CLI cannot drift.                                                                                                                                                                                                                                                               |
+| 6   | **Output: human default + `--json`**                     | Pretty/tabulated for the interactive human; `--json` (bigint→string) for csm-lab's own integration-test harnesses to capture fork state.                                                                                                                                                                                                                                                                                                    |
 
 ## Invocation routes (all reach the same `bin`)
 
 `"bin": { "csm-recipes": "dist/cli.mjs" }` is the mechanism. Every route below is a way to
 reach it; the spec requires **all** of them to work, and the smoke/README must cover them:
 
-| Route | Command | Needs |
-| --- | --- | --- |
-| **npx** | `npx @csm-lab/recipes@latest seed-cm --rpc-url …` | a published release |
-| **global install** | `npm i -g @csm-lab/recipes` → `csm-recipes seed-cm …` | the `bin` on `PATH` |
-| **local install** | `npm i @csm-lab/recipes` → `npx csm-recipes …` / `pnpm exec csm-recipes …` | local `node_modules/.bin` |
-| **built dist (repo dev)** | `node tools/recipes/dist/cli.mjs seed-cm …` / `pnpm --filter @csm-lab/recipes start seed-cm …` | a local build |
+| Route                     | Command                                                                                        | Needs                     |
+| ------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------- |
+| **npx**                   | `npx @csm-lab/recipes@latest seed-cm --rpc-url …`                                              | a published release       |
+| **global install**        | `npm i -g @csm-lab/recipes` → `csm-recipes seed-cm …`                                          | the `bin` on `PATH`       |
+| **local install**         | `npm i @csm-lab/recipes` → `npx csm-recipes …` / `pnpm exec csm-recipes …`                     | local `node_modules/.bin` |
+| **built dist (repo dev)** | `node tools/recipes/dist/cli.mjs seed-cm …` / `pnpm --filter @csm-lab/recipes start seed-cm …` | a local build             |
 
 Bare-install correctness is the hard constraint: no repo-relative paths in `dist/`;
 `readPackageVersion(import.meta.url)` resolves flat-dist `../package.json`; the external
-sibling deps (merkle, receipts) resolve from npm (see *Release*).
+sibling deps (merkle, receipts) resolve from npm (see _Release_).
 
 ## Architecture — declarative command registry
 
@@ -49,24 +49,26 @@ once.
 ```ts
 // cli/define.ts — the structural core
 interface OptionSpec {
-  flag: string;            // '--no-id <n>'
-  key: string;             // 'noId'
-  coerce: (s: string) => unknown;  // toBigInt | toHex | toAddress | identity
+  flag: string; // '--no-id <n>'
+  key: string; // 'noId'
+  coerce: (s: string) => unknown; // toBigInt | toHex | toAddress | identity
   required?: boolean;
 }
 
 interface RecipeCommand<O, R> {
-  name: string;                            // 'add-keys'
-  summary: string;                         // shown in --help
+  name: string; // 'add-keys'
+  summary: string; // shown in --help
   options: OptionSpec[];
-  run: (ctx: Ctx, opts: O) => Promise<R>;  // the recipe, imported from src
-  report: (r: R) => string[];              // human lines; --json bypasses this
-  module?: 'cm' | 'csm';                   // set ⇒ lives under that group, forces ctx.module
-  needsClMock?: boolean;                   // clActivate only
+  run: (ctx: Ctx, opts: O) => Promise<R>; // the recipe, imported from src
+  report: (r: R) => string[]; // human lines; --json bypasses this
+  module?: 'cm' | 'csm'; // set ⇒ lives under that group, forces ctx.module
+  needsClMock?: boolean; // clActivate only
 }
 
 // connectImpl is injectable — the seam that keeps tests hermetic.
-function defineCommand(desc: RecipeCommand, connectImpl = connect): Command { /* … */ }
+function defineCommand(desc: RecipeCommand, connectImpl = connect): Command {
+  /* … */
+}
 ```
 
 `defineCommand`'s action: read global `--rpc-url` / `--module` / `--cl-mock-url`, build `ctx`
@@ -115,12 +117,12 @@ One `connect()` per invocation, from the global flags. `cm`/`csm` groups hardcod
 
 - **Output:** default → `desc.report(result).forEach(l => console.log(l))`; `--json` →
   `console.log(JSON.stringify(result, bigintReplacer, 2))`. `bigintReplacer = (_, v) =>
-  typeof v === 'bigint' ? v.toString() : v` — the same single-replacer hazard `makeRewards`
+typeof v === 'bigint' ? v.toString() : v` — the same single-replacer hazard `makeRewards`
   solved. Kept **local** in `define.ts` (YAGNI; promote to core only on a 2nd consumer).
   Void-returning recipes (`revert`, `unvet`) report a one-line confirmation; `--json` emits
   the result or `{}`.
 - **Errors:** merkle's `run(fn)` wrapper verbatim — `catch → console.error('Error:', msg) →
-  process.exit(1)`. Reverts throw cleanly via viem. Explicit pre-flight throws: missing
+process.exit(1)`. Reverts throw cleanly via viem. Explicit pre-flight throws: missing
   `--rpc-url`/`RPC_URL`; a `needsClMock` command without `--cl-mock-url`. Commander handles
   missing required flags. The existing `idvtc`/v2-snapshot guard surfaces through the wrapper.
 - **Coercion** (per `OptionSpec.coerce`):
@@ -144,7 +146,7 @@ One `connect()` per invocation, from the global flags. `cm`/`csm` groups hardcod
 
 1. **Pure units** — coercers (happy + throw paths) and `bigintReplacer`, directly. **Must**
    assert the 1-wei boundary: `toEth('0.000000000000000001') === 1n` and `toEth('1') ===
-   10n ** 18n` (proves string-based parsing, not float).
+10n ** 18n` (proves string-based parsing, not float).
 2. **Reporters** — each `report` is `result → string[]`, pure; test representative ones with
    canned results.
 3. **Factory wiring** — `defineCommand(desc, fakeConnect)` with a stub `run` returning canned
@@ -152,7 +154,7 @@ One `connect()` per invocation, from the global flags. `cm`/`csm` groups hardcod
    from globals (fakeConnect args), opts coerced correctly, human-vs-`--json` branch. No real
    recipe, no chain.
 
-Recipe *behavior* stays covered by the recipes' existing fake-client tests — the CLI never
+Recipe _behavior_ stays covered by the recipes' existing fake-client tests — the CLI never
 re-tests it. Optionally extend the `ANVIL_FORK_URL`-gated smoke to run **one** command
 end-to-end (e.g. `add-keys --json`) against a real fork.
 

@@ -10,11 +10,11 @@ consumers get no transitive `@csm-lab/*` to resolve at runtime.
 Harvested from the duplication that the cl-mock and ipfs-mock migrations exposed — nothing
 speculative.
 
-| Module | Exports | What it does |
-| --- | --- | --- |
-| `server.ts` | `startServer(app, { port, host, onListen })` | Boot a Hono app on Node; build the shutdown closure, register it for `/admin/shutdown`, bind SIGINT/SIGTERM. |
-| `admin.ts` | `registerAdminRoutes(app, { version, getStatus })`, `setShutdownHandler`, `readPackageVersion(metaUrl)` | Shared `GET /admin/status` (common envelope + app-specific `getStatus()` extras) and `POST /admin/shutdown`. `readPackageVersion` reads the consumer's version — pass `import.meta.url`. |
-| `cli.ts` | `createStatusCommand`, `createStopCommand`, `resolveUrl`, `findRoot`, `formatUptime` | Commander factories for the `status`/`stop` client commands (parameterized by `{ envVar, defaultPort }`; `status` takes a `render` callback for app-specific lines) and the URL/uptime helpers. |
+| Module      | Exports                                                                                                 | What it does                                                                                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `server.ts` | `startServer(app, { port, host, onListen })`                                                            | Boot a Hono app on Node; build the shutdown closure, register it for `/admin/shutdown`, bind SIGINT/SIGTERM.                                                                                    |
+| `admin.ts`  | `registerAdminRoutes(app, { version, getStatus })`, `setShutdownHandler`, `readPackageVersion(metaUrl)` | Shared `GET /admin/status` (common envelope + app-specific `getStatus()` extras) and `POST /admin/shutdown`. `readPackageVersion` reads the consumer's version — pass `import.meta.url`.        |
+| `cli.ts`    | `createStatusCommand`, `createStopCommand`, `resolveUrl`, `findRoot`, `formatUptime`                    | Commander factories for the `status`/`stop` client commands (parameterized by `{ envVar, defaultPort }`; `status` takes a `render` callback for app-specific lines) and the URL/uptime helpers. |
 
 ## Usage
 

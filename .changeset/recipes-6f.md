@@ -1,5 +1,5 @@
 ---
-"@csm-lab/recipes": minor
+'@csm-lab/recipes': minor
 ---
 
 Add increment 6f: csm `idvtc` gate selector (`resolveGate(ctx, 'idvtc')` →
