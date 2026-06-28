@@ -19,9 +19,9 @@ export const DEPOSIT_AMOUNT_GWEI = 32_000_000_000;
 /** Cosmetic deposit_data.json field; not validated on-chain or by the widget. */
 export const DEPOSIT_CLI_VERSION = 'csm-keys/0.1.0';
 
-// Addresses verified against LidoLocator.withdrawalVault() on each chain.
-// mainnet: well-known Lido WithdrawalVault. hoodi: matches the current csm-widget
-// keysGenerator default. Re-verify if a network is re-deployed.
+// WithdrawalVault proxy addresses per Lido deployed-contracts (mainnet + hoodi),
+// fork versions + chainId per eth-clients (mainnet 0x00000000; hoodi 0x10000910, 560048).
+// Verified against authoritative sources 2026-06-28. Re-verify on any network redeploy.
 export const CHAINS: Record<ChainName, ChainConfig> = {
   mainnet: {
     chainId: 1,

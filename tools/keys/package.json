@@ -4,8 +4,18 @@
   "type": "module",
   "description": "Real BLS12-381 validator deposit-data generator for Lido CSM (mainnet/hoodi)",
   "license": "MIT",
-  "keywords": ["bls", "deposit", "validator", "csm", "lido", "eth2", "testing"],
-  "bin": { "csm-keys": "dist/cli.mjs" },
+  "keywords": [
+    "bls",
+    "deposit",
+    "validator",
+    "csm",
+    "lido",
+    "eth2",
+    "testing"
+  ],
+  "bin": {
+    "csm-keys": "dist/cli.mjs"
+  },
   "types": "./dist/index.d.mts",
   "exports": {
     ".": {
@@ -13,7 +23,10 @@
       "import": "./dist/index.mjs"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
@@ -34,5 +47,7 @@
     "vitest": "catalog:",
     "@types/node": "catalog:"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

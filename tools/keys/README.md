@@ -36,3 +36,12 @@ import { makeDepositKeys, writeDepositDataFile } from '@csm-lab/keys';
 const { mnemonic, keys } = await makeDepositKeys({ chain: 'hoodi', count: 5 });
 writeDepositDataFile('deposit_data.json', keys);
 ```
+
+### Options
+
+- `chain` — `'mainnet'` or `'hoodi'` (default: `'hoodi'`)
+- `count` — number of validator keys (required)
+- `mnemonic?` — BIP-39 seed phrase (random 128-bit if omitted)
+- `type?` — withdrawal type: `'0x01'` (eth1, default) or `'0x02'` (compounding)
+- `withdrawalAddress?` — override Lido vault withdrawal address
+- `startIndex?` — first validator index (default: 0)
