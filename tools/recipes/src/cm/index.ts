@@ -4,6 +4,7 @@ import type { CmAddressBook, Hex } from '@csm-lab/receipts';
 import { concat, keccak256, toHex, zeroAddress } from 'viem';
 import { actAs, roleMember } from '../act-as';
 import { resolveGate, type Ctx, type CmGateSelector } from '../context';
+import { randomSeed } from '../random';
 import { addKeys } from '../recipes/add-keys';
 import { deposit } from '../recipes/deposit';
 import { topUpActiveKeys } from '../recipes/topup';
@@ -326,12 +327,6 @@ function keySeed(seed: Hex, label: string): Hex {
   return keccak256(concat([seed, toHex(label)]));
 }
 
-function freshSeed(): Hex {
-  const bytes = new Uint8Array(32);
-  globalThis.crypto.getRandomValues(bytes);
-  return toHex(bytes);
-}
-
 /**
  * Seed a realistic cm fork in one call: create 3 gate operators, group them 34/33/33, then key /
  * deposit / top-up across 3 rounds (and add a final key to two of them). Port of `fork.just
@@ -344,7 +339,7 @@ export async function seedCm(ctx: Ctx, opts: SeedCmOptions = {}): Promise<SeedCm
   }
 
   const selector = opts.selector ?? 'po';
-  const seed = opts.seed ?? freshSeed();
+  const seed = opts.seed ?? randomSeed();
   const operators: [Hex, Hex, Hex] = [
     deriveOperatorAddress(seed, 0),
     deriveOperatorAddress(seed, 1),
@@ -367,8 +362,8 @@ export async function seedCm(ctx: Ctx, opts: SeedCmOptions = {}): Promise<SeedCm
   });
 
   // 3 add/deposit/topup rounds, mapping the source's operator indices 0/1/0 to na/nb/na. Each
-  // addKeys uses a seed keyed by its CALL ORDINAL (na is keyed thrice — per-round labels would
-  // collide on duplicate pubkeys).
+  // addKeys gets a distinct per-call label (r0..r4) so na's three calls draw different key material
+  // — a shared label would regenerate the same pubkeys and collide.
   await addKeys(ctx, { noId: na, count: 4, seed: keySeed(seed, 'r0') });
   await deposit(ctx, { count: 100 });
   await topUpActiveKeys(ctx, { noId: na });

@@ -1,7 +1,7 @@
-import { size } from 'viem';
 import type { Hex } from '@csm-lab/receipts';
 import { actAs } from '../act-as';
 import { contract, type Ctx } from '../context';
+import { getPubkey } from './reads';
 
 /** Per-key top-up cap (2016 ether). Matches `NodeOperators.MAX_TOPUP_PER_KEY`. */
 const MAX_TOPUP_PER_KEY = 2016n * 10n ** 18n;
@@ -18,28 +18,27 @@ export async function increaseAllocatedBalance(
   const m = contract(ctx, 'module');
   const { noId, keyIndex, amountWei } = opts;
 
-  // Order-independent pre-write reads — parallelize (faithful to the source's two `require`s + the
-  // pubkey lookup, all of which run before `allocateDeposits`).
-  const [op, withdrawn, pubkey] = await Promise.all([
-    ctx.client.readContract({ ...m, functionName: 'getNodeOperator', args: [noId] }),
-    ctx.client.readContract({ ...m, functionName: 'isValidatorWithdrawn', args: [noId, keyIndex] }),
-    ctx.client.readContract({ ...m, functionName: 'getSigningKeys', args: [noId, keyIndex, 1n] }),
-  ]);
-
+  // Validate in the source's order — bounds, then withdrawn, THEN the pubkey read. The two checks
+  // gate the pubkey lookup deliberately: on a real fork `getSigningKeys` reverts on an out-of-range
+  // index, so reading it before the bounds check (e.g. batched in a parallel read) surfaces an
+  // opaque revert instead of these precise errors (mirrors NodeOperators.s.sol:311-315).
+  const op = await ctx.client.readContract({ ...m, functionName: 'getNodeOperator', args: [noId] });
   const total = (op as { totalDepositedKeys: number }).totalDepositedKeys;
   if (keyIndex >= BigInt(total)) {
     throw new Error(
       `@csm-lab/recipes: key index ${keyIndex} out of bounds (operator ${noId} has ${total} deposited keys)`,
     );
   }
+  const withdrawn = await ctx.client.readContract({
+    ...m,
+    functionName: 'isValidatorWithdrawn',
+    args: [noId, keyIndex],
+  });
   if (withdrawn) {
     throw new Error(`@csm-lab/recipes: key ${keyIndex} of operator ${noId} is withdrawn`);
   }
-  // count=1 → a single packed 48-byte pubkey (same guard as reads.ts getPubkey).
-  const key = pubkey as Hex;
-  if (!key || size(key) !== 48) {
-    throw new Error(`@csm-lab/recipes: no key found for operator ${noId} at index ${keyIndex}`);
-  }
+  // count=1 → a single packed 48-byte pubkey; reuse reads.ts (same read + 48-byte guard + error).
+  const key = await getPubkey(ctx, { noId, keyIndex });
 
   await actAs(ctx, ctx.addresses.stakingRouter, (from) =>
     ctx.client.writeContract({

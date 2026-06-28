@@ -27,9 +27,10 @@ interface ClMockResponse {
  *
  * cl-mock returns 200 (clean), 207 (partial — only when `errors.length > 0` AND `accepted > 0`,
  * which is impossible for a single item), or 400 (all rejected, no `accepted` field). For one
- * item the realistic failure is 400, caught by the `!res.ok` clause — note `undefined < 1` is
- * `false`, so the `accepted` check alone would NOT catch a 400. The `accepted < 1` guard is a
- * defensive belt-and-braces for a synthetic 207/accepted:0 body the mock never actually emits.
+ * item the realistic failure is 400, caught by the `!res.ok` clause. The `(accepted ?? 0) < 1`
+ * guard is defensive belt-and-braces for a synthetic accepted:0 / missing-`accepted` body the mock
+ * never actually emits — the `?? 0` is load-bearing, since a bare `accepted < 1` is `false` for
+ * `undefined` and would let such a body through as a silent success.
  */
 export async function setClValidator(clMockUrl: string, input: SetValidatorInput): Promise<void> {
   const url = `${clMockUrl.replace(/\/+$/, '')}/admin/validators`;
@@ -48,7 +49,7 @@ export async function setClValidator(clMockUrl: string, input: SetValidatorInput
   });
 
   const json = (await res.json().catch(() => undefined)) as ClMockResponse | undefined;
-  if (!res.ok || !json || json.accepted < 1) {
+  if (!res.ok || !json || (json.accepted ?? 0) < 1) {
     const errs = json?.errors?.length ? ` — ${json.errors.join('; ')}` : '';
     throw new Error(
       `@csm-lab/recipes: cl-mock rejected validator (${res.status} ${res.statusText})${errs}`,

@@ -15,6 +15,7 @@ import {
 } from '@csm-lab/receipts';
 import { actAs } from '../act-as';
 import { contract, type Ctx } from '../context';
+import { randomSeed } from '../random';
 import { operatorInfo } from './operator-info';
 import { warpTo } from './chain';
 
@@ -73,7 +74,7 @@ export interface MakeRewardsOptions {
 export async function makeRewards(ctx: Ctx, opts: MakeRewardsOptions = {}): Promise<RewardsReport> {
   // The all-bigint seeded draw deliberately diverges from the source's lossy
   // `BigInt(Math.floor(Math.random() * Number(REWARD_SPAN)))`: we keccak-hash the seed (32-byte
-  // random when omitted, like `keys.ts randomSeed`) so the draw is reproducible and full-precision.
+  // random when omitted, via the shared `randomSeed`) so the draw is reproducible and full-precision.
   const seed = opts.seed ?? randomSeed();
 
   const m = contract(ctx, 'module');
@@ -174,13 +175,6 @@ function toJsonSafe(value: unknown): unknown {
   return JSON.parse(
     JSON.stringify(value, (_, v: unknown) => (typeof v === 'bigint' ? v.toString() : v)),
   );
-}
-
-/** 32-byte random seed (mirrors `keys.ts randomSeed`) — fed through the SAME keccak path. */
-function randomSeed(): Hex {
-  const bytes = new Uint8Array(32);
-  globalThis.crypto.getRandomValues(bytes);
-  return `0x${[...bytes].map((b) => b.toString(16).padStart(2, '0')).join('')}` as Hex;
 }
 
 /** Normalize the carry-forward input (Map or entries) to an iterable of [noId, shares]. */
@@ -302,15 +296,26 @@ export async function submitRewards(ctx: Ctx, report: RewardsReport): Promise<Su
     await warpTo(ctx, genesisTime + 1n + initialEpoch * slotsPerEpoch * secondsPerSlot);
   }
 
-  const [refSlot] = (await ctx.client.readContract({
+  const [frameRefSlot] = (await ctx.client.readContract({
     ...hashConsensus,
     functionName: 'getCurrentFrame',
   })) as [bigint, bigint];
-  const frameStart = genesisTime + (refSlot + slotsPerEpoch * epochsPerFrame + 1n) * secondsPerSlot;
+  const frameStart =
+    genesisTime + (frameRefSlot + slotsPerEpoch * epochsPerFrame + 1n) * secondsPerSlot;
   const ts2 = (await ctx.client.getBlock()).timestamp;
   if (frameStart > ts2) {
     await warpTo(ctx, frameStart);
   }
+
+  // Re-read the frame AFTER the warp: the report must carry the now-current refSlot, not the
+  // pre-warp one (the warp deliberately advances a full frame past `frameRefSlot`). The source
+  // reads getCurrentFrame() again right after `_waitForNextRefSlot()` (OracleReport.s.sol:46);
+  // inlining the wait must not drop that second read, or submitReport/submitReportData land on a
+  // stale refSlot and HashConsensus reverts.
+  const [refSlot] = (await ctx.client.readContract({
+    ...hashConsensus,
+    functionName: 'getCurrentFrame',
+  })) as [bigint, bigint];
 
   // --- 3. Build ReportData (mock strikes values) + reportHash ---
   const consensusVersion = (await ctx.client.readContract({

@@ -1,5 +1,6 @@
 import { concat, keccak256, toHex } from 'viem';
 import type { Hex } from '@csm-lab/receipts';
+import { randomSeed } from './random';
 
 /**
  * Deterministic, well-formed validator keys. NOT the Solidity byte sequence — keys only
@@ -36,10 +37,4 @@ function expand(seed: Hex, label: string, nBytes: number): Hex {
     counter++;
   }
   return `0x${concat(chunks).slice(2, 2 + nBytes * 2)}` as Hex;
-}
-
-function randomSeed(): Hex {
-  const bytes = new Uint8Array(32);
-  globalThis.crypto.getRandomValues(bytes);
-  return toHex(bytes);
 }
