@@ -242,6 +242,7 @@ export function mergeManifest(
   return {
     abiGitRef: next.abiGitRef,
     abiHashes: next.abiHashes,
+    // Codepoint sort (locale-independent) so the committed manifest is reproducible across machines.
     snapshots: snapshots.toSorted((a, b) => {
       const ka = `${a.chain}/${a.module}`;
       const kb = `${b.chain}/${b.module}`;

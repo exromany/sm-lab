@@ -9,6 +9,7 @@ export type {
   Hex,
   ChainName,
   ModuleName,
+  ProtocolAddresses,
 } from './types';
 // Provenance: contracts git-ref(s) + per-ABI sha256.
 export { default as manifest } from '../data/manifest.json';
