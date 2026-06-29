@@ -11,6 +11,7 @@ import {
   readDeploySnapshot,
   mergeManifest,
   curate,
+  assertProtocol,
   CSM_SCHEMA,
   CM_SCHEMA,
   type Manifest,
@@ -200,5 +201,57 @@ describe('curate', () => {
     const { book, dropped } = curate(cm, CM_SCHEMA);
     expect(book.CuratedGates).toEqual(['0x0000000000000000000000000000000000000030']);
     expect(dropped).toEqual(['NOAddresses.sol']);
+  });
+});
+
+describe('assertProtocol', () => {
+  const good = {
+    stakingRouter: '0x0000000000000000000000000000000000000a01',
+    validatorsExitBusOracle: '0x0000000000000000000000000000000000000a02',
+    lido: '0x0000000000000000000000000000000000000a03',
+    withdrawalQueue: '0x0000000000000000000000000000000000000a04',
+    burner: '0x0000000000000000000000000000000000000a05',
+    withdrawalVault: '0x0000000000000000000000000000000000000a06',
+  };
+  it('returns the 6 typed protocol addresses', () => {
+    expect(assertProtocol(good)).toEqual(good);
+  });
+  it('throws when a getter returned the zero address', () => {
+    expect(() =>
+      assertProtocol({ ...good, burner: '0x0000000000000000000000000000000000000000' }),
+    ).toThrow(/burner/);
+  });
+  it('throws when a key is missing', () => {
+    const { lido: _lido, ...missing } = good;
+    expect(() => assertProtocol(missing)).toThrow(/lido/);
+  });
+});
+
+describe('mergeManifest protocolResolvedAt', () => {
+  it('records the resolved block on enrich', () => {
+    const m = mergeManifest(null, {
+      abiGitRef: 'r1',
+      abiHashes: { CSModule: 'h1' },
+      snapshot: { chain: 'hoodi', module: 'csm', gitRef: 'r1' },
+      generatedAt: 't1',
+      protocolResolvedAt: { key: 'hoodi/csm', chainId: 560048, block: 123 },
+    });
+    expect(m.protocolResolvedAt).toEqual({ 'hoodi/csm': { chainId: 560048, block: 123 } });
+  });
+  it('preserves a prior entry when skipped (no protocolResolvedAt passed)', () => {
+    const prev: Manifest = {
+      abiGitRef: 'r1',
+      abiHashes: { CSModule: 'h1' },
+      snapshots: [{ chain: 'hoodi', module: 'csm', gitRef: 'r1' }],
+      protocolResolvedAt: { 'hoodi/csm': { chainId: 560048, block: 123 } },
+      generatedAt: 't1',
+    };
+    const m = mergeManifest(prev, {
+      abiGitRef: 'r2',
+      abiHashes: { CSModule: 'h2' },
+      snapshot: { chain: 'hoodi', module: 'csm', gitRef: 'r2' },
+      generatedAt: 't2',
+    });
+    expect(m.protocolResolvedAt).toEqual({ 'hoodi/csm': { chainId: 560048, block: 123 } });
   });
 });

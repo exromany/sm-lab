@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import type { ProtocolAddresses } from '../src/types';
 
 export type FieldKind = 'address' | 'address[]' | 'number' | 'string';
 export interface FieldSpec {
@@ -85,6 +86,29 @@ export function curate(
   }
   const dropped = Object.keys(snapshot).filter((k) => !(k in schema));
   return { book, dropped };
+}
+
+const PROTOCOL_KEYS = [
+  'stakingRouter',
+  'validatorsExitBusOracle',
+  'lido',
+  'withdrawalQueue',
+  'burner',
+  'withdrawalVault',
+] as const;
+
+const ZERO = '0x0000000000000000000000000000000000000000';
+
+/** Validate a raw locator-read map into a typed ProtocolAddresses (non-zero addresses). */
+export function assertProtocol(raw: Record<string, unknown>): ProtocolAddresses {
+  const out = {} as Record<string, string>;
+  for (const key of PROTOCOL_KEYS) {
+    const v = raw[key];
+    if (typeof v !== 'string' || !ADDRESS_RE.test(v) || v.toLowerCase() === ZERO)
+      throw new Error(`assertProtocol: "${key}" is not a non-zero address: ${String(v)}`);
+    out[key] = v;
+  }
+  return out as unknown as ProtocolAddresses;
 }
 
 /**
@@ -188,6 +212,7 @@ export interface Manifest {
   abiGitRef: string;
   abiHashes: Record<string, string>;
   snapshots: SnapshotRef[];
+  protocolResolvedAt?: Record<string, { chainId: number; block: number }>;
   generatedAt: string;
 }
 
@@ -198,21 +223,31 @@ export function mergeManifest(
     abiHashes: Record<string, string>;
     snapshot: SnapshotRef;
     generatedAt: string;
+    protocolResolvedAt?: { key: string; chainId: number; block: number };
   },
 ): Manifest {
   const snapshots = (prev?.snapshots ?? []).filter(
     (s) => !(s.chain === next.snapshot.chain && s.module === next.snapshot.module),
   );
   snapshots.push(next.snapshot);
+
+  const resolved = { ...prev?.protocolResolvedAt };
+  if (next.protocolResolvedAt) {
+    resolved[next.protocolResolvedAt.key] = {
+      chainId: next.protocolResolvedAt.chainId,
+      block: next.protocolResolvedAt.block,
+    };
+  }
+
   return {
     abiGitRef: next.abiGitRef,
     abiHashes: next.abiHashes,
-    // Codepoint sort (locale-independent) so the committed manifest is reproducible across machines.
     snapshots: snapshots.toSorted((a, b) => {
       const ka = `${a.chain}/${a.module}`;
       const kb = `${b.chain}/${b.module}`;
       return ka < kb ? -1 : ka > kb ? 1 : 0;
     }),
+    ...(Object.keys(resolved).length > 0 ? { protocolResolvedAt: resolved } : {}),
     generatedAt: next.generatedAt,
   };
 }
