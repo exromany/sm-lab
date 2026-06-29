@@ -1,4 +1,4 @@
-import bls from '@chainsafe/bls/herumi';
+import { SecretKey } from '@chainsafe/bls/herumi';
 import { deriveEth2ValidatorKeys, deriveKeyFromMnemonic } from '@chainsafe/bls-keygen';
 import { generateMnemonic, validateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
@@ -78,7 +78,7 @@ export async function makeDepositKeys(
   const keys: DepositKey[] = [];
   for (let i = 0; i < count; i++) {
     const { signing } = deriveEth2ValidatorKeys(master, startIndex + i);
-    const sk = bls.SecretKey.fromBytes(signing);
+    const sk = SecretKey.fromBytes(signing);
     const pubkey = sk.toPublicKey().toBytes();
     const messageRoot = DepositMessage.hashTreeRoot({
       pubkey,
