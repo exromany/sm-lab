@@ -48,14 +48,14 @@ from the on-chain `LidoLocator` contract (see [Protocol block](#protocol-block) 
 The `protocol` field in each address book holds addresses resolved by calling the canonical
 getter methods on the deployed `LidoLocator` contract:
 
-| Key               | LidoLocator getter  |
-| ----------------- | ------------------- |
-| `lido`            | `lido()`            |
-| `withdrawalVault` | `withdrawalVault()` |
-| `elRewardsVault`  | `elRewardsVault()`  |
-| `stakingRouter`   | `stakingRouter()`   |
-| `burner`          | `burner()`          |
-| `withdrawalQueue` | `withdrawalQueue()` |
+| Key                       | LidoLocator getter          |
+| ------------------------- | --------------------------- |
+| `lido`                    | `lido()`                    |
+| `withdrawalVault`         | `withdrawalVault()`         |
+| `validatorsExitBusOracle` | `validatorsExitBusOracle()` |
+| `stakingRouter`           | `stakingRouter()`           |
+| `burner`                  | `burner()`                  |
+| `withdrawalQueue`         | `withdrawalQueue()`         |
 
 These are the addresses that `@csm-lab/recipes`'s `connect()` and the `@csm-lab/keys` tool
 need at runtime. When a `protocol` block is present in the committed data, both consumers
@@ -67,8 +67,8 @@ resolution when it is absent.
 ```json
 {
   "protocolResolvedAt": {
-    "hoodi": { "chainId": 17000, "block": 123456 },
-    "mainnet": { "chainId": 1, "block": 654321 }
+    "hoodi/csm": { "chainId": 560048, "block": 1234567 },
+    "mainnet/csm": { "chainId": 1, "block": 654321 }
   }
 }
 ```
