@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@csm-lab/config": "workspace:*",
+    "dotenv": "catalog:",
     "tsdown": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",

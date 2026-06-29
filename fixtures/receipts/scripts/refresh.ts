@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { config as loadEnv } from 'dotenv';
 import {
   extractAbis,
   abiHash,
@@ -164,6 +165,9 @@ function parseArgs(argv: string[]): {
 }
 
 async function main(): Promise<void> {
+  // RPC creds come from the repo-root .env (this script lives at fixtures/receipts/scripts/).
+  // Loaded here, not at import, so the hermetic test suite never picks up a developer's .env.
+  loadEnv({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../.env') });
   const { chain, module, contractsPath, force, pkgDir, configPath, rpcUrl } = parseArgs(
     process.argv.slice(2),
   );
