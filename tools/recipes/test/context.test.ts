@@ -38,6 +38,28 @@ describe('connect', () => {
     const { client } = makeFakeClient({ chainId: 999999, reads: LOCATOR_READS });
     await expect(connect({ module: 'csm', client })).rejects.toThrow(/no default snapshot/);
   });
+
+  it('prefers the baked protocol block and performs zero locator reads', async () => {
+    const { client, byMethod } = makeFakeClient({ chainId: 560048, reads: LOCATOR_READS });
+    const ctx = await connect({
+      module: 'csm',
+      client,
+      addresses: csmBook({
+        protocol: {
+          stakingRouter: A(0xb1),
+          validatorsExitBusOracle: A(0xb2),
+          lido: A(0xb3),
+          withdrawalQueue: A(0xb4),
+          burner: A(0xb5),
+          withdrawalVault: A(0xb6),
+        },
+      }),
+    });
+    expect(ctx.addresses.stakingRouter).toBe(A(0xb1));
+    expect(ctx.addresses.vebo).toBe(A(0xb2)); // validatorsExitBusOracle → vebo
+    expect(ctx.addresses.withdrawalQueue).toBe(A(0xb4));
+    expect(byMethod('readContract')).toHaveLength(0);
+  });
 });
 
 describe('resolveGate', () => {

@@ -69,16 +69,38 @@ function defaultSnapshot(chainId: number, module: ModuleName): AddressBook {
 }
 
 /**
- * The only place chain / addresses / module resolve. Reads the five protocol addresses
- * from LidoLocator on-chain (they are absent from the vendored deploy snapshots) and
- * merges them onto the module-suite book.
+ * The only place chain / addresses / module resolve. Prefers the baked `protocol` block
+ * from the address book (zero on-chain reads) and falls back to reading the five protocol
+ * addresses from LidoLocator when the block is absent.
  */
 export async function connect(opts: ConnectOptions): Promise<Ctx> {
   const client = opts.client ?? makeClient(requireRpcUrl(opts));
   const chainId = await client.getChainId();
   const book = opts.addresses ?? defaultSnapshot(chainId, opts.module);
-  const loc = { address: book.LidoLocator as Hex, abi: lidoLocatorAbi } as const;
 
+  const protocol = book.protocol
+    ? {
+        stakingRouter: book.protocol.stakingRouter,
+        vebo: book.protocol.validatorsExitBusOracle,
+        lido: book.protocol.lido,
+        withdrawalQueue: book.protocol.withdrawalQueue,
+        burner: book.protocol.burner,
+      }
+    : await resolveProtocolFromLocator(client, book.LidoLocator as Hex);
+
+  return {
+    client,
+    module: opts.module,
+    clMockUrl: opts.clMockUrl,
+    addresses: { ...book, ...protocol } as ResolvedAddresses,
+  };
+}
+
+async function resolveProtocolFromLocator(
+  client: RecipeClient,
+  locator: Hex,
+): Promise<{ stakingRouter: Hex; vebo: Hex; lido: Hex; withdrawalQueue: Hex; burner: Hex }> {
+  const loc = { address: locator, abi: lidoLocatorAbi } as const;
   const [stakingRouter, vebo, lido, withdrawalQueue, burner] = await Promise.all([
     client.readContract({ ...loc, functionName: 'stakingRouter' }),
     client.readContract({ ...loc, functionName: 'validatorsExitBusOracle' }),
@@ -86,13 +108,7 @@ export async function connect(opts: ConnectOptions): Promise<Ctx> {
     client.readContract({ ...loc, functionName: 'withdrawalQueue' }),
     client.readContract({ ...loc, functionName: 'burner' }),
   ]);
-
-  return {
-    client,
-    module: opts.module,
-    clMockUrl: opts.clMockUrl,
-    addresses: { ...book, stakingRouter, vebo, lido, withdrawalQueue, burner } as ResolvedAddresses,
-  };
+  return { stakingRouter, vebo, lido, withdrawalQueue, burner };
 }
 
 function requireRpcUrl(opts: ConnectOptions): string {
