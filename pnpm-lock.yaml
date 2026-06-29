@@ -209,6 +209,9 @@ importers:
       '@chainsafe/ssz':
         specifier: 'catalog:'
         version: 1.6.0
+      '@csm-lab/receipts':
+        specifier: workspace:*
+        version: link:../../fixtures/receipts
       '@scure/bip39':
         specifier: 'catalog:'
         version: 2.2.0

@@ -9,6 +9,7 @@ import {
   type ChainName,
   type WcType,
 } from './constants';
+import { protocolWithdrawalVault } from './receipts';
 import { bytesToHex, hexToBytes, type Hex } from './hex';
 import { DepositData, DepositMessage, computeDomain, computeSigningRoot } from './ssz';
 
@@ -70,7 +71,8 @@ export async function makeDepositKeys(
   const mnemonic = opts.mnemonic ?? generateMnemonic(wordlist, 128);
   if (!validateMnemonic(mnemonic, wordlist)) throw new Error('invalid BIP-39 mnemonic');
 
-  const wc = withdrawalCredentials(type, opts.withdrawalAddress ?? cfg.withdrawalVault);
+  const baked = protocolWithdrawalVault(cfg.chainId);
+  const wc = withdrawalCredentials(type, opts.withdrawalAddress ?? baked ?? cfg.withdrawalVault);
   const amount = BigInt(DEPOSIT_AMOUNT_GWEI);
   const domain = computeDomain(hexToBytes(cfg.forkVersion));
 

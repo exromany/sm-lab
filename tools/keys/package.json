@@ -37,6 +37,7 @@
     "@chainsafe/bls": "catalog:",
     "@chainsafe/bls-keygen": "catalog:",
     "@chainsafe/ssz": "catalog:",
+    "@csm-lab/receipts": "workspace:*",
     "@scure/bip39": "catalog:",
     "commander": "catalog:"
   },
