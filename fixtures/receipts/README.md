@@ -12,13 +12,13 @@ addresses.mainnet.csm;
 
 ## What's inside
 
-| Path                         | Contents                                                                    |
-| ---------------------------- | --------------------------------------------------------------------------- |
-| `src/abi/*.ts`               | One `as const` TypeScript module per contract (`csModuleAbi`, `vEBOAbi`, …) |
-| `src/index.ts`               | Re-exports `addresses`, all ABI consts, and `manifest`                      |
-| `data/<chain>/<module>.json` | Per-(chain, module) address book                                            |
-| `data/manifest.json`         | Contracts `git-ref`(s) + per-ABI sha256 hashes (provenance record)          |
-| `scripts/refresh.ts`         | CLI that populates the above from a local contracts checkout                |
+| Path                         | Contents                                                                      |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| `src/abi/*.ts`               | One `as const` TypeScript module per contract (`csModuleAbi`, `vEBOAbi`, …)   |
+| `src/index.ts`               | Re-exports `addresses`, all ABI consts, and `manifest`                        |
+| `data/<chain>/<module>.json` | Per-(chain, module) address book                                              |
+| `data/manifest.json`         | Contracts `git-ref`(s) + per-ABI sha256 hashes + optional protocol provenance |
+| `scripts/refresh.ts`         | CLI that populates the above from a local contracts checkout                  |
 
 Public surface:
 
@@ -29,6 +29,52 @@ import { addresses, csModuleAbi, vEBOAbi, manifest } from '@csm-lab/receipts';
 
 Available chains/modules: `hoodi.csm`, `hoodi.cm`, `mainnet.csm`.
 `mainnet/cm` is intentionally absent — no curated mainnet deployment exists yet.
+
+## Address book shape
+
+Each `data/<chain>/<module>.json` is an **allowlist-curated, strictly-typed** set of addresses.
+Only proxy and gate contracts that CSM recipes actually use are included. `DeployParams`, `*Impl`
+addresses, and linked library entries present in the upstream deploy config are intentionally
+dropped — committing them here would add noise without value and they change on every upgrade.
+
+> **Warning:** if you copy addresses from the raw upstream deploy config and notice extra keys
+> (`*Impl`, `DeployParams`, `libraries`, …), those are not in `@csm-lab/receipts` by design.
+
+Each book may also contain an optional `protocol` block with 6 addresses sourced directly
+from the on-chain `LidoLocator` contract (see [Protocol block](#protocol-block) below).
+
+## Protocol block
+
+The `protocol` field in each address book holds addresses resolved by calling the canonical
+getter methods on the deployed `LidoLocator` contract:
+
+| Key               | LidoLocator getter  |
+| ----------------- | ------------------- |
+| `lido`            | `lido()`            |
+| `withdrawalVault` | `withdrawalVault()` |
+| `elRewardsVault`  | `elRewardsVault()`  |
+| `stakingRouter`   | `stakingRouter()`   |
+| `burner`          | `burner()`          |
+| `withdrawalQueue` | `withdrawalQueue()` |
+
+These are the addresses that `@csm-lab/recipes`'s `connect()` and the `@csm-lab/keys` tool
+need at runtime. When a `protocol` block is present in the committed data, both consumers
+prefer it over resolving the addresses at runtime; they fall back to their previous runtime
+resolution when it is absent.
+
+`manifest.protocolResolvedAt` records provenance for the last enrichment:
+
+```json
+{
+  "protocolResolvedAt": {
+    "hoodi": { "chainId": 17000, "block": 123456 },
+    "mainnet": { "chainId": 1, "block": 654321 }
+  }
+}
+```
+
+**The `protocol` blocks are not populated in the initial committed data** — they require a live
+RPC. Run enrichment once an RPC is available (see [Enriching protocol addresses](#enriching-protocol-addresses)).
 
 ## How ABIs and addresses are sourced
 
@@ -50,6 +96,32 @@ from a local checkout of `community-staking-module`:
 
 The extracted snapshots are committed here. Consumers get reproducible, offline reads with no
 Forge dependency.
+
+## Enriching protocol addresses
+
+To populate (or refresh) the `protocol` block in the committed address data, pass `--rpc` (or
+set the matching env var) when running `refresh`:
+
+```bash
+# hoodi csm — explicit flag
+pnpm --filter @csm-lab/receipts refresh --chain hoodi --module csm --rpc <url>
+
+# hoodi csm — via env var
+HOODI_RPC_URL=<url> pnpm --filter @csm-lab/receipts refresh --chain hoodi --module csm
+
+# mainnet csm — via generic fallback
+ETH_RPC_URL=<url> pnpm --filter @csm-lab/receipts refresh --chain mainnet --module csm
+```
+
+RPC URL resolution order: `--rpc` flag → `<CHAIN>_RPC_URL` (uppercased chain name) → `ETH_RPC_URL`.
+
+**Without an RPC** the enrichment step is skipped entirely and any existing `protocol` block
+already in `data/<chain>/<module>.json` is carried forward unchanged (no data loss). This
+means you can run a plain ABI/address refresh without a live node and the protocol provenance
+remains intact.
+
+After enriching, commit the updated `data/` files together with the updated `manifest.json`
+(`protocolResolvedAt` is written there).
 
 ## Refreshing snapshots
 

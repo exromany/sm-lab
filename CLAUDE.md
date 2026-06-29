@@ -71,8 +71,11 @@ package has a build entry); per-package gates above are still the fastest done-c
 Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped into increments 6a–6g
 (see `docs/superpowers/specs/2026-06-26-anvil-recipes-design.md`):
 
-- **6a `@csm-lab/receipts`** ✅ — typed ABIs + module-suite addresses (from the _latest_ per-chain
-  upgrade config) + `manifest.json` + human-run `refresh.ts` (git-ref guard, `--config`).
+- **6a `@csm-lab/receipts`** ✅ — typed ABIs + allowlist-curated strictly-typed address book
+  (DeployParams/`*Impl`/libs dropped) + `manifest.json` + human-run `refresh.ts` (git-ref guard,
+  `--config`). Optional `--rpc`-gated `protocol` block bakes 6 LidoLocator-resolved addresses;
+  skip + carry-forward when RPC absent; `manifest.protocolResolvedAt` records `{ chainId, block }`
+  provenance. recipes `connect()` and the keys tool prefer the baked block, fall back otherwise.
 - **6b `@csm-lab/recipes`** ✅ — Foundry-free TS rewrite of `fork.just`: `connect` (LidoLocator-resolved
   ctx) + the `actAs` impersonation engine + `addKeys`/`operatorInfo`/`warpBy`·`snapshot`·`revert`/
   cm `createCuratedOperator`/csm `setGateAddrs` (ics). Reuses receipts + merkle; hermetic fake-client
