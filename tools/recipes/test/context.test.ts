@@ -1,4 +1,5 @@
 import { addresses } from '@csm-lab/receipts';
+import type { CsmAddressBook } from '@csm-lab/receipts';
 import { describe, expect, it } from 'vitest';
 import { connect, contract, resolveGate } from '../src/context';
 import { makeFakeClient } from './helpers/fake-client';
@@ -18,7 +19,7 @@ describe('connect', () => {
     const ctx = await connect({ module: 'csm', client, addresses: csmBook() });
 
     expect(ctx.module).toBe('csm');
-    expect(ctx.addresses.CSModule).toBe(A(0x01)); // from the snapshot
+    expect((ctx.addresses as CsmAddressBook).CSModule).toBe(A(0x01)); // from the snapshot
     expect(ctx.addresses.stakingRouter).toBe(A(0xa1)); // locator-resolved
     expect(ctx.addresses.vebo).toBe(A(0xa2));
     expect(ctx.addresses.lido).toBe(A(0xa3));
@@ -30,7 +31,7 @@ describe('connect', () => {
   it('falls back to the default @csm-lab/receipts snapshot by chainId', async () => {
     const { client } = makeFakeClient({ chainId: 560048, reads: LOCATOR_READS });
     const ctx = await connect({ module: 'csm', client });
-    expect(ctx.addresses.CSModule).toBe(addresses.hoodi.csm.CSModule);
+    expect((ctx.addresses as CsmAddressBook).CSModule).toBe(addresses.hoodi.csm.CSModule);
   });
 
   it('throws when no chainId match exists in the default snapshot', async () => {

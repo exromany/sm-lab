@@ -2,10 +2,17 @@ export type Hex = `0x${string}`;
 export type ChainName = 'hoodi' | 'mainnet';
 export type ModuleName = 'csm' | 'cm';
 
-/** Catch-all for keys not explicitly modeled (e.g. *Impl, DeployParams, git-ref). */
-type AddressBookExtra = Hex | Hex[] | number | string | Record<string, unknown> | undefined;
+/** Protocol addresses resolved on-chain from LidoLocator during refresh (optional — present iff enriched). */
+export interface ProtocolAddresses {
+  stakingRouter: Hex;
+  validatorsExitBusOracle: Hex;
+  lido: Hex;
+  withdrawalQueue: Hex;
+  burner: Hex;
+  withdrawalVault: Hex;
+}
 
-/** CSM (and csm0x02) deploy address book. Known contracts typed as Hex. */
+/** CSM deploy address book — slimmed to the contracts consumers use. */
 export interface CsmAddressBook {
   CSModule: Hex;
   Accounting: Hex;
@@ -24,7 +31,8 @@ export interface CsmAddressBook {
   /** v3-only; absent on mainnet/v2. */
   IdentifiedDVTClusterGate?: Hex;
   ChainId: number;
-  [key: string]: AddressBookExtra;
+  'git-ref': string;
+  protocol?: ProtocolAddresses;
 }
 
 /** Curated-module deploy address book. */
@@ -44,7 +52,8 @@ export interface CmAddressBook {
   LidoLocator: Hex;
   CuratedGates: Hex[];
   ChainId: number;
-  [key: string]: AddressBookExtra;
+  'git-ref': string;
+  protocol?: ProtocolAddresses;
 }
 
 /** Either module's book (generic consumers). */

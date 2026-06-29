@@ -22,6 +22,7 @@ export function csmBook(overrides: Partial<CsmAddressBook> = {}): CsmAddressBook
     VettedGate: A(0x0d),
     PermissionlessGate: A(0x0e),
     ChainId: 560048,
+    'git-ref': 'test',
     ...overrides,
   };
 }
@@ -43,6 +44,7 @@ export function cmBook(overrides: Partial<CmAddressBook> = {}): CmAddressBook {
     LidoLocator: A(0x2d),
     CuratedGates: [A(0x30), A(0x31), A(0x32), A(0x33), A(0x34), A(0x35), A(0x36)],
     ChainId: 560048,
+    'git-ref': 'test',
     ...overrides,
   };
 }

@@ -127,7 +127,7 @@ export function contract(ctx: Ctx, name: StaticName | 'module') {
     ) as Hex;
     return { address, abi: csModuleAbi };
   }
-  return { address: ctx.addresses[name] as Hex, abi: STATIC[name] };
+  return { address: (ctx.addresses as unknown as Record<string, Hex>)[name], abi: STATIC[name] };
 }
 
 /**
