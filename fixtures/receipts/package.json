@@ -42,6 +42,7 @@
     "tsdown": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
+    "viem": "catalog:",
     "vitest": "catalog:",
     "@types/node": "catalog:"
   },
