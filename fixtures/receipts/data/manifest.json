@@ -35,5 +35,19 @@
       "gitRef": "cc8409a8ac21d7816d572658077dd6cf5f61507f"
     }
   ],
-  "generatedAt": "2026-06-27T07:54:05.518Z"
+  "protocolResolvedAt": {
+    "hoodi/csm": {
+      "chainId": 560048,
+      "block": 3113497
+    },
+    "hoodi/cm": {
+      "chainId": 560048,
+      "block": 3113499
+    },
+    "mainnet/csm": {
+      "chainId": 1,
+      "block": 25423656
+    }
+  },
+  "generatedAt": "2026-06-29T13:35:19.356Z"
 }

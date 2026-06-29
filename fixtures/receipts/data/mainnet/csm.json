@@ -14,5 +14,13 @@
   "VettedGate": "0xB314D4A76C457c93150d308787939063F4Cc67E0",
   "PermissionlessGate": "0xcF33a38111d0B1246A3F38a838fb41D626B454f0",
   "ChainId": 1,
-  "git-ref": "cc8409a8ac21d7816d572658077dd6cf5f61507f"
+  "git-ref": "cc8409a8ac21d7816d572658077dd6cf5f61507f",
+  "protocol": {
+    "stakingRouter": "0xFdDf38947aFB03C621C71b06C9C70bce73f12999",
+    "validatorsExitBusOracle": "0x0De4Ea0184c2ad0BacA7183356Aea5B8d5Bf5c6e",
+    "lido": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+    "withdrawalQueue": "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1",
+    "burner": "0xE76c52750019b80B43E36DF30bf4060EB73F573a",
+    "withdrawalVault": "0xB9D7934878B5FB9610B3fE8A5e441e8fad7E293f"
+  }
 }
