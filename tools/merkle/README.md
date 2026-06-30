@@ -63,7 +63,7 @@ tsdown (ESM, bundled) via the shared `@csm-lab/config` preset:
 // tsdown.config.ts
 import { libConfig } from '@csm-lab/config/tsdown';
 export default libConfig({
-  entry: { index: 'src/index.ts', cli: 'src/cli.ts' },
+  entry: { index: 'src/index.ts', cli: 'src/cli/index.ts' },
   format: ['esm'],
   platform: 'node',
 });
