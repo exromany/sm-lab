@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import {
   registerAdminRoutes,
   readPackageVersion,
@@ -44,6 +45,9 @@ export function createApp(options: AppOptions = {}): AppHandle {
   const fetchUpstream = options.fetchUpstream ?? createUpstreamFetcher(gateway);
 
   const app = new Hono();
+  // Permissive CORS: this mock backs browser consumers (csm-widget) cross-origin, so the
+  // pinning API + /ipfs gateway must answer preflights and echo Access-Control-Allow-Origin.
+  app.use('*', cors());
   registerPinningRoutes(app, store);
   registerGatewayRoutes(app, { store, fetchUpstream, cacheUpstream: options.cacheUpstream });
   registerAdminRoutes(app, {

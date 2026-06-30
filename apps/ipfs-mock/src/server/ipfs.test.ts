@@ -191,6 +191,38 @@ describe('gateway proxy (hermetic, injected upstream)', () => {
   });
 });
 
+describe('CORS', () => {
+  it('echoes Access-Control-Allow-Origin on the gateway response', async () => {
+    const { app } = createApp({ store: new PinStore(), fetchUpstream: stubUpstream('').fetcher });
+    const pin = (await (
+      await app.request('/pinning/pinJSONToIPFS', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Origin: 'http://127.0.0.1:3000' },
+        body: JSON.stringify(FIXTURE),
+      })
+    ).json()) as { IpfsHash: string };
+
+    const res = await app.request(`/ipfs/${pin.IpfsHash}`, {
+      headers: { Origin: 'http://127.0.0.1:3000' },
+    });
+    // Default cors() is fully permissive ('*') — covers localhost AND 127.0.0.1 alike.
+    expect(res.headers.get('access-control-allow-origin')).toBe('*');
+  });
+
+  it('answers a CORS preflight (OPTIONS) for the pinning API', async () => {
+    const { app } = createApp({ store: new PinStore() });
+    const res = await app.request('/pinning/pinJSONToIPFS', {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'http://127.0.0.1:3000',
+        'Access-Control-Request-Method': 'POST',
+      },
+    });
+    expect(res.status).toBe(204);
+    expect(res.headers.get('access-control-allow-origin')).toBe('*');
+  });
+});
+
 describe('admin status', () => {
   it('reports pin totals and the configured gateway', async () => {
     const { app } = createApp({ store: new PinStore(), gateway: 'https://example.test' });
