@@ -12,7 +12,7 @@ const program = new Command()
   .name('csm-cl-mock')
   .description('Consensus Layer mock server for CSM testing')
   .option('--url <url>', 'CL mock server URL (for config/stop commands)')
-  .addHelpCommand(false);
+  .helpCommand(false);
 
 program.addCommand(serveCommand);
 program.addCommand(configCommand);
