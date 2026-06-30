@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { app } from './app';
 import { buildValidator } from './beacon';
 
 // Characterization tests: pin the Beacon API response shape. The CLAUDE.md warns this
@@ -37,5 +38,30 @@ describe('buildValidator', () => {
     expect(v.index).toBe('5');
     expect(v.validator.effective_balance).toBe('31000000000');
     expect(v.balance).toBe('31000000000');
+  });
+});
+
+describe('CORS', () => {
+  const VALIDATORS = '/eth/v1/beacon/states/head/validators';
+
+  it('echoes Access-Control-Allow-Origin on a beacon GET', async () => {
+    const res = await app.request(VALIDATORS, {
+      headers: { Origin: 'http://127.0.0.1:3000' },
+    });
+    expect(res.status).toBe(200);
+    // Default cors() is fully permissive ('*') — covers localhost AND 127.0.0.1 alike.
+    expect(res.headers.get('access-control-allow-origin')).toBe('*');
+  });
+
+  it('answers a CORS preflight (OPTIONS) for a beacon route', async () => {
+    const res = await app.request(VALIDATORS, {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'http://127.0.0.1:3000',
+        'Access-Control-Request-Method': 'GET',
+      },
+    });
+    expect(res.status).toBe(204);
+    expect(res.headers.get('access-control-allow-origin')).toBe('*');
   });
 });

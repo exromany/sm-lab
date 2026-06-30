@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import {
   registerAdminRoutes,
   readPackageVersion,
@@ -10,6 +11,9 @@ import { store } from './store';
 
 const app = new Hono();
 
+// Permissive CORS: this mock backs browser consumers (csm-widget / SDK) cross-origin, so the
+// beacon + validator API must answer preflights and echo Access-Control-Allow-Origin.
+app.use('*', cors());
 registerBeaconRoutes(app);
 registerValidatorRoutes(app);
 registerAdminRoutes(app, {
