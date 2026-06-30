@@ -10,13 +10,18 @@ domain, so they pass the CSM SDK's on-upload BLS validation.
 ## CLI
 
 ```bash
+csm-keys 5                               # count is positional: `5` == `--count 5`
 csm-keys --count 5                       # hoodi, 0x01 (all defaults) → JSON to stdout
 csm-keys --chain mainnet --count 1
 csm-keys --count 1 --type 0x02           # compounding (CM)
 csm-keys --count 3 --mnemonic "..."      # reproducible
 csm-keys --count 2 --wc 0xCustomAddress  # withdrawal address override
 csm-keys --count 5 -o deposit_data.json  # write file (mnemonic → stderr)
+csm-keys help                            # mirrors --help
 ```
+
+`count` is also a positional argument, so `csm-keys 2` == `csm-keys --count 2` (the positional
+wins if both are given). `csm-keys help` mirrors `csm-keys --help`.
 
 | flag                       | default    | notes                                  |
 | -------------------------- | ---------- | -------------------------------------- |

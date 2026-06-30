@@ -4,7 +4,7 @@ import { libConfig } from '@csm-lab/config/tsdown';
 export default libConfig({
   entry: {
     index: 'src/index.ts',
-    cli: 'src/cli.ts',
+    cli: 'src/cli/index.ts',
   },
   format: ['esm'],
   platform: 'node',
