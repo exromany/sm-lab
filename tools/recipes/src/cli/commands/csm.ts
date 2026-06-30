@@ -8,15 +8,18 @@ export const csmCommands: RecipeCommand[] = [
     name: 'set-gate',
     summary: 'build + install a gate address tree (pins to IPFS unless --cid)',
     module: 'csm',
+    // Positional form leads with the selector, then the variadic addresses:
+    //   `set-gate idvtc 0xabc… 0xdef…` == `set-gate --selector idvtc --address 0xabc… --address 0xdef…`
     options: [
+      { flag: '--selector <name>', key: 'selector', coerce: identity, positional: true },
       {
         flag: '--address <addr>',
         key: 'addresses',
         coerce: toAddresses,
         repeatable: true,
         required: true,
+        positional: true,
       },
-      { flag: '--selector <name>', key: 'selector', coerce: identity },
       { flag: '--cid <cid>', key: 'cid', coerce: identity },
     ],
     run: (ctx, o: { addresses: Hex[]; selector?: 'ics'; cid?: string }) => setGateAddrs(ctx, o),

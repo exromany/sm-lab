@@ -9,6 +9,7 @@ import {
   toAddressValue,
   toPairs,
   toAddresses,
+  identity,
   flagProp,
   bigintReplacer,
   defineCommand,
@@ -56,6 +57,8 @@ describe('bigintReplacer', () => {
     expect(JSON.parse(JSON.stringify({ a: 5n }, bigintReplacer))).toEqual({ a: '5' });
   });
 });
+
+const arrayOf = (raw: string | string[]): string[] => raw as string[];
 
 describe('defineCommand', () => {
   const fakeCtx = { module: 'csm' } as never;
@@ -106,14 +109,188 @@ describe('defineCommand', () => {
     log.mockRestore();
   });
 
-  it('exits non-zero when --rpc-url and RPC_URL are both missing', async () => {
-    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+  it('defaults rpcUrl to the anvil default when --rpc-url and RPC_URL are both missing', async () => {
+    fakeConnect.mockClear();
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     delete process.env.RPC_URL;
     await program().parseAsync(['--module', 'csm', 'demo', '--operator-id', '7'], { from: 'user' });
-    expect(err).toHaveBeenCalledWith('Error:', expect.stringContaining('--rpc-url'));
-    expect(exit).toHaveBeenCalledWith(1);
-    err.mockRestore();
-    exit.mockRestore();
+    expect(fakeConnect).toHaveBeenCalledWith({
+      module: 'csm',
+      rpcUrl: 'http://127.0.0.1:8545',
+      clMockUrl: undefined,
+    });
+    log.mockRestore();
+  });
+
+  it('accepts a required option positionally (no flag)', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    await program().parseAsync(['--module', 'csm', 'demo', '7'], { from: 'user' });
+    expect(log).toHaveBeenCalledWith('ok 7');
+    log.mockRestore();
+  });
+
+  describe('positional arguments', () => {
+    // required (operator-id, count) → positional in declaration order; optional (seed) stays a flag.
+    const multi: RecipeCommand<
+      { noId: bigint; count: bigint; seed?: string },
+      { noId: bigint; count: bigint; seed?: string }
+    > = {
+      name: 'multi',
+      summary: 'multi',
+      options: [
+        { flag: '--operator-id <id>', key: 'noId', coerce: toBigInt, required: true },
+        { flag: '--count <n>', key: 'count', coerce: toBigInt, required: true },
+        { flag: '--seed <hex>', key: 'seed', coerce: identity },
+      ],
+      run: async (_ctx, o) => o,
+      report: (r) => [`${r.noId}/${r.count}/${r.seed ?? '-'}`],
+    };
+    const multiProgram = () => {
+      const p = new Command().option('--module <m>').exitOverride();
+      p.addCommand(defineCommand(multi, fakeConnect));
+      return p;
+    };
+
+    it('maps multiple positionals in declaration order; optional flag stays a flag', async () => {
+      const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      await multiProgram().parseAsync(['--module', 'csm', 'multi', '3', '5', '--seed', '0xab'], {
+        from: 'user',
+      });
+      expect(log).toHaveBeenCalledWith('3/5/0xab');
+      log.mockRestore();
+    });
+
+    it('mixes a positional with a flag for the other required option', async () => {
+      const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      await multiProgram().parseAsync(['--module', 'csm', 'multi', '3', '--count', '9'], {
+        from: 'user',
+      });
+      expect(log).toHaveBeenCalledWith('3/9/-');
+      log.mockRestore();
+    });
+
+    it('declares positionals only for required, non-repeatable options', () => {
+      const cmd = defineCommand(
+        {
+          name: 'rep',
+          summary: 'rep',
+          options: [
+            { flag: '--operator-id <id>', key: 'noId', coerce: toBigInt, required: true },
+            { flag: '--seed <hex>', key: 'seed', coerce: identity }, // optional → flag only
+            {
+              flag: '--address <a>',
+              key: 'addresses',
+              coerce: toAddresses,
+              repeatable: true,
+              required: true, // repeatable → flag only
+            },
+          ],
+          run: async () => ({}),
+          report: () => [],
+        },
+        fakeConnect,
+      );
+      expect(cmd.registeredArguments.map((a) => a.name())).toEqual(['operator-id']);
+    });
+
+    // The set-gate shape: a leading optional positional, then a repeatable required option
+    // accepted as the trailing variadic positional — `gate <selector> <address...>`.
+    const gate: RecipeCommand<
+      { selector?: string; addresses: string[] },
+      { selector?: string; addresses: string[] }
+    > = {
+      name: 'gate',
+      summary: 'gate',
+      options: [
+        { flag: '--selector <name>', key: 'selector', coerce: identity, positional: true },
+        {
+          flag: '--address <addr>',
+          key: 'addresses',
+          coerce: arrayOf,
+          repeatable: true,
+          required: true,
+          positional: true,
+        },
+      ],
+      run: async (_ctx, o) => o,
+      report: (r) => [`${r.selector ?? '-'}:${r.addresses.join(',')}`],
+    };
+    const gateProgram = () => {
+      const p = new Command().option('--module <m>').exitOverride();
+      p.addCommand(defineCommand(gate, fakeConnect));
+      return p;
+    };
+
+    it('declares an opt-in positional + a repeatable variadic, in declaration order', () => {
+      const args = defineCommand(gate, fakeConnect).registeredArguments;
+      expect(args.map((a) => a.name())).toEqual(['selector', 'address']);
+      expect(args.map((a) => a.variadic)).toEqual([false, true]);
+    });
+
+    it('maps a leading positional then a trailing variadic positional', async () => {
+      const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      await gateProgram().parseAsync(['--module', 'csm', 'gate', 'idvtc', '0xa', '0xb'], {
+        from: 'user',
+      });
+      expect(log).toHaveBeenCalledWith('idvtc:0xa,0xb');
+      log.mockRestore();
+    });
+
+    it('falls back to flags when no positional values are given for either', async () => {
+      const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      await gateProgram().parseAsync(
+        ['--module', 'csm', 'gate', '--selector', 'ics', '--address', '0xc'],
+        { from: 'user' },
+      );
+      expect(log).toHaveBeenCalledWith('ics:0xc');
+      log.mockRestore();
+    });
+
+    it('throws at build time when a repeatable positional is not declared last', () => {
+      expect(() =>
+        defineCommand(
+          {
+            name: 'bad',
+            summary: 'bad',
+            options: [
+              {
+                flag: '--address <a>',
+                key: 'addresses',
+                coerce: toAddresses,
+                repeatable: true,
+                required: true,
+                positional: true,
+              },
+              { flag: '--selector <s>', key: 'selector', coerce: identity, positional: true },
+            ],
+            run: async () => ({}),
+            report: () => [],
+          },
+          fakeConnect,
+        ),
+      ).toThrow(/repeatable positional/);
+    });
+  });
+
+  it('a descriptor module forces ctx.module, overriding the global --module', async () => {
+    fakeConnect.mockClear();
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const forced: RecipeCommand<{ noId: bigint }, { ok: bigint }> = { ...desc, module: 'csm' };
+    const p = new Command()
+      .option('--rpc-url <url>')
+      .option('--module <m>')
+      .option('--cl-mock-url <url>')
+      .option('--json')
+      .exitOverride();
+    p.addCommand(defineCommand(forced, fakeConnect));
+    await p.parseAsync(['--rpc-url', 'http://x', '--module', 'cm', 'demo', '--operator-id', '1'], {
+      from: 'user',
+    });
+    expect(fakeConnect).toHaveBeenCalledWith({
+      module: 'csm',
+      rpcUrl: 'http://x',
+      clMockUrl: undefined,
+    });
+    log.mockRestore();
   });
 });

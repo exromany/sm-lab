@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cmCommands } from '../src/cli/commands/cm';
 import { csmCommands } from '../src/cli/commands/csm';
+import { defineCommand } from '../src/cli/define';
 
 describe('cm/csm commands', () => {
   it('cm commands all force module cm', () => {
@@ -33,5 +34,11 @@ describe('cm/csm commands', () => {
   it('resolve-gate reports the resolved address', () => {
     const rg = csmCommands.find((c) => c.name === 'resolve-gate')!;
     expect(rg.report('0xabc' as never, { selector: 'idvtc' })).toEqual(['idvtc → 0xabc']);
+  });
+  it('set-gate accepts <selector> then a variadic <address...> positionally', () => {
+    const sg = csmCommands.find((c) => c.name === 'set-gate')!;
+    const args = defineCommand(sg).registeredArguments;
+    expect(args.map((a) => a.name())).toEqual(['selector', 'address']);
+    expect(args.map((a) => a.variadic)).toEqual([false, true]);
   });
 });
