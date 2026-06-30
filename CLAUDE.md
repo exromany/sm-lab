@@ -60,7 +60,12 @@ package has a build entry); per-package gates above are still the fastest done-c
 - **Releases:** Changesets (`access: public`; `core`/`config` are ignored/private).
 - **Services** mirror the `cl-mock` shape: Hono + commander, `serve`/`status`/`stop`/`help`, in-memory
   store, and core's `registerAdminRoutes` for `/admin/status` + `/admin/shutdown`. Each app ships a
-  thin Dockerfile whose `CMD` runs the same published `bin`.
+  thin Dockerfile whose `CMD` runs the same published `bin`. Both mocks enable permissive CORS
+  (`app.use('*', cors())`) so browser consumers (csm-widget / SDK) can call them cross-origin.
+- **CLIs** (`keys`/`merkle`/`recipes`) share an injectable `buildProgram(deps)` seam — `src/cli/program.ts`
+  builds the commander program from injected implementations, `src/cli/index.ts` is a thin bootstrap —
+  so command parsing is tested hermetically with fakes. Suppress the built-in help with `.helpCommand(false)`
+  (not the deprecated `.addHelpCommand(false)`) when shipping a custom `help` cheat sheet.
 - **Don't over-extract into `core` (YAGNI).** Domain validators and single-consumer helpers stay
   local; promote to core only when a _second_ consumer needs them.
 - **Tests are hermetic** — no network, no chain. Test Hono handlers via `app.request(...)`; inject
@@ -119,9 +124,13 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   `buildProgram(connectImpl)` wires ~34 commands — shared at top level (`--module`), cm/csm-only
   under nested `cm`/`csm` groups that force `ctx.module`. ETH amounts via viem `parseEther`
   (1-wei exact); `noId`→`--operator-id` (commander `--no-*` is negation, decoupled via `flagProp`).
-  `bin: csm-recipes → dist/cli.mjs`, v0.1.0, changeset added. Hermetic tests via the `connectImpl`
+  The `cm`/`csm` groups also mirror every shared recipe with the module pre-bound (so
+  `csm-recipes csm <shared>` needs no `--module`); `--rpc-url` defaults to anvil's `127.0.0.1:8545`;
+  required non-repeatable options are accepted positionally in declaration order (a repeatable one
+  becomes the trailing variadic — `set-gate <selector> <address...>`); a `help` command mirrors
+  `--help` on root + groups. `bin: csm-recipes → dist/cli.mjs`, v0.1.0, changeset added. Hermetic tests via the `connectImpl`
   seam. **Published-for-npx is wired but the actual coordinated first publish of
   recipes+merkle+receipts is a deferred release action** (none are on npm yet).
 
-Steps 1–6 (cl-mock, ipfs-mock, merkle, core, receipts, recipes + CLI) are complete.
+Steps 1–6 (cl-mock, ipfs-mock, merkle, keys, core, receipts, recipes + CLI) are complete.
 `docs/migration.md` tracks the increments.

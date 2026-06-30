@@ -16,6 +16,9 @@ Point `@pinata/sdk` (or any fetch client) at `http://127.0.0.1:3000` — no code
 
 ## API surface
 
+All routes are **CORS-enabled** (permissive `*`), so browser consumers (csm-widget) can
+pin and read back cross-origin.
+
 ### Pinata-compatible pinning API
 
 | Method | Route                    | Notes                                                                                                |

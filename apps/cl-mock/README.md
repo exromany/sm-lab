@@ -2,7 +2,8 @@
 
 Consensus Layer (Beacon API) mock server for CSM integration testing. Configure validators
 over an admin HTTP API; consumers then hit the standard beacon endpoint. State is in-memory —
-restart = clean slate.
+restart = clean slate. The beacon + validator API is **CORS-enabled** (permissive `*`) so
+browser consumers (csm-widget / SDK) can call it cross-origin.
 
 ```bash
 npx @csm-lab/cl-mock serve            # binary is csm-cl-mock (unchanged)

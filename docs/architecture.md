@@ -18,12 +18,12 @@ Broader CSM dev/ops tooling stays in its own repos.
 A flat `packages/` would force every package to be treated identically. But this repo holds
 **three kinds of artifact with three different lifecycles**, so the top level splits by that:
 
-| Bucket       | Lifecycle                            | Artifacts                               | Members                |
-| ------------ | ------------------------------------ | --------------------------------------- | ---------------------- |
-| `apps/*`     | **deployed** (long-running service)  | npm `bin` **+** Docker image **+** helm | `cl-mock`, `ipfs-mock` |
-| `tools/*`    | **invoked** (run-and-exit CLI)       | npm `bin`                               | `merkle`               |
-| `fixtures/*` | **data** (refreshed, zero runtime)   | published typed JSON                    | `receipts`             |
-| `packages/*` | **internal** (consumed by the above) | bundled in, not published               | `core`, `config`       |
+| Bucket       | Lifecycle                            | Artifacts                               | Members                     |
+| ------------ | ------------------------------------ | --------------------------------------- | --------------------------- |
+| `apps/*`     | **deployed** (long-running service)  | npm `bin` **+** Docker image **+** helm | `cl-mock`, `ipfs-mock`      |
+| `tools/*`    | **invoked** (run-and-exit CLI)       | npm `bin`                               | `merkle`, `keys`, `recipes` |
+| `fixtures/*` | **data** (refreshed, zero runtime)   | published typed JSON                    | `receipts`                  |
+| `packages/*` | **internal** (consumed by the above) | bundled in, not published               | `core`, `config`            |
 
 The payoff: Turbo filters, Dockerfiles, and release rules target a whole bucket
 (`turbo run build --filter=./apps/*`) instead of special-casing each package.
@@ -34,7 +34,9 @@ csm-lab/
 │   ├── cl-mock/      @csm-lab/cl-mock     Beacon API mock (Hono)        ← csm-test-cl
 │   └── ipfs-mock/    @csm-lab/ipfs-mock   Pinata/IPFS emulator (Hono)   ← NEW
 ├── tools/
-│   └── merkle/       @csm-lab/merkle      ICS + strikes tree builder    ← csm-test-tree
+│   ├── merkle/       @csm-lab/merkle      ICS + strikes tree builder    ← csm-test-tree
+│   ├── keys/         @csm-lab/keys        BLS deposit-data generator    ← NEW
+│   └── recipes/      @csm-lab/recipes     anvil CSM-state recipes + CLI ← fork.just
 ├── fixtures/
 │   └── receipts/     @csm-lab/receipts    typed anvil/deploy snapshots  ← contracts repo
 ├── packages/
@@ -74,15 +76,12 @@ bundled into consumers (`noExternal`), so it never ships as its own package.
 ## Data flow — the offline test bed
 
 ```
-                      ┌─────────────────────────────────────────────┐
-                      │  pnpm stack:up  (docker/compose.yaml)         │
-                      │                                               │
-  merkle (make) ──────┼──► ipfs-mock  ──(deterministic CID)──┐        │
-       │              │                                      │        │
-       │ cast         │   cl-mock (beacon state)             │        │
-       ▼              │       ▲                              ▼        │
-  merkle (set) ───────┼──► anvil (EL) ◄──── widget / SDK / contracts  │
-                      └─────────────────────────────────────────────┘
+  merkle   ──build + pin──►  ipfs-mock      (deterministic CIDs: ICS / gate / rewards trees)
+
+  recipes  ──impersonate──►  anvil (EL)         ┐
+           ──clActivate───►  cl-mock (beacon)   ├──►  widget / SDK / contracts read the
+                                                ┘     prepared offline CSM environment
+
         addresses come from @csm-lab/receipts (no DEPLOY_JSON_PATH)
 ```
 
@@ -96,4 +95,8 @@ bundled into consumers (`noExternal`), so it never ships as its own package.
 - Services mirror cl-mock's CLI shape: `serve` / `config` / `status` / `stop` / `help`,
   in-memory store + HTTP admin, version read from `package.json`. The `help` command is a
   self-contained, agent-facing cheat sheet — the first thing an AI agent runs.
+- Both mocks enable permissive CORS (`app.use('*', cors())`) so browser consumers
+  (csm-widget / SDK) can call them cross-origin.
+- CLIs share an injectable `buildProgram(deps)` seam (`src/cli/program.ts` + a thin
+  `index.ts` bootstrap) so command parsing is tested hermetically with fake implementations.
 - Conventional commits; a Changeset per user-facing change.

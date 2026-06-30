@@ -3,8 +3,9 @@
 Monorepo of testing & emulation utilities for **Lido CSM** (Community Staking Module).
 
 It gives you the pieces to stand up CSM in a controlled environment — a Beacon API mock,
-an IPFS/Pinata emulator, a merkle-tree builder, and versioned deploy fixtures — and
-publishes them so the contracts, SDK, and widget repos can consume them as dependencies.
+an IPFS/Pinata emulator, a merkle-tree builder, a BLS deposit-key generator, anvil
+state recipes, and versioned deploy fixtures — and publishes them so the contracts, SDK,
+and widget repos can consume them as dependencies.
 
 ```bash
 pnpm install
@@ -14,14 +15,16 @@ pnpm stack:up       # cl-mock + ipfs-mock + anvil — a full offline CSM test be
 
 ## Layout
 
-| Path                | Package              | What                                      | From            |
-| ------------------- | -------------------- | ----------------------------------------- | --------------- |
-| `apps/cl-mock`      | `@csm-lab/cl-mock`   | Consensus Layer (Beacon API) mock         | `csm-test-cl`   |
-| `apps/ipfs-mock`    | `@csm-lab/ipfs-mock` | Pinata/IPFS emulator, deterministic CIDs  | new             |
-| `tools/merkle`      | `@csm-lab/merkle`    | ICS + strikes merkle tree builder         | `csm-test-tree` |
-| `fixtures/receipts` | `@csm-lab/receipts`  | typed anvil/deploy snapshots              | contracts repo  |
-| `packages/core`     | `@csm-lab/core`      | shared internals (bundled, not published) | —               |
-| `packages/config`   | `@csm-lab/config`    | tsconfig + tsdown + oxlint presets        | —               |
+| Path                | Package              | What                                        | From            |
+| ------------------- | -------------------- | ------------------------------------------- | --------------- |
+| `apps/cl-mock`      | `@csm-lab/cl-mock`   | Consensus Layer (Beacon API) mock           | `csm-test-cl`   |
+| `apps/ipfs-mock`    | `@csm-lab/ipfs-mock` | Pinata/IPFS emulator, deterministic CIDs    | new             |
+| `tools/merkle`      | `@csm-lab/merkle`    | ICS + strikes merkle tree builder           | `csm-test-tree` |
+| `tools/keys`        | `@csm-lab/keys`      | BLS validator deposit-data generator        | new             |
+| `tools/recipes`     | `@csm-lab/recipes`   | anvil CSM-state recipes + `csm-recipes` CLI | `fork.just`     |
+| `fixtures/receipts` | `@csm-lab/receipts`  | typed anvil/deploy snapshots                | contracts repo  |
+| `packages/core`     | `@csm-lab/core`      | shared internals (bundled, not published)   | —               |
+| `packages/config`   | `@csm-lab/config`    | tsconfig + tsdown + oxlint presets          | —               |
 
 The four-bucket split (`apps` / `tools` / `fixtures` / `packages`) is by **lifecycle**, not
 topic — see [`docs/architecture.md`](./docs/architecture.md).
@@ -39,5 +42,8 @@ All tooling config is centralized in `@csm-lab/config`.
 
 ## Status
 
-Scaffold complete. Packages are stubs with per-package migration notes; see the migration
-plan. This tree is not yet a git repo — `git init` from here to start.
+Migration steps 1–6 are done: `cl-mock`, `ipfs-mock`, `merkle`, `keys`, `recipes` (+ the
+`csm-recipes` CLI), `receipts`, and the shared `core`/`config` packages are built, tested,
+and green. CI runs turbo checks + Changesets releases; the coordinated first npm publish of
+`recipes`/`merkle`/`receipts` is the remaining release action. See
+[`docs/migration.md`](./docs/migration.md) for per-step detail.
