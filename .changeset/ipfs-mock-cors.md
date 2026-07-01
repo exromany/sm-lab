@@ -1,5 +1,5 @@
 ---
-'@csm-lab/ipfs-mock': minor
+'@sm-lab/ipfs-mock': minor
 ---
 
 feat: enable permissive CORS on the pinning API + `/ipfs/:cid` gateway. The mock backs

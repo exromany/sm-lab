@@ -1,4 +1,4 @@
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import type { Ctx } from '../context';
 import { setClValidator } from '../cl-mock';
 import { getKeyBalance, getPubkey } from './reads';
@@ -24,7 +24,7 @@ export async function clActivate(
   opts: { noId: bigint; keyIndex: bigint },
 ): Promise<ClActivateResult> {
   if (!ctx.clMockUrl) {
-    throw new Error('@csm-lab/recipes: clActivate needs ctx.clMockUrl (a running cl-mock)');
+    throw new Error('@sm-lab/recipes: clActivate needs ctx.clMockUrl (a running cl-mock)');
   }
   // Sequential, not Promise.all: pubkey first so an empty key throws "no key found" before any
   // balance read (deterministic errors; no balance read on the empty-pubkey path).

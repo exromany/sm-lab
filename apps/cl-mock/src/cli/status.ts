@@ -1,4 +1,4 @@
-import { createStatusCommand, type BaseStatusResponse } from '@csm-lab/core';
+import { createStatusCommand, type BaseStatusResponse } from '@sm-lab/core';
 import { DEFAULT_PORT } from '../types';
 
 interface ClStatus extends BaseStatusResponse {

@@ -1,5 +1,5 @@
 ---
-'@csm-lab/merkle': patch
+'@sm-lab/merkle': patch
 ---
 
 refactor(cli): extract an injectable `buildProgram(deps)` test seam from the `csm-merkle` CLI.

@@ -31,17 +31,17 @@ The payoff: Turbo filters, Dockerfiles, and release rules target a whole bucket
 ```
 csm-lab/
 ├── apps/
-│   ├── cl-mock/      @csm-lab/cl-mock     Beacon API mock (Hono)        ← csm-test-cl
-│   └── ipfs-mock/    @csm-lab/ipfs-mock   Pinata/IPFS emulator (Hono)   ← NEW
+│   ├── cl-mock/      @sm-lab/cl-mock     Beacon API mock (Hono)        ← csm-test-cl
+│   └── ipfs-mock/    @sm-lab/ipfs-mock   Pinata/IPFS emulator (Hono)   ← NEW
 ├── tools/
-│   ├── merkle/       @csm-lab/merkle      ICS + strikes tree builder    ← csm-test-tree
-│   ├── keys/         @csm-lab/keys        BLS deposit-data generator    ← NEW
-│   └── recipes/      @csm-lab/recipes     anvil CSM-state recipes + CLI ← fork.just
+│   ├── merkle/       @sm-lab/merkle      ICS + strikes tree builder    ← csm-test-tree
+│   ├── keys/         @sm-lab/keys        BLS deposit-data generator    ← NEW
+│   └── recipes/      @sm-lab/recipes     anvil CSM-state recipes + CLI ← fork.just
 ├── fixtures/
-│   └── receipts/     @csm-lab/receipts    typed anvil/deploy snapshots  ← contracts repo
+│   └── receipts/     @sm-lab/receipts    typed anvil/deploy snapshots  ← contracts repo
 ├── packages/
-│   ├── core/         @csm-lab/core        harvested shared internals
-│   └── config/       @csm-lab/config      tsconfig + tsdown + oxlint presets
+│   ├── core/         @sm-lab/core        harvested shared internals
+│   └── config/       @sm-lab/config      tsconfig + tsdown + oxlint presets
 └── docker/compose.yaml   cl-mock + ipfs-mock + anvil = offline test bed
 ```
 
@@ -55,20 +55,20 @@ csm-lab/
 | Lint            | **oxlint** (Oxc)            | all-Rust stack with tsdown; one fast binary                                                                    |
 | Format          | **prettier**                | mature; swap to `oxfmt` once stable                                                                            |
 | Tests           | **Vitest**                  | neither seed repo had tests — added here                                                                       |
-| Versioning      | **Changesets**              | curated public releases of `@csm-lab/*`                                                                        |
+| Versioning      | **Changesets**              | curated public releases of `@sm-lab/*`                                                                        |
 | Runtime         | **Node ≥ 20**               | keeps `@hono/node-server` and existing Docker/helm; no re-platform                                             |
 
-All tooling config lives in **`@csm-lab/config`** — change the build/type/lint strategy in
+All tooling config lives in **`@sm-lab/config`** — change the build/type/lint strategy in
 one package and every other inherits it. See its README for the `extends` / import pattern.
 
 ## Two patterns worth calling out
 
 **One source, two artifacts.** Every `apps/*` service publishes a `bin` for `npx` _and_
 ships a Docker image. The Dockerfile is a ~6-line wrapper whose `CMD` runs that same `bin` —
-not a parallel build. `cl-mock` → `npx @csm-lab/cl-mock` (binary stays `csm-cl-mock`) for
+not a parallel build. `cl-mock` → `npx @sm-lab/cl-mock` (binary stays `csm-cl-mock`) for
 local/SDK use; the image is what test-infra/helm runs.
 
-**Harvest, don't pre-build, `@csm-lab/core`.** The shared lib is extracted from the
+**Harvest, don't pre-build, `@sm-lab/core`.** The shared lib is extracted from the
 duplication migration _exposes_ (pubkey normalization, the `cast` wrapper, the Hono +
 commander scaffold cl-mock already perfected), not designed speculatively up front. It's
 bundled into consumers (`noExternal`), so it never ships as its own package.
@@ -82,16 +82,16 @@ bundled into consumers (`noExternal`), so it never ships as its own package.
            ──clActivate───►  cl-mock (beacon)   ├──►  widget / SDK / contracts read the
                                                 ┘     prepared offline CSM environment
 
-        addresses come from @csm-lab/receipts (no DEPLOY_JSON_PATH)
+        addresses come from @sm-lab/receipts (no DEPLOY_JSON_PATH)
 ```
 
 `docker compose up` yields a complete offline CSM environment; consumer repos pull
-`@csm-lab/receipts` + the mocks as ordinary dependencies.
+`@sm-lab/receipts` + the mocks as ordinary dependencies.
 
 ## Conventions every package follows
 
 - Same scripts: `build` · `dev` · `test` · `types` (`lint`/`format` run repo-wide).
-- `extends: @csm-lab/config/tsconfig.lib.json`; `export default libConfig()` (or `binConfig()`).
+- `extends: @sm-lab/config/tsconfig.lib.json`; `export default libConfig()` (or `binConfig()`).
 - Services mirror cl-mock's CLI shape: `serve` / `config` / `status` / `stop` / `help`,
   in-memory store + HTTP admin, version read from `package.json`. The `help` command is a
   self-contained, agent-facing cheat sheet — the first thing an AI agent runs.

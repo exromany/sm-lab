@@ -1,5 +1,5 @@
 {
-  "name": "@csm-lab/keys",
+  "name": "@sm-lab/keys",
   "version": "0.1.0",
   "type": "module",
   "description": "Real BLS12-381 validator deposit-data generator for Lido CSM (mainnet/hoodi)",
@@ -37,12 +37,12 @@
     "@chainsafe/bls": "catalog:",
     "@chainsafe/bls-keygen": "catalog:",
     "@chainsafe/ssz": "catalog:",
-    "@csm-lab/receipts": "workspace:*",
+    "@sm-lab/receipts": "workspace:*",
     "@scure/bip39": "catalog:",
     "commander": "catalog:"
   },
   "devDependencies": {
-    "@csm-lab/config": "workspace:*",
+    "@sm-lab/config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",

@@ -84,12 +84,12 @@ importers:
 
   apps/cl-mock:
     dependencies:
-      '@csm-lab/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.0.6(hono@4.12.27)
+      '@sm-lab/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       commander:
         specifier: 'catalog:'
         version: 15.0.0
@@ -97,7 +97,7 @@ importers:
         specifier: 'catalog:'
         version: 4.12.27
     devDependencies:
-      '@csm-lab/config':
+      '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@types/node':
@@ -115,12 +115,12 @@ importers:
 
   apps/ipfs-mock:
     dependencies:
-      '@csm-lab/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.0.6(hono@4.12.27)
+      '@sm-lab/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       commander:
         specifier: 'catalog:'
         version: 15.0.0
@@ -131,7 +131,7 @@ importers:
         specifier: ^14.0.2
         version: 14.0.2
     devDependencies:
-      '@csm-lab/config':
+      '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@types/node':
@@ -149,7 +149,7 @@ importers:
 
   fixtures/receipts:
     devDependencies:
-      '@csm-lab/config':
+      '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@types/node':
@@ -188,7 +188,7 @@ importers:
         specifier: 'catalog:'
         version: 4.12.27
     devDependencies:
-      '@csm-lab/config':
+      '@sm-lab/config':
         specifier: workspace:*
         version: link:../config
       '@types/node':
@@ -212,17 +212,17 @@ importers:
       '@chainsafe/ssz':
         specifier: 'catalog:'
         version: 1.6.0
-      '@csm-lab/receipts':
-        specifier: workspace:*
-        version: link:../../fixtures/receipts
       '@scure/bip39':
         specifier: 'catalog:'
         version: 2.2.0
+      '@sm-lab/receipts':
+        specifier: workspace:*
+        version: link:../../fixtures/receipts
       commander:
         specifier: 'catalog:'
         version: 15.0.0
     devDependencies:
-      '@csm-lab/config':
+      '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@types/node':
@@ -250,7 +250,7 @@ importers:
         specifier: 'catalog:'
         version: 17.4.2
     devDependencies:
-      '@csm-lab/config':
+      '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@types/node':
@@ -268,10 +268,10 @@ importers:
 
   tools/recipes:
     dependencies:
-      '@csm-lab/merkle':
+      '@sm-lab/merkle':
         specifier: workspace:*
         version: link:../merkle
-      '@csm-lab/receipts':
+      '@sm-lab/receipts':
         specifier: workspace:*
         version: link:../../fixtures/receipts
       commander:
@@ -284,7 +284,7 @@ importers:
         specifier: 'catalog:'
         version: 2.53.1(typescript@6.0.3)
     devDependencies:
-      '@csm-lab/config':
+      '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@types/node':

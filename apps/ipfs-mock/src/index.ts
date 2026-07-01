@@ -10,5 +10,5 @@ export type { UpstreamFetcher, UpstreamResult } from './server/upstream';
 export { registerPinningRoutes } from './server/pinning';
 export { registerGatewayRoutes } from './server/gateway';
 export type { GatewayOptions } from './server/gateway';
-// Shared /admin/status + /admin/shutdown now come from @csm-lab/core's registerAdminRoutes.
+// Shared /admin/status + /admin/shutdown now come from @sm-lab/core's registerAdminRoutes.
 export * from './types';

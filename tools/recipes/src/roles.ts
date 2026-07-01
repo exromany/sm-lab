@@ -1,5 +1,5 @@
 import { keccak256, toBytes } from 'viem';
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 
 /** OZ AccessControl default admin role (all-zero bytes32). */
 export const DEFAULT_ADMIN_ROLE = `0x${'0'.repeat(64)}` as Hex;

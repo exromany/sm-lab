@@ -5,7 +5,7 @@ import {
   curatedGateAbi,
   lidoLocatorAbi,
   vettedGateAbi,
-} from '@csm-lab/receipts';
+} from '@sm-lab/receipts';
 import type {
   AddressBook,
   ChainName,
@@ -13,7 +13,7 @@ import type {
   CsmAddressBook,
   Hex,
   ModuleName,
-} from '@csm-lab/receipts';
+} from '@sm-lab/receipts';
 import { makeClient, type RecipeClient } from './client';
 
 /** Module-suite snapshot + the protocol addresses resolved on-chain by connect(). */
@@ -38,7 +38,7 @@ export interface ConnectOptions {
   rpcUrl?: string;
   /** Inject a prebuilt client (tests, or a shared client). */
   client?: RecipeClient;
-  /** Override the module-suite snapshot; defaults to @csm-lab/receipts by chainId. */
+  /** Override the module-suite snapshot; defaults to @sm-lab/receipts by chainId. */
   addresses?: AddressBook;
   clMockUrl?: string;
 }
@@ -64,7 +64,7 @@ function defaultSnapshot(chainId: number, module: ModuleName): AddressBook {
     if (book && (book as { ChainId: number }).ChainId === chainId) return book;
   }
   throw new Error(
-    `@csm-lab/recipes: no default snapshot for chainId=${chainId}, module=${module} — pass addresses explicitly`,
+    `@sm-lab/recipes: no default snapshot for chainId=${chainId}, module=${module} — pass addresses explicitly`,
   );
 }
 
@@ -113,7 +113,7 @@ async function resolveProtocolFromLocator(
 
 function requireRpcUrl(opts: ConnectOptions): string {
   if (!opts.rpcUrl)
-    throw new Error('@csm-lab/recipes: connect() needs rpcUrl (or an injected client)');
+    throw new Error('@sm-lab/recipes: connect() needs rpcUrl (or an injected client)');
   return opts.rpcUrl;
 }
 
@@ -157,9 +157,9 @@ export function resolveGate(ctx: Ctx, selector: string): Hex {
   if (ctx.module === 'cm') {
     const idx = CM_SELECTORS[selector] ?? (/^\d+$/.test(selector) ? Number(selector) : undefined);
     if (idx === undefined)
-      throw new Error(`@csm-lab/recipes: unknown cm gate selector "${selector}"`);
+      throw new Error(`@sm-lab/recipes: unknown cm gate selector "${selector}"`);
     const gate = (ctx.addresses as CmAddressBook).CuratedGates[idx];
-    if (!gate) throw new Error(`@csm-lab/recipes: cm gate index ${idx} out of range`);
+    if (!gate) throw new Error(`@sm-lab/recipes: cm gate index ${idx} out of range`);
     return gate;
   }
   if (selector === 'ics') return (ctx.addresses as CsmAddressBook).VettedGate;
@@ -167,9 +167,9 @@ export function resolveGate(ctx: Ctx, selector: string): Hex {
     const g = (ctx.addresses as CsmAddressBook).IdentifiedDVTClusterGate;
     if (!g)
       throw new Error(
-        '@csm-lab/recipes: idvtc gate not in this snapshot (v3-only; absent on mainnet/v2)',
+        '@sm-lab/recipes: idvtc gate not in this snapshot (v3-only; absent on mainnet/v2)',
       );
     return g;
   }
-  throw new Error(`@csm-lab/recipes: unknown csm gate selector "${selector}"`);
+  throw new Error(`@sm-lab/recipes: unknown csm gate selector "${selector}"`);
 }

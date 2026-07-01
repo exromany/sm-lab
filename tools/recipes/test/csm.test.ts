@@ -1,4 +1,4 @@
-import { buildIcsTree } from '@csm-lab/merkle';
+import { buildIcsTree } from '@sm-lab/merkle';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { setGateAddrs } from '../src/csm/index';
 import { SET_TREE_ROLE } from '../src/roles';

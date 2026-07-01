@@ -1,5 +1,5 @@
 ---
-'@csm-lab/merkle': minor
+'@sm-lab/merkle': minor
 ---
 
 Add `buildRewardsTree(leaves)` + `REWARDS_LEAF_ENCODING` (`['uint256','uint256']`), mirroring

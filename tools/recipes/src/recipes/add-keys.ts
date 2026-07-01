@@ -1,4 +1,4 @@
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import { actAs } from '../act-as';
 import { contract, type Ctx } from '../context';
 import { randomKeys } from '../keys';

@@ -1,5 +1,5 @@
 import { maxUint256, toHex } from 'viem';
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import { actAs, roleMember } from '../act-as';
 import { contract, type Ctx } from '../context';
 import { REPORT_GENERAL_DELAYED_PENALTY_ROLE, SETTLE_GENERAL_DELAYED_PENALTY_ROLE } from '../roles';

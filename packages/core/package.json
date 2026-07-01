@@ -1,5 +1,5 @@
 {
-  "name": "@csm-lab/core",
+  "name": "@sm-lab/core",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,7 +17,7 @@
     "commander": "catalog:"
   },
   "devDependencies": {
-    "@csm-lab/config": "workspace:*",
+    "@sm-lab/config": "workspace:*",
     "typescript": "catalog:",
     "vitest": "catalog:",
     "@types/node": "catalog:"

@@ -1,5 +1,5 @@
 import { toHex } from 'viem';
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 
 /**
  * A 32-byte cryptographically-random seed, hex-encoded. The shared origin for every recipe that

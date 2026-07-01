@@ -1,4 +1,4 @@
-import { libConfig } from '@csm-lab/config/tsdown';
+import { libConfig } from '@sm-lab/config/tsdown';
 
 // Object entry keeps the source tree intact while emitting two predictable outputs:
 // dist/index.mjs (library) + dist/cli.mjs (the `csm-merkle` bin). ESM-only + Node platform —

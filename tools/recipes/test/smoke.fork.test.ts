@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Hex } from '@csm-lab/receipts';
-import { feeDistributorAbi } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
+import { feeDistributorAbi } from '@sm-lab/receipts';
 import { connect } from '../src/context';
 import { operatorInfo } from '../src/recipes/operator-info';
 import { revert, snapshot, warpBy } from '../src/recipes/chain';
@@ -24,7 +24,7 @@ describe.skipIf(!FORK_URL)('fork smoke (ANVIL_FORK_URL)', () => {
   });
 
   it('makeRewards → submitRewards round-trips an oracle report', async () => {
-    // Needs IPFS configured (IPFS_API_URL → local @csm-lab/ipfs-mock, or PINATA_*) OR escape cids.
+    // Needs IPFS configured (IPFS_API_URL → local @sm-lab/ipfs-mock, or PINATA_*) OR escape cids.
     const ctx = await connect({ module: 'csm', rpcUrl: FORK_URL as string });
     const report = await makeRewards(ctx, { seed: '0x01', treeCid: 'cid-t', logCid: 'cid-l' });
     const result = await submitRewards(ctx, report);

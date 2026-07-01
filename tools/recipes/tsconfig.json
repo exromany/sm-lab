@@ -1,5 +1,5 @@
 {
-  "comment": "Relative extends, not the @csm-lab/config subpath — tsdown's Rust tsconfig loader doesn't follow package-exports extends. tsc here is typecheck-only (--noEmit). include covers test/** so `pnpm types` typechecks the suite (Vitest does not).",
+  "comment": "Relative extends, not the @sm-lab/config subpath — tsdown's Rust tsconfig loader doesn't follow package-exports extends. tsc here is typecheck-only (--noEmit). include covers test/** so `pnpm types` typechecks the suite (Vitest does not).",
   "extends": "../../packages/config/tsconfig.lib.json",
   "include": ["src/**/*", "test/**/*"]
 }

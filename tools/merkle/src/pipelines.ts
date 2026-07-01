@@ -6,7 +6,7 @@ import type { TreeConfig } from './io';
 /**
  * merkle's single job: build a Merkle tree from input, pin it to IPFS, and return the
  * root + CID. Pushing those on-chain (and resolving deploy addresses) is out of scope —
- * that belongs to `@csm-lab/receipts`. No `cast`, no `DEPLOY_JSON_PATH` here.
+ * that belongs to `@sm-lab/receipts`. No `cast`, no `DEPLOY_JSON_PATH` here.
  */
 
 export interface MakeResult {
@@ -32,7 +32,7 @@ async function maybePin(
   if (noUpload) return undefined;
   if (!shouldAttemptPin()) {
     console.warn(
-      'Warning: IPFS upload skipped — set IPFS_API_URL (e.g. a local @csm-lab/ipfs-mock) or PINATA_API_KEY/SECRET / PINATA_JWT',
+      'Warning: IPFS upload skipped — set IPFS_API_URL (e.g. a local @sm-lab/ipfs-mock) or PINATA_API_KEY/SECRET / PINATA_JWT',
     );
     return undefined;
   }

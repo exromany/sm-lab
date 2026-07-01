@@ -1,4 +1,4 @@
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import type { RecipeClient } from '../../src/client';
 
 export interface RecordedCall {

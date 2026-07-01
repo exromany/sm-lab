@@ -1,4 +1,4 @@
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import { actAs } from '../act-as';
 import { contract, type Ctx } from '../context';
 import { getPubkey } from './reads';
@@ -26,7 +26,7 @@ export async function increaseAllocatedBalance(
   const total = (op as { totalDepositedKeys: number }).totalDepositedKeys;
   if (keyIndex >= BigInt(total)) {
     throw new Error(
-      `@csm-lab/recipes: key index ${keyIndex} out of bounds (operator ${noId} has ${total} deposited keys)`,
+      `@sm-lab/recipes: key index ${keyIndex} out of bounds (operator ${noId} has ${total} deposited keys)`,
     );
   }
   const withdrawn = await ctx.client.readContract({
@@ -35,7 +35,7 @@ export async function increaseAllocatedBalance(
     args: [noId, keyIndex],
   });
   if (withdrawn) {
-    throw new Error(`@csm-lab/recipes: key ${keyIndex} of operator ${noId} is withdrawn`);
+    throw new Error(`@sm-lab/recipes: key ${keyIndex} of operator ${noId} is withdrawn`);
   }
   // count=1 → a single packed 48-byte pubkey; reuse reads.ts (same read + 48-byte guard + error).
   const key = await getPubkey(ctx, { noId, keyIndex });
@@ -69,7 +69,7 @@ export async function topUpActiveKeys(
   const op = await ctx.client.readContract({ ...m, functionName: 'getNodeOperator', args: [noId] });
   const total = (op as { totalDepositedKeys: number }).totalDepositedKeys;
   if (total === 0) {
-    throw new Error(`@csm-lab/recipes: operator ${noId} has no deposited keys`);
+    throw new Error(`@sm-lab/recipes: operator ${noId} has no deposited keys`);
   }
 
   const allocated = (await ctx.client.readContract({
@@ -81,7 +81,7 @@ export async function topUpActiveKeys(
   // `allocated[i] === 0n` silently false-y for the missing tail.
   if (allocated.length !== total) {
     throw new Error(
-      `@csm-lab/recipes: getKeyAllocatedBalances returned ${allocated.length} entries (expected ${total})`,
+      `@sm-lab/recipes: getKeyAllocatedBalances returned ${allocated.length} entries (expected ${total})`,
     );
   }
 

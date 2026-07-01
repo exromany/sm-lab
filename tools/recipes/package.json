@@ -1,5 +1,5 @@
 {
-  "name": "@csm-lab/recipes",
+  "name": "@sm-lab/recipes",
   "version": "0.1.0",
   "type": "module",
   "description": "TypeScript recipes to prepare CSM on-chain state on an anvil fork (rewritten fork.just; no Foundry)",
@@ -43,14 +43,14 @@
     "types": "tsc --noEmit"
   },
   "dependencies": {
-    "@csm-lab/merkle": "workspace:*",
-    "@csm-lab/receipts": "workspace:*",
+    "@sm-lab/merkle": "workspace:*",
+    "@sm-lab/receipts": "workspace:*",
     "commander": "catalog:",
     "dotenv": "catalog:",
     "viem": "catalog:"
   },
   "devDependencies": {
-    "@csm-lab/config": "workspace:*",
+    "@sm-lab/config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",

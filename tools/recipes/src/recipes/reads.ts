@@ -1,5 +1,5 @@
 import { size } from 'viem';
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import { contract, type Ctx } from '../context';
 
 /** One key's 48-byte pubkey from on-chain storage. Throws if no key exists at `keyIndex`. */
@@ -14,7 +14,7 @@ export async function getPubkey(ctx: Ctx, opts: { noId: bigint; keyIndex: bigint
   // (unscripted fake reads) before `size()` so it throws the clean error, not a viem internal.
   if (!keys || size(keys) !== 48) {
     throw new Error(
-      `@csm-lab/recipes: no key found for operator ${opts.noId} at index ${opts.keyIndex}`,
+      `@sm-lab/recipes: no key found for operator ${opts.noId} at index ${opts.keyIndex}`,
     );
   }
   return keys;
@@ -34,7 +34,7 @@ export async function getKeyBalance(
   const wei = balances[0]; // noUncheckedIndexedAccess: guard
   if (wei === undefined) {
     throw new Error(
-      `@csm-lab/recipes: no allocated balance for operator ${opts.noId} at index ${opts.keyIndex}`,
+      `@sm-lab/recipes: no allocated balance for operator ${opts.noId} at index ${opts.keyIndex}`,
     );
   }
   return wei;

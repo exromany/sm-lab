@@ -1,4 +1,4 @@
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import { contract, type Ctx } from '../context';
 
 /** Decoded NodeOperator (abitype: uint32/uint8 → number, address → Hex, bool → boolean). */

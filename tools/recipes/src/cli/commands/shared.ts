@@ -1,5 +1,5 @@
 import { formatEther } from 'viem';
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import {
   identity,
   toAddressValue,

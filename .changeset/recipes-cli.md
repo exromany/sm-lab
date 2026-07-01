@@ -1,5 +1,5 @@
 ---
-'@csm-lab/recipes': minor
+'@sm-lab/recipes': minor
 ---
 
 Add the `csm-recipes` CLI — a run-and-exit front-end over the recipe surface (declarative

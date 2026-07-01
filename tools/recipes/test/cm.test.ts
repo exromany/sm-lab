@@ -1,4 +1,4 @@
-import { buildIcsTree } from '@csm-lab/merkle';
+import { buildIcsTree } from '@sm-lab/merkle';
 import { describe, expect, it } from 'vitest';
 import {
   createCuratedOperator,

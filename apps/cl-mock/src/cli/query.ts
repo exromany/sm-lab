@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { resolveUrl as coreResolveUrl } from '@csm-lab/core';
+import { resolveUrl as coreResolveUrl } from '@sm-lab/core';
 import { DEFAULT_PORT } from '../types';
 
 const resolveUrl = (cmd: Command): string =>

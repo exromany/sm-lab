@@ -23,7 +23,7 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
-      # changesets: cuts the version PR, or on merge publishes @csm-lab/* to npm.
+      # changesets: cuts the version PR, or on merge publishes @sm-lab/* to npm.
       - uses: changesets/action@v1
         with:
           publish: pnpm release

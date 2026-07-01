@@ -70,7 +70,7 @@ export function buildProgram(
 
 WHAT IT DOES
   Build a Merkle tree from input, pin it to IPFS, and print the root + CID.
-  Pushing the root/CID on-chain is NOT this tool's job — that's @csm-lab/receipts.
+  Pushing the root/CID on-chain is NOT this tool's job — that's @sm-lab/receipts.
 
 COMMANDS
   ics <addresses>      build the ICS address tree, pin to IPFS, print root + CID
@@ -82,7 +82,7 @@ FLAGS
 
 ENV
   IPFS_API_URL         pinning endpoint; unset → real Pinata (https://api.pinata.cloud).
-                       Point at @csm-lab/ipfs-mock locally (e.g. http://127.0.0.1:3000) —
+                       Point at @sm-lab/ipfs-mock locally (e.g. http://127.0.0.1:3000) —
                        a custom endpoint pins without Pinata credentials.
   PINATA_API_KEY/SECRET   Pinata credentials (or PINATA_JWT). Ignored by the mock.
 

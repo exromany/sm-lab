@@ -1,4 +1,4 @@
-import { addresses as RECEIPTS, type AddressBook } from '@csm-lab/receipts';
+import { addresses as RECEIPTS, type AddressBook } from '@sm-lab/receipts';
 import type { Hex } from './hex';
 
 /** The baked Lido WithdrawalVault for a chainId, or undefined if no receipts book has been enriched. */

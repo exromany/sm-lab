@@ -1,11 +1,11 @@
-import { libConfig } from '@csm-lab/config/tsdown';
+import { libConfig } from '@sm-lab/config/tsdown';
 
 // Three entry points → dist/index.mjs + dist/cm.mjs + dist/csm.mjs, matching the
-// "." / "./cm" / "./csm" subpath exports. ESM-only + Node, like @csm-lab/merkle.
+// "." / "./cm" / "./csm" subpath exports. ESM-only + Node, like @sm-lab/merkle.
 //
-// alwaysBundle is overridden to [] so the *published* siblings @csm-lab/receipts and
-// @csm-lab/merkle stay EXTERNAL (the shared libConfig default bundles all @csm-lab/* —
-// that is meant for the unpublished @csm-lab/core only). They resolve as normal runtime
+// alwaysBundle is overridden to [] so the *published* siblings @sm-lab/receipts and
+// @sm-lab/merkle stay EXTERNAL (the shared libConfig default bundles all @sm-lab/* —
+// that is meant for the unpublished @sm-lab/core only). They resolve as normal runtime
 // deps; merkle's @openzeppelin/merkle-tree resolves transitively.
 export default libConfig({
   entry: {

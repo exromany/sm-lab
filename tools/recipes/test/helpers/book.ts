@@ -1,4 +1,4 @@
-import type { CmAddressBook, CsmAddressBook, Hex, ModuleName } from '@csm-lab/receipts';
+import type { CmAddressBook, CsmAddressBook, Hex, ModuleName } from '@sm-lab/receipts';
 import type { Ctx, ResolvedAddresses } from '../../src/context';
 import type { RecipeClient } from '../../src/client';
 

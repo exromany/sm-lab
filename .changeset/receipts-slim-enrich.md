@@ -1,7 +1,7 @@
 ---
-'@csm-lab/receipts': minor
-'@csm-lab/recipes': patch
-'@csm-lab/keys': patch
+'@sm-lab/receipts': minor
+'@sm-lab/recipes': patch
+'@sm-lab/keys': patch
 ---
 
 receipts: slim committed address data to a strictly-typed allowlist (drop DeployParams, \*Impl,

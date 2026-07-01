@@ -1,5 +1,5 @@
 {
-  "name": "@csm-lab/receipts",
+  "name": "@sm-lab/receipts",
   "version": "0.0.0",
   "type": "module",
   "description": "Versioned CSM anvil/deploy receipts — typed, importable contract addresses & ABIs",
@@ -38,7 +38,7 @@
     "refresh": "node --import tsx scripts/refresh.ts"
   },
   "devDependencies": {
-    "@csm-lab/config": "workspace:*",
+    "@sm-lab/config": "workspace:*",
     "dotenv": "catalog:",
     "tsdown": "catalog:",
     "tsx": "catalog:",

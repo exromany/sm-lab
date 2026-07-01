@@ -1,5 +1,5 @@
 ---
-'@csm-lab/keys': minor
+'@sm-lab/keys': minor
 ---
 
-feat: @csm-lab/keys — real BLS12-381 deposit-key generator (csm-keys bin + TS API) for mainnet/hoodi, replacing the eth-staking-smith binary
+feat: @sm-lab/keys — real BLS12-381 deposit-key generator (csm-keys bin + TS API) for mainnet/hoodi, replacing the eth-staking-smith binary

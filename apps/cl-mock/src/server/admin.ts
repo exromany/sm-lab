@@ -14,7 +14,7 @@ function logChange(line: string): void {
 
 /**
  * cl-mock-specific admin routes — the `/admin/validators` CRUD surface.
- * The shared `/admin/status` + `/admin/shutdown` come from `@csm-lab/core`'s
+ * The shared `/admin/status` + `/admin/shutdown` come from `@sm-lab/core`'s
  * `registerAdminRoutes` (wired in `app.ts`).
  */
 export function registerValidatorRoutes(app: Hono): void {

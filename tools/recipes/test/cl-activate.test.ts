@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import { clActivate } from '../src/recipes/cl-activate';
 import { getKeyBalance } from '../src/recipes/reads';
 import { setClValidator } from '../src/cl-mock';

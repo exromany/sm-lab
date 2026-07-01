@@ -1,4 +1,4 @@
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import type { Ctx } from '../context';
 
 /** Advance fork time by `seconds` and mine a block (evm_increaseTime + evm_mine). */

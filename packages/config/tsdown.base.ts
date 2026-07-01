@@ -7,24 +7,24 @@ import { defineConfig, type Options } from 'tsdown';
  * handled) is a single decision that should live in ONE place. Each package calls
  * `libConfig()` and passes only its own entrypoints/overrides.
  *
- * `deps.alwaysBundle: [/^@csm-lab\//]` forces workspace internals like `@csm-lab/core`
+ * `deps.alwaysBundle: [/^@sm-lab\//]` forces workspace internals like `@sm-lab/core`
  * to be bundled *into* each consumer's output (JS and dts) rather than left as runtime
  * deps. That keeps core private/unpublished and gives consumers a self-contained artifact
- * with no transitive `@csm-lab/*` to resolve. Third-party deps stay external as usual.
+ * with no transitive `@sm-lab/*` to resolve. Third-party deps stay external as usual.
  */
 export function libConfig(overrides: Options = {}): Options {
   return defineConfig({
     entry: ['src/index.ts'],
     format: ['esm', 'cjs'],
     // `eager` is required to bundle a source-only workspace dep's declarations
-    // (@csm-lab/core has no emitted .d.ts) into the consumer's .d.mts.
+    // (@sm-lab/core has no emitted .d.ts) into the consumer's .d.mts.
     dts: { eager: true },
     clean: true,
     treeshake: true,
     sourcemap: true,
     deps: {
-      alwaysBundle: [/^@csm-lab\//],
-      dts: { alwaysBundle: [/^@csm-lab\//] },
+      alwaysBundle: [/^@sm-lab\//],
+      dts: { alwaysBundle: [/^@sm-lab\//] },
     },
     ...overrides,
   }) as Options;

@@ -23,7 +23,7 @@ export {
 } from './io';
 export type { TreeConfig } from './io';
 
-// IPFS pinning client (env-switchable endpoint: real Pinata or @csm-lab/ipfs-mock)
+// IPFS pinning client (env-switchable endpoint: real Pinata or @sm-lab/ipfs-mock)
 export {
   pinJsonToIpfs,
   hasPinataCredentials,
@@ -35,6 +35,6 @@ export {
 } from './ipfs';
 export type { IpfsClientOptions, PinResponse } from './ipfs';
 
-// Build + pin pipeline (root + CID; on-chain work belongs to @csm-lab/receipts)
+// Build + pin pipeline (root + CID; on-chain work belongs to @sm-lab/receipts)
 export { makeIcs, makeStrikes } from './pipelines';
 export type { MakeResult, MakeOptions } from './pipelines';

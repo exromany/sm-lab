@@ -1,5 +1,5 @@
 ---
-'@csm-lab/recipes': minor
+'@sm-lab/recipes': minor
 ---
 
 Add `makeRewards(ctx, opts?)` (increment 6e, PR-1): build the cumulative FeeDistributor rewards

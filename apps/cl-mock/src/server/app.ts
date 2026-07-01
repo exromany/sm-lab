@@ -4,7 +4,7 @@ import {
   registerAdminRoutes,
   readPackageVersion,
   startServer as coreStartServer,
-} from '@csm-lab/core';
+} from '@sm-lab/core';
 import { registerBeaconRoutes } from './beacon';
 import { registerValidatorRoutes } from './admin';
 import { store } from './store';

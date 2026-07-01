@@ -1,4 +1,4 @@
-# @csm-lab/ipfs-mock
+# @sm-lab/ipfs-mock
 
 Pinata-compatible IPFS pinning service **and** gateway, with deterministic CIDs — a
 drop-in stand-in for Pinata in CSM testing. Same Hono + commander shape as `cl-mock`.
@@ -86,7 +86,7 @@ The package also exports its internals so consumers can embed the mock in-proces
 inject a stub upstream fetcher (hermetic tests — no network):
 
 ```ts
-import { createApp } from '@csm-lab/ipfs-mock';
+import { createApp } from '@sm-lab/ipfs-mock';
 
 const { app } = createApp({
   fetchUpstream: async (cid) => ({ ok: true, status: 200, contentType: 'text/plain', data }),

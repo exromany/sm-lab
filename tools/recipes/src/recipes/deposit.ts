@@ -31,7 +31,7 @@ export async function deposit(
     const [, , depositable] = summary;
     const capped = requested < depositable ? requested : depositable;
     if (requested > 0n && capped === 0n) {
-      throw new Error('@csm-lab/recipes: deposit found nothing depositable for this module');
+      throw new Error('@sm-lab/recipes: deposit found nothing depositable for this module');
     }
 
     const { result, request } = await ctx.client.simulateContract({

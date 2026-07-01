@@ -3,7 +3,7 @@
  *
  * Why not `@pinata/sdk` directly? The installed v2 SDK hardcodes
  * `baseUrl = 'https://api.pinata.cloud'` (see its `src/constants.ts`); its `PinataConfig`
- * exposes only API keys / JWT, no host override. To target `@csm-lab/ipfs-mock` locally we
+ * exposes only API keys / JWT, no host override. To target `@sm-lab/ipfs-mock` locally we
  * need a configurable base URL, so this is a thin `fetch` client hitting the exact same
  * `/pinning/pinJSONToIPFS` route the mock implements. Point it at real Pinata in test-infra
  * by leaving `IPFS_API_URL` unset (defaults to the real host) and supplying credentials.
@@ -54,7 +54,7 @@ export function hasPinataCredentials(opts: IpfsClientOptions = ipfsOptionsFromEn
 
 /**
  * True when a non-default pinning endpoint is configured — i.e. `IPFS_API_URL` points
- * somewhere other than real Pinata (typically a local `@csm-lab/ipfs-mock`). Such endpoints
+ * somewhere other than real Pinata (typically a local `@sm-lab/ipfs-mock`). Such endpoints
  * accept unauthenticated pins, so credentials are not required to upload to them.
  */
 export function hasCustomIpfsEndpoint(opts: IpfsClientOptions = ipfsOptionsFromEnv()): boolean {
@@ -86,7 +86,7 @@ function buildAuthHeaders(opts: IpfsClientOptions): Record<string, string> {
 
 /**
  * Pin a JSON object and return its CID. POSTs the Pinata `pinJSONToIPFS` envelope
- * (`{ pinataContent, pinataMetadata }`) so both real Pinata and `@csm-lab/ipfs-mock` accept it.
+ * (`{ pinataContent, pinataMetadata }`) so both real Pinata and `@sm-lab/ipfs-mock` accept it.
  */
 export async function pinJsonToIpfs(
   data: unknown,

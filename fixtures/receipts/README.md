@@ -1,10 +1,10 @@
-# @csm-lab/receipts
+# @sm-lab/receipts
 
 Versioned, typed snapshots of CSM contract ABIs and deploy addresses. Replaces ad-hoc `deploy.json`
 files copied between repos and the `DEPLOY_JSON_PATH` env-var dance.
 
 ```ts
-import { addresses, csModuleAbi, manifest } from '@csm-lab/receipts';
+import { addresses, csModuleAbi, manifest } from '@sm-lab/receipts';
 
 addresses.hoodi.csm; // typed address string, autocompleted, compile-checked
 addresses.mainnet.csm;
@@ -23,7 +23,7 @@ addresses.mainnet.csm;
 Public surface:
 
 ```ts
-import { addresses, csModuleAbi, vEBOAbi, manifest } from '@csm-lab/receipts';
+import { addresses, csModuleAbi, vEBOAbi, manifest } from '@sm-lab/receipts';
 //       ^^^^^^^^^ { hoodi: { csm, cm }, mainnet: { csm } }
 ```
 
@@ -38,7 +38,7 @@ addresses, and linked library entries present in the upstream deploy config are 
 dropped — committing them here would add noise without value and they change on every upgrade.
 
 > **Warning:** if you copy addresses from the raw upstream deploy config and notice extra keys
-> (`*Impl`, `DeployParams`, `libraries`, …), those are not in `@csm-lab/receipts` by design.
+> (`*Impl`, `DeployParams`, `libraries`, …), those are not in `@sm-lab/receipts` by design.
 
 Each book may also contain an optional `protocol` block with 6 addresses sourced directly
 from the on-chain `LidoLocator` contract (see [Protocol block](#protocol-block) below).
@@ -57,7 +57,7 @@ getter methods on the deployed `LidoLocator` contract:
 | `burner`                  | `burner()`                  |
 | `withdrawalQueue`         | `withdrawalQueue()`         |
 
-These are the addresses that `@csm-lab/recipes`'s `connect()` and the `@csm-lab/keys` tool
+These are the addresses that `@sm-lab/recipes`'s `connect()` and the `@sm-lab/keys` tool
 need at runtime. When a `protocol` block is present in the committed data, both consumers
 prefer it over resolving the addresses at runtime; they fall back to their previous runtime
 resolution when it is absent.
@@ -104,13 +104,13 @@ set the matching env var) when running `refresh`:
 
 ```bash
 # hoodi csm — explicit flag
-pnpm --filter @csm-lab/receipts refresh --chain hoodi --module csm --rpc <url>
+pnpm --filter @sm-lab/receipts refresh --chain hoodi --module csm --rpc <url>
 
 # hoodi csm — via env var
-HOODI_RPC_URL=<url> pnpm --filter @csm-lab/receipts refresh --chain hoodi --module csm
+HOODI_RPC_URL=<url> pnpm --filter @sm-lab/receipts refresh --chain hoodi --module csm
 
 # mainnet csm — via generic fallback
-ETH_RPC_URL=<url> pnpm --filter @csm-lab/receipts refresh --chain mainnet --module csm
+ETH_RPC_URL=<url> pnpm --filter @sm-lab/receipts refresh --chain mainnet --module csm
 ```
 
 RPC URL resolution order: `--rpc` flag → `<CHAIN>_RPC_URL` (uppercased chain name) → `ETH_RPC_URL`.
@@ -128,7 +128,7 @@ After enriching, commit the updated `data/` files together with the updated `man
 Run per-target when a deployment or contract changes:
 
 ```bash
-pnpm --filter @csm-lab/receipts refresh -- \
+pnpm --filter @sm-lab/receipts refresh -- \
   --chain <hoodi|mainnet> \
   --module <csm|cm> \
   [--contracts <path-to-community-staking-module>] \
@@ -174,6 +174,6 @@ filter that may need adjustment if the ABI changes.
 
 ```ts
 // tsdown.config.ts
-import { libConfig } from '@csm-lab/config/tsdown';
+import { libConfig } from '@sm-lab/config/tsdown';
 export default libConfig();
 ```

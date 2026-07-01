@@ -1,5 +1,5 @@
 {
-  "name": "@csm-lab/ipfs-mock",
+  "name": "@sm-lab/ipfs-mock",
   "version": "1.0.0",
   "type": "module",
   "description": "Pinata-compatible IPFS pinning + gateway emulator with deterministic CIDs, for CSM testing",
@@ -36,14 +36,14 @@
     "start": "node dist/cli.mjs serve"
   },
   "dependencies": {
-    "@csm-lab/core": "workspace:*",
+    "@sm-lab/core": "workspace:*",
     "hono": "catalog:",
     "@hono/node-server": "catalog:",
     "commander": "catalog:",
     "multiformats": "^14.0.2"
   },
   "devDependencies": {
-    "@csm-lab/config": "workspace:*",
+    "@sm-lab/config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",

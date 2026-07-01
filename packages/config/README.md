@@ -1,4 +1,4 @@
-# @csm-lab/config
+# @sm-lab/config
 
 Shared, internal-only build/type/lint presets. Not published — consumed via `workspace:*`.
 
@@ -10,13 +10,13 @@ formats, or compiler options here and every package inherits it on next build.
 **TypeScript** — each package's `tsconfig.json`:
 
 ```json
-{ "extends": "@csm-lab/config/tsconfig.lib.json", "compilerOptions": { "outDir": "dist" } }
+{ "extends": "@sm-lab/config/tsconfig.lib.json", "compilerOptions": { "outDir": "dist" } }
 ```
 
 **tsdown** — each package's `tsdown.config.ts`:
 
 ```ts
-import { libConfig } from '@csm-lab/config/tsdown';
+import { libConfig } from '@sm-lab/config/tsdown';
 export default libConfig(); // or libConfig({ entry: ['src/index.ts', 'src/cli.ts'] })
 ```
 

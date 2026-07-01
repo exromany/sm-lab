@@ -1,5 +1,5 @@
-import { addresses } from '@csm-lab/receipts';
-import type { CsmAddressBook } from '@csm-lab/receipts';
+import { addresses } from '@sm-lab/receipts';
+import type { CsmAddressBook } from '@sm-lab/receipts';
 import { describe, expect, it } from 'vitest';
 import { connect, contract, resolveGate } from '../src/context';
 import { makeFakeClient } from './helpers/fake-client';
@@ -28,7 +28,7 @@ describe('connect', () => {
     expect(byMethod('readContract')).toHaveLength(5); // exactly the 5 locator getters
   });
 
-  it('falls back to the default @csm-lab/receipts snapshot by chainId', async () => {
+  it('falls back to the default @sm-lab/receipts snapshot by chainId', async () => {
     const { client } = makeFakeClient({ chainId: 560048, reads: LOCATOR_READS });
     const ctx = await connect({ module: 'csm', client });
     expect((ctx.addresses as CsmAddressBook).CSModule).toBe(addresses.hoodi.csm.CSModule);

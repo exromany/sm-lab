@@ -1,5 +1,5 @@
 ---
-'@csm-lab/recipes': minor
+'@sm-lab/recipes': minor
 ---
 
 Add operator-lifecycle recipe families (increment 6c): manager/reward address proposal+confirm,

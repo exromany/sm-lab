@@ -1,9 +1,9 @@
-# @csm-lab/core
+# @sm-lab/core
 
 Shared internals consumed by the service packages (`apps/cl-mock`, `apps/ipfs-mock`).
 Private — **bundled into** each consumer's artifact via tsdown's `deps.alwaysBundle`
 (see `packages/config/tsdown.base.ts`), so it never ships as its own npm package and
-consumers get no transitive `@csm-lab/*` to resolve at runtime.
+consumers get no transitive `@sm-lab/*` to resolve at runtime.
 
 ## Contents
 
@@ -19,7 +19,7 @@ speculative.
 ## Usage
 
 ```ts
-import { startServer, registerAdminRoutes, readPackageVersion } from '@csm-lab/core';
+import { startServer, registerAdminRoutes, readPackageVersion } from '@sm-lab/core';
 
 registerAdminRoutes(app, {
   version: readPackageVersion(import.meta.url),

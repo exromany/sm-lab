@@ -1,5 +1,5 @@
 ---
-'@csm-lab/keys': minor
+'@sm-lab/keys': minor
 ---
 
 feat(cli): `csm-keys` now accepts `count` positionally and a top-level `help` command,

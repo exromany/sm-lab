@@ -1,5 +1,5 @@
 {
-  "name": "@csm-lab/merkle",
+  "name": "@sm-lab/merkle",
   "version": "1.1.0",
   "type": "module",
   "description": "Merkle tree builder for Lido CSM — ICS (vetted gate) and strikes pipelines",
@@ -38,7 +38,7 @@
     "dotenv": "catalog:"
   },
   "devDependencies": {
-    "@csm-lab/config": "workspace:*",
+    "@sm-lab/config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",

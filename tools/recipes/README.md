@@ -1,4 +1,4 @@
-# @csm-lab/recipes
+# @sm-lab/recipes
 
 TypeScript recipes that prepare CSM on-chain state on an **anvil fork** — the rewritten,
 Foundry-free successor to the contracts repo's `fork.just`. Recipes **prepare state and
@@ -6,29 +6,31 @@ return what they did**; they do not assert (verification is the calling test's j
 
 ## Install
 
-    pnpm add @csm-lab/recipes
+    pnpm add @sm-lab/recipes
 
 Peer runtime: a running anvil fork with CSM already deployed (`anvil --fork-url <RPC>`).
 
 ## Quick start
 
-    import { connect, addKeys, operatorInfo } from '@csm-lab/recipes';
+```js
+import { connect, addKeys, operatorInfo } from '@sm-lab/recipes';
 
-    const ctx = await connect({ module: 'csm', rpcUrl: 'http://127.0.0.1:8545' });
-    const { publicKeys } = await addKeys(ctx, { noId: 0n, count: 3 });
-    const info = await operatorInfo(ctx, { noId: 0n });
+const ctx = await connect({ module: 'csm', rpcUrl: 'http://127.0.0.1:8545' });
+const { publicKeys } = await addKeys(ctx, { noId: 0n, count: 3 });
+const info = await operatorInfo(ctx, { noId: 0n });
+```
 
 `connect()` reads protocol addresses (`stakingRouter`, `vebo`, `lido`, `withdrawalQueue`,
 `burner`) from `LidoLocator` on-chain and merges them onto a module-suite snapshot from
-`@csm-lab/receipts`. Override the snapshot per call: `connect({ module, rpcUrl, addresses })`.
+`@sm-lab/receipts`. Override the snapshot per call: `connect({ module, rpcUrl, addresses })`.
 
 ## CLI (`csm-recipes`)
 
 A run-and-exit CLI over the recipe surface. Same `bin` underpins every route:
 
 ```bash
-npx @csm-lab/recipes cm seed --rpc-url http://127.0.0.1:8545   # published
-npm i -g @csm-lab/recipes && csm-recipes --help                # global install
+npx @sm-lab/recipes cm seed --rpc-url http://127.0.0.1:8545   # published
+npm i -g @sm-lab/recipes && csm-recipes --help                # global install
 node tools/recipes/dist/cli.mjs --help                         # built dist (repo dev)
 ```
 
@@ -74,18 +76,18 @@ This replaces the Solidity `broadcast*` modifiers.
 
 ## Subpaths & gate selectors
 
-- `@csm-lab/recipes` — shared: `connect`, `actAs`, `addKeys`, `operatorInfo`, `warpBy`,
+- `@sm-lab/recipes` — shared: `connect`, `actAs`, `addKeys`, `operatorInfo`, `warpBy`,
   `snapshot`, `revert`, `clActivate`.
-- `@csm-lab/recipes/cm` — `createCuratedOperator` (cm gates `po/pto/pgo/do/eeo/iodc/iodcp` →
+- `@sm-lab/recipes/cm` — `createCuratedOperator` (cm gates `po/pto/pgo/do/eeo/iodc/iodcp` →
   `CuratedGates[0..6]`), MetaRegistry group/curve recipes `createOperatorGroup`,
   `resetOperatorGroup`, `setBondCurveWeight`, and `seedCm` — seed a realistic cm fork in one call
   (3 gate operators, a 34/33/33 operator group, keyed/deposited/topped-up across rounds; pass `seed`
   to make the operator addresses + keys deterministic).
-- `@csm-lab/recipes/csm` — `setGateAddrs` (selector `ics` → `VettedGate`). `idvtc` →
+- `@sm-lab/recipes/csm` — `setGateAddrs` (selector `ics` → `VettedGate`). `idvtc` →
   `IdentifiedDVTClusterGate` (v3-only, hoodi; resolves the address only — throws on
   mainnet/v2 snapshots that lack it).
 
-`setGateAddrs` pins the tree to IPFS (set `IPFS_API_URL` to a local `@csm-lab/ipfs-mock`,
+`setGateAddrs` pins the tree to IPFS (set `IPFS_API_URL` to a local `@sm-lab/ipfs-mock`,
 or `PINATA_*`), or pass `cid` to skip pinning.
 
 ## Top-up (`allocateDeposits` as the StakingRouter)
@@ -110,7 +112,7 @@ consensus frame, builds the `ReportData` tuple, reaches consensus across the fas
 `members[0]`. A zero-root report is a graceful no-op (`{ submitted: false }`), so
 `submitRewards(ctx, await makeRewards(ctx))` composes on an empty fork.
 
-    import { makeRewards, submitRewards } from '@csm-lab/recipes';
+    import { makeRewards, submitRewards } from '@sm-lab/recipes';
     const report = await makeRewards(ctx, { seed: '0x…', treeCid: 'cid-t', logCid: 'cid-l' });
     const { submitted, refSlot, reportHash } = await submitRewards(ctx, report);
 
@@ -130,7 +132,7 @@ consensus frame, builds the `ReportData` tuple, reaches consensus across the fas
 
 ## CL bridge (cl-mock)
 
-`clActivate(ctx, { noId, keyIndex })` is the only chain-aware `@csm-lab/cl-mock` bridge in
+`clActivate(ctx, { noId, keyIndex })` is the only chain-aware `@sm-lab/cl-mock` bridge in
 recipes. It requires `ctx.clMockUrl` (pass it via `connect({ module, rpcUrl, clMockUrl })`),
 reads the key's pubkey + allocated balance on-chain, then marks the validator `active_ongoing`
 on the running cl-mock with effective balance = `32 ETH + allocated`, in gwei (full precision,
@@ -143,12 +145,12 @@ Unit tests are **hermetic** — they inject a fake viem client (no network, no c
 opt-in integration smoke runs against a real fork:
 
     anvil --fork-url <hoodi RPC>            # in another shell
-    ANVIL_FORK_URL=http://127.0.0.1:8545 pnpm --filter @csm-lab/recipes test
+    ANVIL_FORK_URL=http://127.0.0.1:8545 pnpm --filter @sm-lab/recipes test
 
 Without `ANVIL_FORK_URL` the smoke is skipped and the suite stays offline-green.
 
 ## Keeping ABIs/addresses fresh
 
-ABIs + addresses are vendored via `@csm-lab/receipts` (`pnpm --filter @csm-lab/receipts
+ABIs + addresses are vendored via `@sm-lab/receipts` (`pnpm --filter @sm-lab/receipts
 refresh`). The SDK maintains a parallel set via its `/update-abis`; a cross-repo parity
 check is a planned follow-up (not yet wired). Recipes never import ABIs from the SDK.

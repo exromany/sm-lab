@@ -1,12 +1,12 @@
 /**
  * cl-mock bridge — a thin `fetch` client that POSTs one validator to a running
- * `@csm-lab/cl-mock` (`/admin/validators`). Mirrors the discipline of `tools/merkle/src/ipfs.ts`:
+ * `@sm-lab/cl-mock` (`/admin/validators`). Mirrors the discipline of `tools/merkle/src/ipfs.ts`:
  * trailing-slash-stripped URL join, explicit `as` cast for the response (no DOM lib), and a
  * throw carrying status + the mock's `errors[]`. Ctx-agnostic — takes a `clMockUrl: string`, not
  * the whole `Ctx`, so it stays trivially unit-testable.
  */
 
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 
 export interface SetValidatorInput {
   pubkey: Hex;
@@ -22,7 +22,7 @@ interface ClMockResponse {
 }
 
 /**
- * POST one validator to a running `@csm-lab/cl-mock` `/admin/validators`. Surfaces the mock's
+ * POST one validator to a running `@sm-lab/cl-mock` `/admin/validators`. Surfaces the mock's
  * `errors[]` and throws unless the single item was accepted.
  *
  * cl-mock returns 200 (clean), 207 (partial — only when `errors.length > 0` AND `accepted > 0`,
@@ -52,7 +52,7 @@ export async function setClValidator(clMockUrl: string, input: SetValidatorInput
   if (!res.ok || !json || (json.accepted ?? 0) < 1) {
     const errs = json?.errors?.length ? ` — ${json.errors.join('; ')}` : '';
     throw new Error(
-      `@csm-lab/recipes: cl-mock rejected validator (${res.status} ${res.statusText})${errs}`,
+      `@sm-lab/recipes: cl-mock rejected validator (${res.status} ${res.statusText})${errs}`,
     );
   }
 }

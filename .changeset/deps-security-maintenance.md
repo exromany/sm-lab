@@ -1,9 +1,9 @@
 ---
-'@csm-lab/cl-mock': patch
-'@csm-lab/ipfs-mock': patch
-'@csm-lab/merkle': patch
-'@csm-lab/recipes': patch
-'@csm-lab/keys': patch
+'@sm-lab/cl-mock': patch
+'@sm-lab/ipfs-mock': patch
+'@sm-lab/merkle': patch
+'@sm-lab/recipes': patch
+'@sm-lab/keys': patch
 ---
 
 chore(deps): security + dependency maintenance.

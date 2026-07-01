@@ -1,4 +1,4 @@
-# @csm-lab/keys
+# @sm-lab/keys
 
 Real BLS12-381 validator **deposit-data** generator for Lido CSM (mainnet / hoodi).
 Pure TypeScript — no chain, no Foundry, no external binary. Replaces `eth-staking-smith`
@@ -36,7 +36,7 @@ wins if both are given). `csm-keys help` mirrors `csm-keys --help`.
 ## TS API
 
 ```ts
-import { makeDepositKeys, writeDepositDataFile } from '@csm-lab/keys';
+import { makeDepositKeys, writeDepositDataFile } from '@sm-lab/keys';
 
 const { mnemonic, keys } = await makeDepositKeys({ chain: 'hoodi', count: 5 });
 writeDepositDataFile('deposit_data.json', keys);

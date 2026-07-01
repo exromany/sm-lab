@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { addresses, manifest, csModuleAbi } from '../src/index';
 
-describe('@csm-lab/receipts public surface', () => {
+describe('@sm-lab/receipts public surface', () => {
   it('exposes typed address books with real addresses', () => {
     expect(addresses.hoodi.csm.CSModule).toMatch(/^0x[0-9a-fA-F]{40}$/);
     expect(addresses.mainnet.csm.CSModule).toMatch(/^0x[0-9a-fA-F]{40}$/);

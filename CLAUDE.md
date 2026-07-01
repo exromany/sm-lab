@@ -20,9 +20,9 @@ Top level splits by **lifecycle**, not topic:
 
 ```bash
 pnpm install                              # never run two installs concurrently (lockfile race)
-pnpm --filter @csm-lab/<pkg> build        # tsdown
-pnpm --filter @csm-lab/<pkg> types        # tsc --noEmit
-pnpm --filter @csm-lab/<pkg> test         # vitest run
+pnpm --filter @sm-lab/<pkg> build        # tsdown
+pnpm --filter @sm-lab/<pkg> types        # tsc --noEmit
+pnpm --filter @sm-lab/<pkg> test         # vitest run
 pnpm lint                                 # oxlint . (repo-wide)
 pnpm format / pnpm format:check           # prettier
 pnpm stack:up                             # docker compose: cl-mock + ipfs-mock + anvil
@@ -40,14 +40,14 @@ package has a build entry); per-package gates above are still the fastest done-c
 - **tsdown pinned `^0.22.3`.** The scaffold's `^0.6` is incompatible with the installed rolldown.
   Output is `.mjs` / `.d.mts` (not `.js`) — `bin`/`exports`/`types` in package.json must match.
 - **Package `tsconfig.json` uses a RELATIVE `extends`** (`../../packages/config/tsconfig.lib.json`),
-  NOT the `@csm-lab/config` subpath — tsdown's Rust tsconfig loader can't follow package-exports extends.
+  NOT the `@sm-lab/config` subpath — tsdown's Rust tsconfig loader can't follow package-exports extends.
 - **Shared `tsconfig.lib.json` holds only path-INDEPENDENT options.** `rootDir`/`outDir`/`include`
   resolve relative to the file that declares them, so they live per-package.
 - **No DOM lib** (`lib: ["ES2023"]`): `fetch`/`Response.json()` are `unknown` — type them explicitly,
   don't add DOM. `noUncheckedIndexedAccess` is on (guard array access / default destructures).
-- **`@csm-lab/core` is bundled into consumers**, never published — via `deps.alwaysBundle` +
+- **`@sm-lab/core` is bundled into consumers**, never published — via `deps.alwaysBundle` +
   `dts: { eager: true }` in `packages/config/tsdown.base.ts` (eager is required to inline a
-  source-only dep's declarations). Verify after build: no runtime `import '@csm-lab/core'` in `dist/`.
+  source-only dep's declarations). Verify after build: no runtime `import '@sm-lab/core'` in `dist/`.
 - **Runtime version read:** call `readPackageVersion(import.meta.url)` (from core) at the _consumer's_
   call site. It resolves `../package.json` because bundled output is flat in `dist/`.
 
@@ -76,12 +76,12 @@ package has a build entry); per-package gates above are still the fastest done-c
 Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped into increments 6a–6g
 (see `docs/superpowers/specs/2026-06-26-anvil-recipes-design.md`):
 
-- **6a `@csm-lab/receipts`** ✅ — typed ABIs + allowlist-curated strictly-typed address book
+- **6a `@sm-lab/receipts`** ✅ — typed ABIs + allowlist-curated strictly-typed address book
   (DeployParams/`*Impl`/libs dropped) + `manifest.json` + human-run `refresh.ts` (git-ref guard,
   `--config`). Optional `--rpc`-gated `protocol` block bakes 6 LidoLocator-resolved addresses;
   skip + carry-forward when RPC absent; `manifest.protocolResolvedAt` records `{ chainId, block }`
   provenance. recipes `connect()` and the keys tool prefer the baked block, fall back otherwise.
-- **6b `@csm-lab/recipes`** ✅ — Foundry-free TS rewrite of `fork.just`: `connect` (LidoLocator-resolved
+- **6b `@sm-lab/recipes`** ✅ — Foundry-free TS rewrite of `fork.just`: `connect` (LidoLocator-resolved
   ctx) + the `actAs` impersonation engine + `addKeys`/`operatorInfo`/`warpBy`·`snapshot`·`revert`/
   cm `createCuratedOperator`/csm `setGateAddrs` (ics). Reuses receipts + merkle; hermetic fake-client
   tests + one `ANVIL_FORK_URL`-gated smoke.
@@ -90,7 +90,7 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   `createBondDebt`. Mechanical once `actAs` was proven.
 - **6d cl-mock bridge** ✅ — `clActivate(ctx, { noId, keyIndex })` reads a key's pubkey
   (`getPubkey`) + allocated balance (`getKeyBalance`) on-chain, then POSTs `active_ongoing` to a
-  running `@csm-lab/cl-mock` (`ctx.clMockUrl`) with effective balance = 32 ETH + allocated, in gwei
+  running `@sm-lab/cl-mock` (`ctx.clMockUrl`) with effective balance = 32 ETH + allocated, in gwei
   (full precision, diverging from the source's integer-ETH truncation). Thin `setClValidator` HTTP
   client mirrors merkle's `ipfs.ts`; hermetic `fetch`-stub tests.
 
@@ -106,7 +106,7 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
 
 - **6f cm/csm specifics** ✅ (core) — csm `idvtc` selector: `resolveGate(ctx,'idvtc')` →
   `IdentifiedDVTClusterGate` (new optional `CsmAddressBook` field; v3-only — throws on mainnet/v2
-  snapshots that lack it). cm group/curve recipes (`@csm-lab/recipes/cm`, port of
+  snapshots that lack it). cm group/curve recipes (`@sm-lab/recipes/cm`, port of
   `MetaRegistryHelpers.s.sol`): `createOperatorGroup` (bps pairs sum to 10000, dedup-resets prior
   memberships), `resetOperatorGroup`, `setBondCurveWeight` — role read from the MetaRegistry contract.
   `resetOperatorGroup`/`setBondCurveWeight` role read from the MetaRegistry contract.

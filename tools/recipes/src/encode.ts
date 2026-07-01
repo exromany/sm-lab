@@ -1,5 +1,5 @@
 import { toHex } from 'viem';
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 
 /** A node-operator id packed as the on-chain `bytes8(uint64)` (big-endian). */
 export function nodeOperatorIdBytes(noId: bigint): Hex {

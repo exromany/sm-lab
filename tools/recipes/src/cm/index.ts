@@ -1,6 +1,6 @@
-import { buildIcsTree } from '@csm-lab/merkle';
-import { curatedGateAbi, metaRegistryAbi } from '@csm-lab/receipts';
-import type { CmAddressBook, Hex } from '@csm-lab/receipts';
+import { buildIcsTree } from '@sm-lab/merkle';
+import { curatedGateAbi, metaRegistryAbi } from '@sm-lab/receipts';
+import type { CmAddressBook, Hex } from '@sm-lab/receipts';
 import { concat, keccak256, toHex, zeroAddress } from 'viem';
 import { actAs, roleMember } from '../act-as';
 import { resolveGate, type Ctx, type CmGateSelector } from '../context';
@@ -38,7 +38,7 @@ export async function createCuratedOperator(
   opts: CreateCuratedOperatorOptions,
 ): Promise<CreateCuratedOperatorResult> {
   if (ctx.module !== 'cm') {
-    throw new Error('@csm-lab/recipes/cm: createCuratedOperator requires ctx.module === "cm"');
+    throw new Error('@sm-lab/recipes/cm: createCuratedOperator requires ctx.module === "cm"');
   }
   const gate = { address: resolveGate(ctx, opts.selector), abi: curatedGateAbi } as const;
   const extra = opts.extra ?? deriveExtra(opts.operator);
@@ -145,14 +145,14 @@ export async function createOperatorGroup(
   opts: CreateOperatorGroupOptions,
 ): Promise<CreateOperatorGroupResult> {
   if (ctx.module !== 'cm') {
-    throw new Error('@csm-lab/recipes/cm: createOperatorGroup requires ctx.module === "cm"');
+    throw new Error('@sm-lab/recipes/cm: createOperatorGroup requires ctx.module === "cm"');
   }
   // Validate input BEFORE any chain call — a precise error beats an opaque on-chain revert.
   if (opts.pairs.length < 1)
-    throw new Error('@csm-lab/recipes/cm: createOperatorGroup needs ≥1 [noId, shareBps] pair');
+    throw new Error('@sm-lab/recipes/cm: createOperatorGroup needs ≥1 [noId, shareBps] pair');
   const shareSum = opts.pairs.reduce((acc, [, s]) => acc + s, 0n);
   if (shareSum !== 10000n)
-    throw new Error(`@csm-lab/recipes/cm: shares must sum to 10000 bps (got ${shareSum})`);
+    throw new Error(`@sm-lab/recipes/cm: shares must sum to 10000 bps (got ${shareSum})`);
 
   const mr = {
     address: (ctx.addresses as CmAddressBook).MetaRegistry as Hex,
@@ -226,7 +226,7 @@ export async function resetOperatorGroup(
   opts: { noId: bigint },
 ): Promise<ResetOperatorGroupResult> {
   if (ctx.module !== 'cm') {
-    throw new Error('@csm-lab/recipes/cm: resetOperatorGroup requires ctx.module === "cm"');
+    throw new Error('@sm-lab/recipes/cm: resetOperatorGroup requires ctx.module === "cm"');
   }
   const mr = {
     address: (ctx.addresses as CmAddressBook).MetaRegistry as Hex,
@@ -247,7 +247,7 @@ export async function resetOperatorGroup(
     ...mr,
     functionName: 'NO_GROUP_ID',
   })) as bigint;
-  if (gid === noGroupId) throw new Error('@csm-lab/recipes/cm: operator not in a group');
+  if (gid === noGroupId) throw new Error('@sm-lab/recipes/cm: operator not in a group');
 
   await actAs(ctx, manager, (from) =>
     ctx.client.writeContract({
@@ -271,7 +271,7 @@ export async function setBondCurveWeight(
   opts: { curveId: bigint; weight: bigint },
 ): Promise<{ curveId: bigint; weight: bigint }> {
   if (ctx.module !== 'cm') {
-    throw new Error('@csm-lab/recipes/cm: setBondCurveWeight requires ctx.module === "cm"');
+    throw new Error('@sm-lab/recipes/cm: setBondCurveWeight requires ctx.module === "cm"');
   }
   const mr = {
     address: (ctx.addresses as CmAddressBook).MetaRegistry as Hex,
@@ -335,7 +335,7 @@ function keySeed(seed: Hex, label: string): Hex {
  */
 export async function seedCm(ctx: Ctx, opts: SeedCmOptions = {}): Promise<SeedCmResult> {
   if (ctx.module !== 'cm') {
-    throw new Error('@csm-lab/recipes/cm: seedCm requires ctx.module === "cm"');
+    throw new Error('@sm-lab/recipes/cm: seedCm requires ctx.module === "cm"');
   }
 
   const selector = opts.selector ?? 'po';

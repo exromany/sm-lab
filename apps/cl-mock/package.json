@@ -1,5 +1,5 @@
 {
-  "name": "@csm-lab/cl-mock",
+  "name": "@sm-lab/cl-mock",
   "version": "1.0.0",
   "type": "module",
   "description": "Standalone Consensus Layer (Beacon API) mock server for CSM integration testing",
@@ -36,13 +36,13 @@
     "start": "node dist/cli.mjs serve"
   },
   "dependencies": {
-    "@csm-lab/core": "workspace:*",
+    "@sm-lab/core": "workspace:*",
     "hono": "catalog:",
     "@hono/node-server": "catalog:",
     "commander": "catalog:"
   },
   "devDependencies": {
-    "@csm-lab/config": "workspace:*",
+    "@sm-lab/config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",

@@ -4,7 +4,7 @@ import {
   pinJsonToIpfs,
   shouldAttemptPin,
   type TreeDump,
-} from '@csm-lab/merkle';
+} from '@sm-lab/merkle';
 import { encodeAbiParameters, keccak256, parseAbiParameters, parseEther, toBytes } from 'viem';
 import {
   feeDistributorAbi,
@@ -12,7 +12,7 @@ import {
   hashConsensusAbi,
   lidoAbi,
   type Hex,
-} from '@csm-lab/receipts';
+} from '@sm-lab/receipts';
 import { actAs } from '../act-as';
 import { contract, type Ctx } from '../context';
 import { randomSeed } from '../random';
@@ -138,7 +138,7 @@ export async function makeRewards(ctx: Ctx, opts: MakeRewardsOptions = {}): Prom
   const needsPin = opts.treeCid === undefined || opts.logCid === undefined;
   if (needsPin && !shouldAttemptPin()) {
     throw new Error(
-      '@csm-lab/recipes: could not pin the rewards tree/log — set IPFS_API_URL (a local @csm-lab/ipfs-mock) or PINATA_* credentials, or pass opts.treeCid + opts.logCid',
+      '@sm-lab/recipes: could not pin the rewards tree/log — set IPFS_API_URL (a local @sm-lab/ipfs-mock) or PINATA_* credentials, or pass opts.treeCid + opts.logCid',
     );
   }
 
@@ -347,7 +347,7 @@ export async function submitRewards(ctx: Ctx, report: RewardsReport): Promise<Su
     })) as [Hex[], bigint[]];
   }
   if (members.length === 0) {
-    throw new Error('@csm-lab/recipes: no consensus members to reach quorum');
+    throw new Error('@sm-lab/recipes: no consensus members to reach quorum');
   }
 
   // --- 5. Reach consensus from every member, then submit the report data as members[0] ---

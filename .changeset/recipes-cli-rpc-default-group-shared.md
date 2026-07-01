@@ -1,5 +1,5 @@
 ---
-'@csm-lab/recipes': minor
+'@sm-lab/recipes': minor
 ---
 
 feat(cli): `csm-recipes` now defaults `--rpc-url` to anvil's `http://127.0.0.1:8545` (after

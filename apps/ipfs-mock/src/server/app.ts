@@ -4,7 +4,7 @@ import {
   registerAdminRoutes,
   readPackageVersion,
   startServer as coreStartServer,
-} from '@csm-lab/core';
+} from '@sm-lab/core';
 import { PinStore, store as defaultStore } from './store';
 import { registerPinningRoutes } from './pinning';
 import { registerGatewayRoutes } from './gateway';
@@ -36,7 +36,7 @@ export interface AppHandle {
  * upstream gateway) is injectable, so the same factory powers the CLI server AND hermetic
  * tests (stub `fetchUpstream`, get a fresh in-memory `store`).
  *
- * The shared `/admin/status` + `/admin/shutdown` come from `@csm-lab/core`; ipfs-mock
+ * The shared `/admin/status` + `/admin/shutdown` come from `@sm-lab/core`; ipfs-mock
  * contributes the gateway + pin totals via `getStatus`.
  */
 export function createApp(options: AppOptions = {}): AppHandle {

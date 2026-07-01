@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { isAddress, isHex, parseEther } from 'viem';
-import type { Hex } from '@csm-lab/receipts';
+import type { Hex } from '@sm-lab/receipts';
 import { connect, type Ctx } from '../context';
 
 export interface OptionSpec {

@@ -17,14 +17,14 @@ pnpm stack:up       # cl-mock + ipfs-mock + anvil — a full offline CSM test be
 
 | Path                | Package              | What                                        | From            |
 | ------------------- | -------------------- | ------------------------------------------- | --------------- |
-| `apps/cl-mock`      | `@csm-lab/cl-mock`   | Consensus Layer (Beacon API) mock           | `csm-test-cl`   |
-| `apps/ipfs-mock`    | `@csm-lab/ipfs-mock` | Pinata/IPFS emulator, deterministic CIDs    | new             |
-| `tools/merkle`      | `@csm-lab/merkle`    | ICS + strikes merkle tree builder           | `csm-test-tree` |
-| `tools/keys`        | `@csm-lab/keys`      | BLS validator deposit-data generator        | new             |
-| `tools/recipes`     | `@csm-lab/recipes`   | anvil CSM-state recipes + `csm-recipes` CLI | `fork.just`     |
-| `fixtures/receipts` | `@csm-lab/receipts`  | typed anvil/deploy snapshots                | contracts repo  |
-| `packages/core`     | `@csm-lab/core`      | shared internals (bundled, not published)   | —               |
-| `packages/config`   | `@csm-lab/config`    | tsconfig + tsdown + oxlint presets          | —               |
+| `apps/cl-mock`      | `@sm-lab/cl-mock`   | Consensus Layer (Beacon API) mock           | `csm-test-cl`   |
+| `apps/ipfs-mock`    | `@sm-lab/ipfs-mock` | Pinata/IPFS emulator, deterministic CIDs    | new             |
+| `tools/merkle`      | `@sm-lab/merkle`    | ICS + strikes merkle tree builder           | `csm-test-tree` |
+| `tools/keys`        | `@sm-lab/keys`      | BLS validator deposit-data generator        | new             |
+| `tools/recipes`     | `@sm-lab/recipes`   | anvil CSM-state recipes + `csm-recipes` CLI | `fork.just`     |
+| `fixtures/receipts` | `@sm-lab/receipts`  | typed anvil/deploy snapshots                | contracts repo  |
+| `packages/core`     | `@sm-lab/core`      | shared internals (bundled, not published)   | —               |
+| `packages/config`   | `@sm-lab/config`    | tsconfig + tsdown + oxlint presets          | —               |
 
 The four-bucket split (`apps` / `tools` / `fixtures` / `packages`) is by **lifecycle**, not
 topic — see [`docs/architecture.md`](./docs/architecture.md).
@@ -32,7 +32,7 @@ topic — see [`docs/architecture.md`](./docs/architecture.md).
 ## Stack
 
 pnpm · Turborepo · tsdown (Rolldown+Oxc) · oxlint · Vitest · Changesets · TS-strict ESM.
-All tooling config is centralized in `@csm-lab/config`.
+All tooling config is centralized in `@sm-lab/config`.
 
 ## Docs
 

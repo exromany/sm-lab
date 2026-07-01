@@ -1,5 +1,5 @@
 ---
-'@csm-lab/recipes': minor
+'@sm-lab/recipes': minor
 ---
 
 Add `submitRewards(ctx, report)` (increment 6e, PR-2): submit a `RewardsReport` (from `makeRewards`)
