@@ -10,3 +10,5 @@
 ---
 
 - how to be 'agentic-first' ?
+- rename project folder + gh repo (manual: GitHub Settings → rename, `git remote set-url`)
+- shell completion for tools/apps; well-described commands/options for agents
