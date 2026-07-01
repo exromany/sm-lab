@@ -7,13 +7,13 @@ WORKDIR /repo
 FROM base AS build
 COPY . .
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @sm-lab/cl-mock build
+RUN pnpm --filter @sm-lab/ipfs build
 # `pnpm deploy` produces a self-contained dir (package.json + dist + pruned prod node_modules)
-RUN pnpm --filter @sm-lab/cl-mock deploy --prod /app
+RUN pnpm --filter @sm-lab/ipfs deploy --prod /app
 
 FROM node:22-alpine
 WORKDIR /app
 COPY --from=build /app .
-EXPOSE 5052
+EXPOSE 3000
 ENTRYPOINT ["node", "dist/cli.mjs"]
 CMD ["serve", "--host", "0.0.0.0"]

@@ -1,5 +1,5 @@
 {
-  "name": "@sm-lab/ipfs-mock",
+  "name": "@sm-lab/ipfs",
   "version": "1.0.0",
   "type": "module",
   "description": "Pinata-compatible IPFS pinning + gateway emulator with deterministic CIDs, for CSM testing",

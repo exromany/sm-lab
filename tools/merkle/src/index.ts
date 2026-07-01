@@ -23,7 +23,7 @@ export {
 } from './io';
 export type { TreeConfig } from './io';
 
-// IPFS pinning client (env-switchable endpoint: real Pinata or @sm-lab/ipfs-mock)
+// IPFS pinning client (env-switchable endpoint: real Pinata or @sm-lab/ipfs)
 export {
   pinJsonToIpfs,
   hasPinataCredentials,

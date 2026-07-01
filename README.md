@@ -17,8 +17,8 @@ pnpm stack:up       # cl-mock + ipfs-mock + anvil — a full offline CSM test be
 
 | Path                | Package              | What                                        | From            |
 | ------------------- | -------------------- | ------------------------------------------- | --------------- |
-| `apps/cl-mock`      | `@sm-lab/cl-mock`   | Consensus Layer (Beacon API) mock           | `csm-test-cl`   |
-| `apps/ipfs-mock`    | `@sm-lab/ipfs-mock` | Pinata/IPFS emulator, deterministic CIDs    | new             |
+| `apps/cl-mock`      | `@sm-lab/cl`   | Consensus Layer (Beacon API) mock           | `csm-test-cl`   |
+| `apps/ipfs-mock`    | `@sm-lab/ipfs` | Pinata/IPFS emulator, deterministic CIDs    | new             |
 | `tools/merkle`      | `@sm-lab/merkle`    | ICS + strikes merkle tree builder           | `csm-test-tree` |
 | `tools/keys`        | `@sm-lab/keys`      | BLS validator deposit-data generator        | new             |
 | `tools/recipes`     | `@sm-lab/recipes`   | anvil CSM-state recipes + `csm-recipes` CLI | `fork.just`     |

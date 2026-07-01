@@ -22,7 +22,7 @@ export interface SetGateAddrsResult {
 /**
  * Build the ICS address tree (OZ ['address'], via @sm-lab/merkle) and install it on the
  * VettedGate (`setTreeParams(root, cid)`), impersonating the gate admin. The cid is pinned
- * to IPFS (env-configured: a local @sm-lab/ipfs-mock or Pinata) unless `cid` is supplied.
+ * to IPFS (env-configured: a local @sm-lab/ipfs or Pinata) unless `cid` is supplied.
  * (Port of fork.just `set-gate-addrs` + `update-gate-tree`.)
  */
 export async function setGateAddrs(
@@ -59,7 +59,7 @@ async function pinTree(dump: unknown): Promise<string> {
   // Guard BEFORE any network call so hermetic tests (no IPFS env) never hit the wire.
   if (!shouldAttemptPin()) {
     throw new Error(
-      '@sm-lab/recipes/csm: could not pin the gate tree — set IPFS_API_URL (a local @sm-lab/ipfs-mock) or PINATA_* credentials, or pass opts.cid',
+      '@sm-lab/recipes/csm: could not pin the gate tree — set IPFS_API_URL (a local @sm-lab/ipfs) or PINATA_* credentials, or pass opts.cid',
     );
   }
   return pinJsonToIpfs(dump, 'gate-ics', ipfsOptionsFromEnv());

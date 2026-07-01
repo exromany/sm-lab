@@ -31,8 +31,8 @@ The payoff: Turbo filters, Dockerfiles, and release rules target a whole bucket
 ```
 csm-lab/
 ├── apps/
-│   ├── cl-mock/      @sm-lab/cl-mock     Beacon API mock (Hono)        ← csm-test-cl
-│   └── ipfs-mock/    @sm-lab/ipfs-mock   Pinata/IPFS emulator (Hono)   ← NEW
+│   ├── cl-mock/      @sm-lab/cl     Beacon API mock (Hono)        ← csm-test-cl
+│   └── ipfs-mock/    @sm-lab/ipfs   Pinata/IPFS emulator (Hono)   ← NEW
 ├── tools/
 │   ├── merkle/       @sm-lab/merkle      ICS + strikes tree builder    ← csm-test-tree
 │   ├── keys/         @sm-lab/keys        BLS deposit-data generator    ← NEW
@@ -65,7 +65,7 @@ one package and every other inherits it. See its README for the `extends` / impo
 
 **One source, two artifacts.** Every `apps/*` service publishes a `bin` for `npx` _and_
 ships a Docker image. The Dockerfile is a ~6-line wrapper whose `CMD` runs that same `bin` —
-not a parallel build. `cl-mock` → `npx @sm-lab/cl-mock` (binary stays `csm-cl-mock`) for
+not a parallel build. `cl-mock` → `npx @sm-lab/cl` (binary stays `csm-cl-mock`) for
 local/SDK use; the image is what test-infra/helm runs.
 
 **Harvest, don't pre-build, `@sm-lab/core`.** The shared lib is extracted from the

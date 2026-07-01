@@ -32,7 +32,7 @@ async function maybePin(
   if (noUpload) return undefined;
   if (!shouldAttemptPin()) {
     console.warn(
-      'Warning: IPFS upload skipped — set IPFS_API_URL (e.g. a local @sm-lab/ipfs-mock) or PINATA_API_KEY/SECRET / PINATA_JWT',
+      'Warning: IPFS upload skipped — set IPFS_API_URL (e.g. a local @sm-lab/ipfs) or PINATA_API_KEY/SECRET / PINATA_JWT',
     );
     return undefined;
   }

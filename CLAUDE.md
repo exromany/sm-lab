@@ -90,7 +90,7 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   `createBondDebt`. Mechanical once `actAs` was proven.
 - **6d cl-mock bridge** ✅ — `clActivate(ctx, { noId, keyIndex })` reads a key's pubkey
   (`getPubkey`) + allocated balance (`getKeyBalance`) on-chain, then POSTs `active_ongoing` to a
-  running `@sm-lab/cl-mock` (`ctx.clMockUrl`) with effective balance = 32 ETH + allocated, in gwei
+  running `@sm-lab/cl` (`ctx.clMockUrl`) with effective balance = 32 ETH + allocated, in gwei
   (full precision, diverging from the source's integer-ETH truncation). Thin `setClValidator` HTTP
   client mirrors merkle's `ipfs.ts`; hermetic `fetch`-stub tests.
 

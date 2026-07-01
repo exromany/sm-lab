@@ -1,6 +1,6 @@
 ---
-'@sm-lab/cl-mock': patch
-'@sm-lab/ipfs-mock': patch
+'@sm-lab/cl': patch
+'@sm-lab/ipfs': patch
 '@sm-lab/merkle': patch
 '@sm-lab/recipes': patch
 '@sm-lab/keys': patch

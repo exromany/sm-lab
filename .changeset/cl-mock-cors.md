@@ -1,5 +1,5 @@
 ---
-'@sm-lab/cl-mock': minor
+'@sm-lab/cl': minor
 ---
 
 feat: enable permissive CORS on the beacon + validator API. The mock backs browser

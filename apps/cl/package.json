@@ -1,5 +1,5 @@
 {
-  "name": "@sm-lab/cl-mock",
+  "name": "@sm-lab/cl",
   "version": "1.0.0",
   "type": "module",
   "description": "Standalone Consensus Layer (Beacon API) mock server for CSM integration testing",

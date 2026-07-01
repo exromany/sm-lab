@@ -13,6 +13,6 @@ resolving deploy addresses are intentionally **out of scope** — that work belo
 `@sm-lab/receipts` (no `cast`, no `DEPLOY_JSON_PATH`).
 
 The IPFS endpoint is env-switchable via `IPFS_API_URL` (a thin Pinata-compatible `fetch`
-client, since `@pinata/sdk` v2 hardcodes its host) so it targets `@sm-lab/ipfs-mock` locally
+client, since `@pinata/sdk` v2 hardcodes its host) so it targets `@sm-lab/ipfs` locally
 or real Pinata; a custom endpoint pins without credentials. Adds the first Vitest suite pinning
 the deterministic tree roots, leaf encodings, proofs, parsers, and the IPFS client request shape.

@@ -87,7 +87,7 @@ This replaces the Solidity `broadcast*` modifiers.
   `IdentifiedDVTClusterGate` (v3-only, hoodi; resolves the address only — throws on
   mainnet/v2 snapshots that lack it).
 
-`setGateAddrs` pins the tree to IPFS (set `IPFS_API_URL` to a local `@sm-lab/ipfs-mock`,
+`setGateAddrs` pins the tree to IPFS (set `IPFS_API_URL` to a local `@sm-lab/ipfs`,
 or `PINATA_*`), or pass `cid` to skip pinning.
 
 ## Top-up (`allocateDeposits` as the StakingRouter)
@@ -132,7 +132,7 @@ consensus frame, builds the `ReportData` tuple, reaches consensus across the fas
 
 ## CL bridge (cl-mock)
 
-`clActivate(ctx, { noId, keyIndex })` is the only chain-aware `@sm-lab/cl-mock` bridge in
+`clActivate(ctx, { noId, keyIndex })` is the only chain-aware `@sm-lab/cl` bridge in
 recipes. It requires `ctx.clMockUrl` (pass it via `connect({ module, rpcUrl, clMockUrl })`),
 reads the key's pubkey + allocated balance on-chain, then marks the validator `active_ongoing`
 on the running cl-mock with effective balance = `32 ETH + allocated`, in gwei (full precision,

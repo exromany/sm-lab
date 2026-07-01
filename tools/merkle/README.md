@@ -42,7 +42,7 @@ Tree leaf encodings: ICS `["address"]` · strikes `["uint256", "string", "uint25
 
 | Var                                    | Purpose                                                                                                                                                                                                      |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `IPFS_API_URL`                         | Pinning endpoint. **Unset → real Pinata** (`https://api.pinata.cloud`). Point at `@sm-lab/ipfs-mock` for local runs (e.g. `http://127.0.0.1:3000`) — a custom endpoint pins **without** Pinata credentials. |
+| `IPFS_API_URL`                         | Pinning endpoint. **Unset → real Pinata** (`https://api.pinata.cloud`). Point at `@sm-lab/ipfs` for local runs (e.g. `http://127.0.0.1:3000`) — a custom endpoint pins **without** Pinata credentials. |
 | `PINATA_API_KEY` / `PINATA_API_SECRET` | Pinata credentials (`pinata_api_key` / `pinata_secret_api_key` headers).                                                                                                                                     |
 | `PINATA_JWT`                           | Alternative to key/secret (`Authorization: Bearer …`).                                                                                                                                                       |
 

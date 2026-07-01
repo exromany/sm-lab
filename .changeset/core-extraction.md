@@ -1,6 +1,6 @@
 ---
-'@sm-lab/cl-mock': patch
-'@sm-lab/ipfs-mock': patch
+'@sm-lab/cl': patch
+'@sm-lab/ipfs': patch
 ---
 
 Extract shared server internals into `@sm-lab/core` (bundled into each consumer, not

@@ -138,7 +138,7 @@ export async function makeRewards(ctx: Ctx, opts: MakeRewardsOptions = {}): Prom
   const needsPin = opts.treeCid === undefined || opts.logCid === undefined;
   if (needsPin && !shouldAttemptPin()) {
     throw new Error(
-      '@sm-lab/recipes: could not pin the rewards tree/log — set IPFS_API_URL (a local @sm-lab/ipfs-mock) or PINATA_* credentials, or pass opts.treeCid + opts.logCid',
+      '@sm-lab/recipes: could not pin the rewards tree/log — set IPFS_API_URL (a local @sm-lab/ipfs) or PINATA_* credentials, or pass opts.treeCid + opts.logCid',
     );
   }
 
