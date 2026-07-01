@@ -1,7 +1,7 @@
 # CLAUDE.md
 
-Guidance for Claude Code working in this repo. See `docs/architecture.md` for the full design,
-`docs/decisions/` for ADRs, and `docs/migration.md` for the (in-progress) migration plan.
+Guidance for Claude Code working in this repo. See `docs/architecture.md` for the full design and
+`docs/decisions/` for ADRs.
 
 ## What this is
 
@@ -11,7 +11,7 @@ _consumers_, not members.
 
 Top level splits by **lifecycle**, not topic:
 
-- `apps/*` — long-running services (npm `bin` + Docker image): `cl-mock`, `ipfs-mock`
+- `apps/*` — long-running services (npm `bin` + Docker image): `cl`, `ipfs`
 - `tools/*` — run-and-exit CLIs / libraries: `merkle`, `recipes`
 - `fixtures/*` — versioned data, zero runtime: `receipts`
 - `packages/*` — shared internals, bundled into consumers (not published): `core`, `config`
@@ -33,7 +33,7 @@ pnpm --filter @sm-lab/<pkg> types        # tsc --noEmit
 pnpm --filter @sm-lab/<pkg> test         # vitest run
 pnpm lint                                 # oxlint . (repo-wide)
 pnpm format / pnpm format:check           # prettier
-pnpm stack:up                             # docker compose: cl-mock + ipfs-mock + anvil
+pnpm stack:up                             # docker compose: cl + ipfs + anvil
 pnpm changeset                            # add a changeset per user-facing change
 ```
 
@@ -66,9 +66,12 @@ package has a build entry); per-package gates above are still the fastest done-c
 - **Lint/format:** oxlint (`.oxlintrc.json`) + prettier (single quotes, width 100, trailing commas).
   Prefer `Array#toSorted()` over `.sort()`.
 - **Releases:** Changesets (`access: public`; `core`/`config` are ignored/private).
-- **Services** mirror the `cl-mock` shape: Hono + commander, `serve`/`status`/`stop`/`help`, in-memory
-  store, and core's `registerAdminRoutes` for `/admin/status` + `/admin/shutdown`. Each app ships a
-  thin Dockerfile whose `CMD` runs the same published `bin`. Both mocks enable permissive CORS
+- **Services** mirror the `cl` shape: Hono + commander, `serve`/`status`/`stop`/`help`, in-memory
+  store, and core's `registerAdminRoutes` for `/admin/status` + `/admin/shutdown`. `serve --state <file>`
+  persists the store (load-on-boot, save-on-shutdown) via core's state helpers, plus `/admin/save` +
+  `/admin/load` — bound to the configured path only (never a client-supplied path). `cl` also
+  proxies-and-caches a real CL API when `serve --upstream <url>` is set. Each app ships a thin
+  Dockerfile whose `CMD` runs the same published `bin`. Both mocks enable permissive CORS
   (`app.use('*', cors())`) so browser consumers (csm-widget / SDK) can call them cross-origin.
 - **CLIs** (`keys`/`merkle`/`recipes`) share an injectable `buildProgram(deps)` seam — `src/cli/program.ts`
   builds the commander program from injected implementations, `src/cli/index.ts` is a thin bootstrap —
@@ -143,5 +146,29 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   seam. **Published-for-npx is wired but the actual coordinated first publish of
   recipes+merkle+receipts is a deferred release action** (none are on npm yet).
 
-Steps 1–6 (cl-mock, ipfs-mock, merkle, keys, core, receipts, recipes + CLI) are complete.
-`docs/migration.md` tracks the increments.
+Steps 1–6 (cl, ipfs, merkle, keys, core, receipts, recipes + CLI) are complete.
+
+### sm-lab TODO roadmap (Phases 1–4) ✅
+
+(see `docs/superpowers/specs/2026-07-01-todo-roadmap-design.md`)
+
+- **P1 Rename** — repo/scope `csm-lab`/`@csm-lab` → `sm-lab`/`@sm-lab`; apps dropped `-mock`
+  (`@sm-lab/cl`, `@sm-lab/ipfs`); bins `sm-*`; docker/compose repointed.
+- **P2 Housekeeping + machine-readable I/O (F1)** — node ≥24 (engines + Docker + CI); ipfs default
+  port `3000`→`5001`; `addHelpCommand`→`helpCommand`; `docs/migration.md` deleted + migration/CORS
+  notes dropped from READMEs; global `.env.sample`; **universal `--json` contract across all 5 CLIs**
+  (see the Machine-readable I/O convention above). This satisfies "agentic-first"; the MCP-server idea
+  was dropped.
+- **P3 Tools** — merkle `addresses`(default)/`strikes`/`rewards` modes + flexible input
+  (positional / `--input` / `--source`) + **local-first IPFS** (`IPFS_API_URL` unset → local
+  `@sm-lab/ipfs` `127.0.0.1:5001`; Pinata only when `PINATA_*` set); `makeRewards` pipeline returns a
+  JSON-safe `treeDump`. recipes uses **real BLS keys** via `@sm-lab/keys` `makeDepositKeys`
+  (deterministic) and delegates the rewards tree-build+pin to merkle's `makeRewards`.
+- **P4 Mock state** — `@sm-lab/core` state helpers (`saveStateToFile` / `loadStateFromFile` /
+  `registerStateRoutes` + `startServer` load-on-boot / save-on-shutdown; atomic writes;
+  corrupt-file-tolerant boot); both mocks gain `serve --state`; `cl` gains a cached upstream proxy
+  (`serve --upstream`).
+
+**Deferred (non-blocking):** comment-cleanup; `/admin/*` auth-token + loopback-only hardening;
+faithful epoch-relay on the `cl` proxy; the **coordinated first npm publish** (changeset bodies are
+de-staled / publish-ready); and the manual GitHub-repo + local-dir rename (see Repo rename note).
