@@ -47,7 +47,8 @@ export interface StatusCommandOptions<T extends BaseStatusResponse> extends Clie
 /**
  * Build a `status` command: GET /admin/status, print the shared header, then app-specific
  * lines via `render`. `--json` dumps the raw payload. On connect failure prints
- * `<url>  offline (<reason>)` and exits 1 (status is the "is it up?" question, not an error).
+ * `Error: <url> offline (<reason>)` to stderr and exits 1 — offline is a legitimate answer, and
+ * the `Error:` prefix + exit 1 keep the machine I/O contract uniform with the other commands.
  */
 export function createStatusCommand<T extends BaseStatusResponse>(
   opts: StatusCommandOptions<T>,
