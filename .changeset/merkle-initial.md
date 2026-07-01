@@ -2,9 +2,9 @@
 '@sm-lab/merkle': minor
 ---
 
-Migrate `csm-test-tree` into the sm-lab monorepo as `@sm-lab/merkle` (bin `csm-merkle`).
+Migrate `csm-test-tree` into the sm-lab monorepo as `@sm-lab/merkle` (bin `sm-merkle`).
 Build moves from `ts-node`/CommonJS to tsdown (ESM, bundled), split into a library export (`.`)
-and the `csm-merkle` bin.
+and the `sm-merkle` bin.
 
 Scope is focused on **build + pin**: `ics <addresses>` and `strikes <strikes>` each build a
 `StandardMerkleTree`, pin it to IPFS, and print the root + CID (`--no-upload` for root-only,

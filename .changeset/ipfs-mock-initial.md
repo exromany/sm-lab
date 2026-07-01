@@ -2,7 +2,7 @@
 '@sm-lab/ipfs': minor
 ---
 
-Add `@sm-lab/ipfs` (`csm-ipfs-mock` bin): a Pinata-compatible IPFS pinning + gateway
+Add `@sm-lab/ipfs` (`sm-ipfs` bin): a Pinata-compatible IPFS pinning + gateway
 emulator for CSM testing. Implements `POST /pinning/pinJSONToIPFS`, `POST /pinning/pinFileToIPFS`,
 `GET /data/pinList`, and `DELETE /pinning/unpin/:cid` with deterministic CIDs (CIDv1 / raw codec
 0x55 / sha2-256). The `GET /ipfs/:cid` gateway serves locally-pinned content and transparently
