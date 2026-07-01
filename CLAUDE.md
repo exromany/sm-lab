@@ -20,6 +20,7 @@ Top level splits by **lifecycle**, not topic:
 
 The codebase is already name-clean (`sm-lab` throughout). Renaming the GitHub repo and local
 working directory to `sm-lab` is a **manual owner action** (not done by code):
+
 1. GitHub Settings → Rename repository → `sm-lab`.
 2. Locally: `git remote set-url origin <new-url>` (GitHub redirects, but update anyway).
 
@@ -124,7 +125,7 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   createCuratedOperator/createOperatorGroup/addKeys/deposit/topUpActiveKeys into the `seed-cm`
   scenario — uses the returned noIds (not hardcoded indices) + deterministic operator addresses.
 
-- **6g `csm-recipes` CLI** ✅ — run-and-exit CLI over the recipe surface (merkle's shape, not a
+- **6g `sm-recipes` CLI** ✅ — run-and-exit CLI over the recipe surface (merkle's shape, not a
   server). Declarative command registry: each recipe is a `RecipeCommand` data descriptor;
   one `defineCommand(desc, connectImpl)` factory (`src/cli/define.ts`) generates the commander
   wiring (per-field coercion, `connect()` once, `--json` vs human output, `run()` error-exit).
@@ -132,10 +133,10 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   under nested `cm`/`csm` groups that force `ctx.module`. ETH amounts via viem `parseEther`
   (1-wei exact); `noId`→`--operator-id` (commander `--no-*` is negation, decoupled via `flagProp`).
   The `cm`/`csm` groups also mirror every shared recipe with the module pre-bound (so
-  `csm-recipes csm <shared>` needs no `--module`); `--rpc-url` defaults to anvil's `127.0.0.1:8545`;
+  `sm-recipes csm <shared>` needs no `--module`); `--rpc-url` defaults to anvil's `127.0.0.1:8545`;
   required non-repeatable options are accepted positionally in declaration order (a repeatable one
   becomes the trailing variadic — `set-gate <selector> <address...>`); a `help` command mirrors
-  `--help` on root + groups. `bin: csm-recipes → dist/cli.mjs`, v0.1.0, changeset added. Hermetic tests via the `connectImpl`
+  `--help` on root + groups. `bin: sm-recipes → dist/cli.mjs`, v0.1.0, changeset added. Hermetic tests via the `connectImpl`
   seam. **Published-for-npx is wired but the actual coordinated first publish of
   recipes+merkle+receipts is a deferred release action** (none are on npm yet).
 

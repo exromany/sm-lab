@@ -55,7 +55,7 @@ sm-lab/
 | Lint            | **oxlint** (Oxc)            | all-Rust stack with tsdown; one fast binary                                                                    |
 | Format          | **prettier**                | mature; swap to `oxfmt` once stable                                                                            |
 | Tests           | **Vitest**                  | neither seed repo had tests — added here                                                                       |
-| Versioning      | **Changesets**              | curated public releases of `@sm-lab/*`                                                                        |
+| Versioning      | **Changesets**              | curated public releases of `@sm-lab/*`                                                                         |
 | Runtime         | **Node ≥ 20**               | keeps `@hono/node-server` and existing Docker/helm; no re-platform                                             |
 
 All tooling config lives in **`@sm-lab/config`** — change the build/type/lint strategy in
@@ -65,7 +65,7 @@ one package and every other inherits it. See its README for the `extends` / impo
 
 **One source, two artifacts.** Every `apps/*` service publishes a `bin` for `npx` _and_
 ships a Docker image. The Dockerfile is a ~6-line wrapper whose `CMD` runs that same `bin` —
-not a parallel build. `cl-mock` → `npx @sm-lab/cl` (binary stays `csm-cl-mock`) for
+not a parallel build. `cl-mock` → `npx @sm-lab/cl` (binary `sm-cl`) for
 local/SDK use; the image is what test-infra/helm runs.
 
 **Harvest, don't pre-build, `@sm-lab/core`.** The shared lib is extracted from the

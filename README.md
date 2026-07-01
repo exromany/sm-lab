@@ -15,16 +15,16 @@ pnpm stack:up       # cl-mock + ipfs-mock + anvil — a full offline CSM test be
 
 ## Layout
 
-| Path                | Package              | What                                        | From            |
-| ------------------- | -------------------- | ------------------------------------------- | --------------- |
-| `apps/cl`           | `@sm-lab/cl`   | Consensus Layer (Beacon API) mock           | `csm-test-cl`   |
-| `apps/ipfs`         | `@sm-lab/ipfs` | Pinata/IPFS emulator, deterministic CIDs    | new             |
-| `tools/merkle`      | `@sm-lab/merkle`    | ICS + strikes merkle tree builder           | `csm-test-tree` |
-| `tools/keys`        | `@sm-lab/keys`      | BLS validator deposit-data generator        | new             |
-| `tools/recipes`     | `@sm-lab/recipes`   | anvil CSM-state recipes + `csm-recipes` CLI | `fork.just`     |
-| `fixtures/receipts` | `@sm-lab/receipts`  | typed anvil/deploy snapshots                | contracts repo  |
-| `packages/core`     | `@sm-lab/core`      | shared internals (bundled, not published)   | —               |
-| `packages/config`   | `@sm-lab/config`    | tsconfig + tsdown + oxlint presets          | —               |
+| Path                | Package            | What                                       | From            |
+| ------------------- | ------------------ | ------------------------------------------ | --------------- |
+| `apps/cl`           | `@sm-lab/cl`       | Consensus Layer (Beacon API) mock          | `csm-test-cl`   |
+| `apps/ipfs`         | `@sm-lab/ipfs`     | Pinata/IPFS emulator, deterministic CIDs   | new             |
+| `tools/merkle`      | `@sm-lab/merkle`   | ICS + strikes merkle tree builder          | `csm-test-tree` |
+| `tools/keys`        | `@sm-lab/keys`     | BLS validator deposit-data generator       | new             |
+| `tools/recipes`     | `@sm-lab/recipes`  | anvil CSM-state recipes + `sm-recipes` CLI | `fork.just`     |
+| `fixtures/receipts` | `@sm-lab/receipts` | typed anvil/deploy snapshots               | contracts repo  |
+| `packages/core`     | `@sm-lab/core`     | shared internals (bundled, not published)  | —               |
+| `packages/config`   | `@sm-lab/config`   | tsconfig + tsdown + oxlint presets         | —               |
 
 The four-bucket split (`apps` / `tools` / `fixtures` / `packages`) is by **lifecycle**, not
 topic — see [`docs/architecture.md`](./docs/architecture.md).
@@ -43,7 +43,7 @@ All tooling config is centralized in `@sm-lab/config`.
 ## Status
 
 Migration steps 1–6 are done: `cl-mock`, `ipfs-mock`, `merkle`, `keys`, `recipes` (+ the
-`csm-recipes` CLI), `receipts`, and the shared `core`/`config` packages are built, tested,
+`sm-recipes` CLI), `receipts`, and the shared `core`/`config` packages are built, tested,
 and green. CI runs turbo checks + Changesets releases; the coordinated first npm publish of
 `recipes`/`merkle`/`receipts` is the remaining release action. See
 [`docs/migration.md`](./docs/migration.md) for per-step detail.
