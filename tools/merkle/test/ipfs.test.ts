@@ -6,6 +6,7 @@ import {
   shouldAttemptPin,
   pinJsonToIpfs,
   DEFAULT_IPFS_API_URL,
+  LOCAL_IPFS_API_URL,
 } from '../src/ipfs';
 
 afterEach(() => {
@@ -24,9 +25,25 @@ describe('resolveIpfsApiUrl', () => {
     expect(resolveIpfsApiUrl()).toBe('http://127.0.0.1:3000');
   });
 
-  it('defaults to real Pinata when nothing is set', () => {
+  it('uses Pinata when PINATA_JWT is set and IPFS_API_URL is unset', () => {
     vi.stubEnv('IPFS_API_URL', '');
+    vi.stubEnv('PINATA_JWT', 'tok');
     expect(resolveIpfsApiUrl()).toBe(DEFAULT_IPFS_API_URL);
+  });
+
+  it('uses Pinata when PINATA_API_KEY+SECRET are set and IPFS_API_URL is unset', () => {
+    vi.stubEnv('IPFS_API_URL', '');
+    vi.stubEnv('PINATA_API_KEY', 'k');
+    vi.stubEnv('PINATA_API_SECRET', 's');
+    expect(resolveIpfsApiUrl()).toBe(DEFAULT_IPFS_API_URL);
+  });
+
+  it('falls back to LOCAL_IPFS_API_URL when nothing is set', () => {
+    vi.stubEnv('IPFS_API_URL', '');
+    vi.stubEnv('PINATA_JWT', '');
+    vi.stubEnv('PINATA_API_KEY', '');
+    vi.stubEnv('PINATA_API_SECRET', '');
+    expect(resolveIpfsApiUrl()).toBe(LOCAL_IPFS_API_URL);
   });
 });
 
@@ -68,9 +85,17 @@ describe('shouldAttemptPin', () => {
     expect(shouldAttemptPin({ apiKey: 'k', apiSecret: 's' })).toBe(true);
   });
 
-  it('skips when targeting real Pinata with no credentials', () => {
-    expect(shouldAttemptPin({})).toBe(false);
+  it('pins by default (no env set) — falls through to local @sm-lab/ipfs', () => {
+    // With no opts at all, the local default is always usable.
+    expect(shouldAttemptPin({})).toBe(true);
+  });
+
+  it('skips only when IPFS_API_URL explicitly points at real Pinata with no credentials', () => {
     expect(shouldAttemptPin({ apiUrl: DEFAULT_IPFS_API_URL })).toBe(false);
+  });
+
+  it('pins to LOCAL_IPFS_API_URL via env when IPFS_API_URL is the local address', () => {
+    expect(shouldAttemptPin({ apiUrl: LOCAL_IPFS_API_URL })).toBe(true);
   });
 });
 

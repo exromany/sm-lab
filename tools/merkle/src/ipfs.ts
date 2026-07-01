@@ -6,11 +6,17 @@
  * exposes only API keys / JWT, no host override. To target `@sm-lab/ipfs` locally we
  * need a configurable base URL, so this is a thin `fetch` client hitting the exact same
  * `/pinning/pinJSONToIPFS` route the mock implements. Point it at real Pinata in test-infra
- * by leaving `IPFS_API_URL` unset (defaults to the real host) and supplying credentials.
+ * by supplying PINATA_* credentials (no need to set IPFS_API_URL when using Pinata).
+ *
+ * Default resolution (local-first):
+ *   explicit apiUrl → IPFS_API_URL env → Pinata (if PINATA_* set) → local @sm-lab/ipfs
  */
 
-/** Real Pinata host — the default when `IPFS_API_URL` is unset. */
+/** Real Pinata host. Used when PINATA_* credentials are set but IPFS_API_URL is unset. */
 export const DEFAULT_IPFS_API_URL = 'https://api.pinata.cloud';
+
+/** Local @sm-lab/ipfs default — the fallback when no IPFS_API_URL or Pinata creds are set. */
+export const LOCAL_IPFS_API_URL = 'http://127.0.0.1:5001';
 
 export interface IpfsClientOptions {
   /** Base URL of the pinning service. Defaults to `IPFS_API_URL` env, then real Pinata. */
@@ -30,11 +36,16 @@ export interface PinResponse {
   Timestamp: string;
 }
 
-/** Resolve the pinning base URL from explicit option → env → real Pinata default. */
+/**
+ * Resolve the pinning base URL: explicit apiUrl → IPFS_API_URL env → Pinata (if PINATA_* set)
+ * → local @sm-lab/ipfs (http://127.0.0.1:5001).
+ */
 export function resolveIpfsApiUrl(apiUrl?: string): string {
-  // Treat empty string (e.g. `IPFS_API_URL=`) as unset so it falls through to the default.
-  const candidate = apiUrl || process.env.IPFS_API_URL || DEFAULT_IPFS_API_URL;
-  return candidate.replace(/\/+$/, '');
+  // Treat empty string (e.g. `IPFS_API_URL=`) as unset so it falls through to the defaults.
+  const explicit = apiUrl || process.env.IPFS_API_URL;
+  if (explicit) return explicit.replace(/\/+$/, '');
+  if (hasPinataCredentials()) return DEFAULT_IPFS_API_URL;
+  return LOCAL_IPFS_API_URL;
 }
 
 /** Read pinning config from the environment (credentials + endpoint switch). */
@@ -63,12 +74,17 @@ export function hasCustomIpfsEndpoint(opts: IpfsClientOptions = ipfsOptionsFromE
 }
 
 /**
- * Whether `make`/`tree` should attempt to pin: yes if a custom endpoint is set (no auth needed,
- * e.g. the local mock) OR real-Pinata credentials are present. Lets local mock runs upload
- * without credentials while still skipping gracefully when nothing is configured.
+ * Whether `make`/`tree` should attempt to pin. With the local-first default there is always a
+ * usable target, so this returns `true` unless an explicit `IPFS_API_URL` points directly at
+ * real Pinata without credentials (that edge case cannot pin, so we still return `false` there).
+ * Use the CLI's `--no-upload` / `MakeOptions.noUpload` to explicitly skip pinning.
  */
 export function shouldAttemptPin(opts: IpfsClientOptions = ipfsOptionsFromEnv()): boolean {
-  return hasCustomIpfsEndpoint(opts) || hasPinataCredentials(opts);
+  // Explicit endpoint set to real Pinata but no creds — cannot pin.
+  const raw = (opts.apiUrl ?? process.env.IPFS_API_URL ?? '').replace(/\/+$/, '');
+  if (raw === DEFAULT_IPFS_API_URL && !hasPinataCredentials(opts)) return false;
+  // All other cases: custom endpoint (including no env, which falls through to LOCAL) or Pinata creds.
+  return true;
 }
 
 function buildAuthHeaders(opts: IpfsClientOptions): Record<string, string> {

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import {
   buildIcsTree,
@@ -9,6 +9,7 @@ import {
   REWARDS_LEAF_ENCODING,
   type StrikesEntry,
 } from '../src/tree';
+import { makeRewards } from '../src/pipelines';
 
 const ADDRESSES = [
   '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
@@ -114,5 +115,43 @@ describe('buildRewardsTree', () => {
       [PAD_NO_ID, 0n],
     ]);
     expect(tree.dump().values).toHaveLength(2);
+  });
+});
+
+describe('makeRewards pipeline treeDump', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('returns a JSON-safe treeDump (leaf values are strings, not bigints)', async () => {
+    // noUpload: true avoids any network calls; local-first default would attempt a fetch
+    const result = await makeRewards(
+      [
+        [0n, 1000n],
+        [1n, 2000n],
+      ],
+      { noUpload: true },
+    );
+
+    expect(result.treeDump).toBeDefined();
+    // Values must be strings (JSON-safe), not bigints
+    const firstValue = result.treeDump.values[0]?.value[0];
+    expect(typeof firstValue).toBe('string');
+    // JSON.stringify must not throw (the critical contract)
+    expect(() => JSON.stringify(result.treeDump)).not.toThrow();
+  });
+
+  it('treeDump has the expected OZ dump shape (format + leafEncoding + values)', async () => {
+    const result = await makeRewards(
+      [
+        [0n, 1000n],
+        [1n, 2000n],
+      ],
+      { noUpload: true },
+    );
+    expect(result.treeDump).toHaveProperty('format');
+    expect(result.treeDump).toHaveProperty('leafEncoding');
+    expect(result.treeDump.values).toHaveLength(2);
   });
 });

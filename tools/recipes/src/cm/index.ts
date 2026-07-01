@@ -362,8 +362,9 @@ export async function seedCm(ctx: Ctx, opts: SeedCmOptions = {}): Promise<SeedCm
   });
 
   // 3 add/deposit/topup rounds, mapping the source's operator indices 0/1/0 to na/nb/na. Each
-  // addKeys gets a distinct per-call label (r0..r4) so na's three calls draw different key material
-  // — a shared label would regenerate the same pubkeys and collide.
+  // addKeys gets a distinct per-call label (r0..r4) so na's three calls draw different key material.
+  // Note: keccak256(seed) % 2^20 startIndex ranges CAN collide across seeds (birthday in 1M space),
+  // but that is benign here — CSM does not dedup pubkeys (SigningKeys.sol has no uniqueness check).
   await addKeys(ctx, { noId: na, count: 4, seed: keySeed(seed, 'r0') });
   await deposit(ctx, { count: 100 });
   await topUpActiveKeys(ctx, { noId: na });

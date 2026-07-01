@@ -16,35 +16,62 @@ input JSON → build StandardMerkleTree → pin to IPFS → print { treeRoot, tr
 Binary: `sm-merkle` (`npx @sm-lab/merkle …`).
 
 ```bash
-sm-merkle ics addresses.json              # build ICS tree, pin, print root + CID
-sm-merkle strikes strikes.json            # build strikes tree, pin, print root + CID
-sm-merkle ics addresses.json --no-upload  # build/print root only, skip pinning
-sm-merkle ics addresses.json -o out.json  # also write { treeRoot, treeCid } to out.json
-sm-merkle help                            # self-contained cheat sheet
+sm-merkle 0xABC 0xDEF                           # inline addresses → ICS tree (default command)
+sm-merkle addresses --source addresses.json     # ICS tree from file
+sm-merkle addresses --input 0xABC --input 0xDEF # ICS tree from repeated --input flags
+sm-merkle strikes strikes.json                  # build strikes tree, pin, print root + CID
+sm-merkle rewards --source rewards.json         # build rewards tree from [[noId, shares], ...]
+sm-merkle addresses --source a.json --no-upload # build/print root only, skip pinning
+sm-merkle addresses --source a.json -o out.json # also write { treeRoot, treeCid } to out.json
+sm-merkle help                                  # self-contained cheat sheet
 ```
 
 Flags: `--no-upload` (root only, skip IPFS) · `-o, --out <path>` (also write a
-`{ treeRoot, treeCid }` JSON — a handoff seam for `@sm-lab/receipts` / CI).
+`{ treeRoot, treeCid }` JSON — a handoff seam for `@sm-lab/receipts` / CI) · `--json`
+(machine-readable single-JSON-value output).
 
 ## Library
 
+### Low-level (build + pin manually)
+
 ```ts
-import { buildIcsTree, buildStrikesTree, pinJsonToIpfs, makeIcs } from '@sm-lab/merkle';
+import { buildIcsTree, buildStrikesTree, pinJsonToIpfs } from '@sm-lab/merkle';
 
 const tree = buildIcsTree(['0x70997970…', '0x3C44CdD…']);
 tree.root; // deterministic 0x… root
 const cid = await pinJsonToIpfs(tree.dump(), 'merkle-tree-ics'); // env-switched endpoint
 ```
 
-Tree leaf encodings: ICS `["address"]` · strikes `["uint256", "string", "uint256[]"]`.
+### High-level TS API
+
+`makeIcs` accepts a resolved `string[]` of addresses, builds the tree, pins the dump to IPFS
+(using the env-configured endpoint — local `@sm-lab/ipfs` by default), and returns
+`{ treeRoot, treeCid }`. No filesystem access — pass the address list directly.
+
+```ts
+import { makeIcs } from '@sm-lab/merkle';
+
+// Build + pin in one call. Addresses must already be resolved (inline list or pre-read file).
+const { treeRoot, treeCid } = await makeIcs(
+  ['0x70997970C51812dc3A010C7d01b50e0d17dc79C8', '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC'],
+  // options are optional:
+  // { noUpload: true }   → skip IPFS, return only treeRoot
+  // { configPath: 'out.json' } → also write { treeRoot, treeCid } to disk
+);
+
+console.log('tree root:', treeRoot);
+console.log('IPFS CID: ', treeCid);
+```
+
+Tree leaf encodings: ICS `["address"]` · strikes `["uint256", "string", "uint256[]"]` · rewards `["uint256", "uint256"]`.
 
 ## Environment
 
-| Var                                    | Purpose                                                                                                                                                                                                |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `IPFS_API_URL`                         | Pinning endpoint. **Unset → real Pinata** (`https://api.pinata.cloud`). Point at `@sm-lab/ipfs` for local runs (e.g. `http://127.0.0.1:5001`) — a custom endpoint pins **without** Pinata credentials. |
-| `PINATA_API_KEY` / `PINATA_API_SECRET` | Pinata credentials (`pinata_api_key` / `pinata_secret_api_key` headers).                                                                                                                               |
-| `PINATA_JWT`                           | Alternative to key/secret (`Authorization: Bearer …`).                                                                                                                                                 |
+| Var                                    | Purpose                                                                                                                                                                                                       |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IPFS_API_URL`                         | Pinning endpoint. **Unset → local `@sm-lab/ipfs`** (`http://127.0.0.1:5001`). Pinata is used only when `PINATA_*` creds are set (and `IPFS_API_URL` is unset). Set explicitly to override both defaults. |
+| `PINATA_API_KEY` / `PINATA_API_SECRET` | Pinata credentials (`pinata_api_key` / `pinata_secret_api_key` headers). When set, Pinata is preferred over the local default.                                                                                |
+| `PINATA_JWT`                           | Alternative to key/secret (`Authorization: Bearer …`). When set, Pinata is preferred over the local default.                                                                                                 |
 
 Copy `.env` from your own values; never commit secrets (`.env*` is gitignored).
 

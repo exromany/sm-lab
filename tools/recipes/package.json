@@ -43,6 +43,7 @@
     "types": "tsc --noEmit"
   },
   "dependencies": {
+    "@sm-lab/keys": "workspace:*",
     "@sm-lab/merkle": "workspace:*",
     "@sm-lab/receipts": "workspace:*",
     "commander": "catalog:",

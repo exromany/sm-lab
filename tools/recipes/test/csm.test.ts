@@ -48,7 +48,9 @@ describe('setGateAddrs', () => {
   });
 
   it('throws when no cid is provided and IPFS is not configured', async () => {
-    // No IPFS_API_URL / Pinata creds in the hermetic env → pin returns nothing.
+    // With the local-first IPFS default, shouldAttemptPin() is true unless IPFS_API_URL points
+    // at real Pinata with no credentials. Set that edge case to trigger the guard throw.
+    process.env.IPFS_API_URL = 'https://api.pinata.cloud';
     const ctx = fakeCtx('csm', makeFakeClient({ reads: { getRoleMember: A(0xd0) } }).client, {
       VettedGate: A(0x0d),
     });

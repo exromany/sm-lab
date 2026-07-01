@@ -35,7 +35,7 @@ export async function addKeys(ctx: Ctx, opts: AddKeysOptions): Promise<AddKeysRe
     args: [opts.noId, BigInt(opts.count)],
   });
 
-  const { publicKeys, packedKeys, packedSignatures } = randomKeys(opts.count, opts.seed);
+  const { publicKeys, packedKeys, packedSignatures } = await randomKeys(opts.count, opts.seed);
 
   await actAs(ctx, manager, (from) =>
     ctx.client.writeContract({

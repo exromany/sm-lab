@@ -1,7 +1,5 @@
 import {
-  buildRewardsTree,
-  ipfsOptionsFromEnv,
-  pinJsonToIpfs,
+  makeRewards as makeRewardsTree,
   shouldAttemptPin,
   type TreeDump,
 } from '@sm-lab/merkle';
@@ -129,12 +127,12 @@ export async function makeRewards(ctx: Ctx, opts: MakeRewardsOptions = {}): Prom
     return { treeRoot: ZERO_ROOT, treeCid: '', logCid: '', distributed, rebate, cumulatives };
   }
 
-  const tree = buildRewardsTree(leaves);
-  const treeRoot = tree.root as Hex;
-
-  // Guard before the IPFS pin (the only `fetch` this recipe makes) so hermetic tests with no IPFS
-  // env and no escape cids fail loudly instead of hitting the wire. Mirrors `setGateAddrs.pinTree`.
-  // Sits AFTER the empty-report return so an empty fork never needs IPFS configured.
+  // Guard before the IPFS pin so hermetic tests with no IPFS env and no escape cids fail loudly
+  // instead of hitting the wire. Mirrors `setGateAddrs.pinTree`. Sits AFTER the empty-report return
+  // so an empty fork never needs IPFS configured.
+  // shouldAttemptPin() is now true by default (local-first); it returns false ONLY when
+  // IPFS_API_URL points at real Pinata with no credentials. That is the canonical "not configured"
+  // state tests can set to trigger this guard.
   const needsPin = opts.treeCid === undefined || opts.logCid === undefined;
   if (needsPin && !shouldAttemptPin()) {
     throw new Error(
@@ -142,11 +140,8 @@ export async function makeRewards(ctx: Ctx, opts: MakeRewardsOptions = {}): Prom
     );
   }
 
-  // The report log (faithful-but-minimal mock shape) has bigints nested in operators[*] +
-  // distributable/distributed_rewards/rebate_to_protocol. OZ `dump()` returns the original leaf
-  // values verbatim (no serialization step) — since we built the tree from `[bigint, bigint]`
-  // leaves, `dump().values[*].value` holds bigints too. `pinJsonToIpfs` JSON.stringifies internally
-  // (throws on bigint), so normalize BOTH through one replacer (delta #2) rather than touching each field.
+  // The report log (faithful-but-minimal mock shape) — bigints nested in operators[*] are
+  // serialized by merkle's makeRewardsTree (bigintReplacer) before pinning.
   const blockTimestamp = opts.now ?? Math.floor(Date.now() / 1000);
   const log = {
     blockstamp: { block_timestamp: blockTimestamp },
@@ -155,12 +150,45 @@ export async function makeRewards(ctx: Ctx, opts: MakeRewardsOptions = {}): Prom
     rebate_to_protocol: rebate,
     operators: reportOperators,
   };
-  const treeDump = toJsonSafe(tree.dump()) as TreeDump;
 
-  const treeCid =
-    opts.treeCid ?? (await pinJsonToIpfs(treeDump, 'rewards-tree', ipfsOptionsFromEnv()));
-  const logCid =
-    opts.logCid ?? (await pinJsonToIpfs(toJsonSafe(log), 'rewards-log', ipfsOptionsFromEnv()));
+  // Delegate pin and tree build to merkle's makeRewards. It returns a JSON-safe treeDump
+  // (bigint leaf values serialized as decimal strings) — no local tree build needed.
+  // When escape-hatch cids are both set, skip upload entirely (noUpload: true).
+  // Otherwise let merkle handle the pin — it uses the same shouldAttemptPin() path guarded above.
+  let treeRoot: Hex;
+  let treeCid: string;
+  let logCid: string;
+  let treeDump: TreeDump;
+
+  if (opts.treeCid !== undefined && opts.logCid !== undefined) {
+    // Both escape-hatch cids supplied: still need to build the tree for treeRoot + treeDump.
+    const result = await makeRewardsTree(leaves, { noUpload: true });
+    treeRoot = result.treeRoot as Hex;
+    treeDump = result.treeDump;
+    treeCid = opts.treeCid;
+    logCid = opts.logCid;
+  } else if (opts.treeCid !== undefined) {
+    // tree cid supplied, only pin the log
+    const result = await makeRewardsTree(leaves, { log, noUpload: false });
+    treeRoot = result.treeRoot as Hex;
+    treeDump = result.treeDump;
+    treeCid = opts.treeCid;
+    logCid = result.logCid ?? '';
+  } else if (opts.logCid !== undefined) {
+    // log cid supplied, only pin the tree
+    const result = await makeRewardsTree(leaves, { noUpload: false });
+    treeRoot = result.treeRoot as Hex;
+    treeDump = result.treeDump;
+    treeCid = result.treeCid ?? '';
+    logCid = opts.logCid;
+  } else {
+    // No escape-hatch cids: delegate both to merkle
+    const result = await makeRewardsTree(leaves, { log });
+    treeRoot = result.treeRoot as Hex;
+    treeDump = result.treeDump;
+    treeCid = result.treeCid ?? '';
+    logCid = result.logCid ?? '';
+  }
 
   return { treeRoot, treeCid, logCid, distributed, rebate, treeDump, cumulatives };
 }
@@ -168,13 +196,6 @@ export async function makeRewards(ctx: Ctx, opts: MakeRewardsOptions = {}): Prom
 /** Deterministic uint in `[0, span)` from `keccak256(toBytes(\`${seed}:${label}\`)) % span`. */
 function seededUint(seed: Hex, label: string, span: bigint): bigint {
   return BigInt(keccak256(toBytes(`${seed}:${label}`))) % span;
-}
-
-/** Deep-clone `value` to a fully bigint-free object (bigints → decimal strings) for JSON pinning. */
-function toJsonSafe(value: unknown): unknown {
-  return JSON.parse(
-    JSON.stringify(value, (_, v: unknown) => (typeof v === 'bigint' ? v.toString() : v)),
-  );
 }
 
 /** Normalize the carry-forward input (Map or entries) to an iterable of [noId, shares]. */

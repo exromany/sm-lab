@@ -32,9 +32,10 @@ export {
   resolveIpfsApiUrl,
   ipfsOptionsFromEnv,
   DEFAULT_IPFS_API_URL,
+  LOCAL_IPFS_API_URL,
 } from './ipfs';
 export type { IpfsClientOptions, PinResponse } from './ipfs';
 
 // Build + pin pipeline (root + CID; on-chain work belongs to @sm-lab/receipts)
-export { makeIcs, makeStrikes } from './pipelines';
-export type { MakeResult, MakeOptions } from './pipelines';
+export { makeIcs, makeStrikes, makeRewards } from './pipelines';
+export type { MakeResult, MakeOptions, MakeRewardsResult } from './pipelines';

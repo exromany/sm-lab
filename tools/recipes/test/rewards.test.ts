@@ -54,6 +54,11 @@ describe('makeRewards', () => {
     expect(report.treeCid).toBe('cid-t');
     expect(report.logCid).toBe('cid-l');
     expect(fetchSpy).not.toHaveBeenCalled();
+    // treeDump must be JSON-safe: values are strings (not bigints), JSON.stringify must not throw.
+    expect(report.treeDump).toBeDefined();
+    expect(() => JSON.stringify(report.treeDump)).not.toThrow();
+    const firstValue = report.treeDump?.values[0]?.value[0];
+    expect(typeof firstValue).toBe('string');
   });
 
   it('T-R2: carries previous cumulatives forward and adds this frame delta (pad excluded)', async () => {
@@ -137,10 +142,14 @@ describe('makeRewards', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('T-R6: pin guard — no cids + no IPFS env throws BEFORE any network', async () => {
+  it('T-R6: pin guard — no cids + Pinata URL with no creds → shouldAttemptPin false → throws BEFORE any network', async () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
-    delete process.env.IPFS_API_URL; // ensure shouldAttemptPin() is false
+    // Set IPFS_API_URL to real Pinata host with no credentials → shouldAttemptPin() returns false.
+    process.env.IPFS_API_URL = 'https://api.pinata.cloud';
+    delete process.env.PINATA_JWT;
+    delete process.env.PINATA_API_KEY;
+    delete process.env.PINATA_API_SECRET;
     const { client } = makeFakeClient(TWO_OPS);
 
     await expect(makeRewards(fakeCtx('csm', client), { seed: '0x01' })).rejects.toThrow(
