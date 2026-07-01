@@ -2,10 +2,11 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import {
   registerAdminRoutes,
+  registerStateRoutes,
   readPackageVersion,
   startServer as coreStartServer,
 } from '@sm-lab/core';
-import { PinStore, store as defaultStore } from './store';
+import { PinStore, store as defaultStore, snapshotStore, restoreStore } from './store';
 import { registerPinningRoutes } from './pinning';
 import { registerGatewayRoutes } from './gateway';
 import { createUpstreamFetcher, type UpstreamFetcher } from './upstream';
@@ -23,6 +24,12 @@ export interface AppOptions {
   fetchUpstream?: UpstreamFetcher;
   /** Cache proxied content back into the store (default true). */
   cacheUpstream?: boolean;
+  /**
+   * Default file path for POST /admin/save and POST /admin/load.
+   * When set, state routes are registered (always). The path is also used as the default
+   * ?path= target when the request omits it.
+   */
+  statePath?: string;
 }
 
 export interface AppHandle {
@@ -44,6 +51,9 @@ export function createApp(options: AppOptions = {}): AppHandle {
   const gateway = options.gateway ?? process.env.IPFS_UPSTREAM_GATEWAY ?? DEFAULT_GATEWAY;
   const fetchUpstream = options.fetchUpstream ?? createUpstreamFetcher(gateway);
 
+  const snapshot = () => snapshotStore(store);
+  const restore = (s: unknown) => restoreStore(store, s);
+
   const app = new Hono();
   // Permissive CORS: this mock backs browser consumers (csm-widget) cross-origin, so the
   // pinning API + /ipfs gateway must answer preflights and echo Access-Control-Allow-Origin.
@@ -57,6 +67,8 @@ export function createApp(options: AppOptions = {}): AppHandle {
       return { gateway, pins: { total: store.size, totalBytes } };
     },
   });
+  // State routes are always registered; defaultPath is set when --state / statePath is given.
+  registerStateRoutes(app, { snapshot, restore, defaultPath: options.statePath });
 
   return { app, store, gateway };
 }
@@ -69,25 +81,38 @@ export interface ServeOptions {
   host?: string;
   gateway?: string;
   persist?: string;
+  /** Path to a JSON state file for boot-restore + shutdown-save. */
+  statePath?: string;
 }
 
 /**
  * Boots the HTTP server (via core's startServer: graceful shutdown wired to SIGINT/SIGTERM
- * and POST /admin/shutdown). Builds its own app honoring --persist / --gateway.
+ * and POST /admin/shutdown). Builds its own app honoring --persist / --gateway / --state.
  */
 export function startServer(options: ServeOptions = {}): ReturnType<typeof coreStartServer> {
   const port = options.port ?? DEFAULT_PORT;
   const host = options.host ?? DEFAULT_HOST;
   const store = options.persist ? new PinStore(options.persist) : new PinStore();
-  const { app: serverApp, gateway } = createApp({ store, gateway: options.gateway });
+  const { app: serverApp, gateway } = createApp({
+    store,
+    gateway: options.gateway,
+    statePath: options.statePath,
+  });
+
+  const snapshot = () => snapshotStore(store);
+  const restore = (s: unknown) => restoreStore(store, s);
 
   return coreStartServer(serverApp, {
     port,
     host,
+    statePath: options.statePath,
+    snapshot,
+    restore,
     onListen: (url) => {
       console.log(`IPFS mock listening on ${url}`);
       console.log(`  upstream gateway: ${gateway}`);
       if (options.persist) console.log(`  persisting pins to: ${options.persist}`);
+      if (options.statePath) console.log(`  state file: ${options.statePath}`);
     },
   });
 }

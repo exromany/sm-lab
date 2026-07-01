@@ -9,4 +9,5 @@ export type { AdminRoutesOptions, BaseStatus } from './admin';
 export { findRoot, resolveUrl, formatUptime, createStatusCommand, createStopCommand } from './cli';
 export type { ClientTarget, BaseStatusResponse, StatusCommandOptions } from './cli';
 
-// .gitkeep no longer needed now that src has real modules.
+export { saveStateToFile, loadStateFromFile, registerStateRoutes } from './state';
+export type { StateRoutesOptions } from './state';

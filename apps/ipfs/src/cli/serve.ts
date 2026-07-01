@@ -7,12 +7,25 @@ export const serveCommand = new Command('serve')
   .option('-h, --host <host>', 'server host', DEFAULT_HOST)
   .option('-g, --gateway <url>', 'upstream IPFS gateway for store-miss CIDs (overrides env)')
   .option('--persist <dir>', 'persist pins to a directory (survives restarts)')
-  .action(async (opts: { port: string; host: string; gateway?: string; persist?: string }) => {
-    const { startServer } = await import('../server/app');
-    startServer({
-      port: Number(opts.port),
-      host: opts.host,
-      gateway: opts.gateway,
-      persist: opts.persist,
-    });
-  });
+  .option(
+    '--state <file>',
+    'JSON state file: load on boot, save on graceful shutdown (env: IPFS_MOCK_STATE)',
+  )
+  .action(
+    async (opts: {
+      port: string;
+      host: string;
+      gateway?: string;
+      persist?: string;
+      state?: string;
+    }) => {
+      const { startServer } = await import('../server/app');
+      startServer({
+        port: Number(opts.port),
+        host: opts.host,
+        gateway: opts.gateway,
+        persist: opts.persist,
+        statePath: opts.state ?? process.env['IPFS_MOCK_STATE'],
+      });
+    },
+  );

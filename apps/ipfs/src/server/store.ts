@@ -89,3 +89,57 @@ export class PinStore {
 
 /** Default singleton store (in-memory). Swap via the app factory for tests/persistence. */
 export const store = new PinStore();
+
+// ---------------------------------------------------------------------------
+// State serialization (for core's registerStateRoutes + server-boot wiring)
+// ---------------------------------------------------------------------------
+
+/** JSON-safe shape for a serialized pin (Uint8Array → base64). */
+interface SerializedPin {
+  cid: string;
+  size: number;
+  data: string; // base64
+  contentType: string;
+  pinnedAt: string;
+  name?: string;
+}
+
+/** Serialize the entire store to a plain JSON-safe object. */
+export function snapshotStore(s: PinStore): unknown {
+  return s.list().map((p): SerializedPin => ({
+    cid: p.cid,
+    size: p.size,
+    data: Buffer.from(p.data).toString('base64'),
+    contentType: p.contentType,
+    pinnedAt: p.pinnedAt,
+    ...(p.name !== undefined ? { name: p.name } : {}),
+  }));
+}
+
+/** Restore the store from a previously-snapshotted value (replaces all pins). */
+export function restoreStore(s: PinStore, raw: unknown): void {
+  s.clear();
+  if (!Array.isArray(raw)) return;
+  for (const item of raw as SerializedPin[]) {
+    // Guard required fields before use — a malformed item (e.g. data: null from a
+    // hand-edited or truncated file) must skip silently, mirroring ValidatorStore.restore().
+    if (
+      item === null ||
+      typeof item !== 'object' ||
+      typeof item.cid !== 'string' ||
+      typeof item.data !== 'string' ||
+      typeof item.contentType !== 'string' ||
+      typeof item.pinnedAt !== 'string'
+    ) {
+      continue;
+    }
+    s.set({
+      cid: item.cid,
+      size: item.size,
+      data: new Uint8Array(Buffer.from(item.data, 'base64')),
+      contentType: item.contentType,
+      pinnedAt: item.pinnedAt,
+      ...(item.name !== undefined ? { name: item.name } : {}),
+    });
+  }
+}

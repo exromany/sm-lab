@@ -145,7 +145,9 @@ describe('status error handling', () => {
     stubFetchDown();
     const errors: string[] = [];
     vi.spyOn(console, 'log').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation((...args) => errors.push(args.map(String).join(' ')));
+    vi.spyOn(console, 'error').mockImplementation((...args) =>
+      errors.push(args.map(String).join(' ')),
+    );
     vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null) => {
       throw new ExitError(typeof code === 'number' ? code : 0);
     });

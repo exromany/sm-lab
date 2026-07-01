@@ -1,4 +1,9 @@
 import type { ValidatorEntry } from '../types';
+import { isValidPubkey, isValidStatus } from '../types';
+
+export interface StoreSnapshot {
+  validators: Array<{ pubkey: string; entry: ValidatorEntry }>;
+}
 
 export class ValidatorStore {
   private validators = new Map<string, ValidatorEntry>();
@@ -33,6 +38,39 @@ export class ValidatorStore {
 
   get size(): number {
     return this.validators.size;
+  }
+
+  /** Serialize the store as a plain JSON-serialisable value. */
+  snapshot(): StoreSnapshot {
+    return { validators: this.list() };
+  }
+
+  /**
+   * Restore the store from a previously-taken snapshot.
+   * Silently skips malformed entries (unknown status / invalid pubkey) so a
+   * corrupt file never crashes the server.
+   */
+  restore(raw: unknown): void {
+    this.validators.clear();
+    if (
+      raw === null ||
+      typeof raw !== 'object' ||
+      !Array.isArray((raw as StoreSnapshot).validators)
+    ) {
+      return;
+    }
+    for (const item of (raw as StoreSnapshot).validators) {
+      const { pubkey, entry } = item ?? {};
+      if (
+        typeof pubkey !== 'string' ||
+        !isValidPubkey(pubkey) ||
+        !entry ||
+        !isValidStatus(entry.status)
+      ) {
+        continue;
+      }
+      this.validators.set(pubkey.toLowerCase(), entry);
+    }
   }
 }
 
