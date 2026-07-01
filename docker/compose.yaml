@@ -10,18 +10,18 @@ services:
     ports:
       - '8545:8545'
 
-  cl-mock:
+  cl:
     build:
       context: ..
-      dockerfile: apps/cl-mock/Dockerfile
+      dockerfile: apps/cl/Dockerfile
     command: ['serve', '--host', '0.0.0.0']
     ports:
       - '5052:5052'
 
-  ipfs-mock:
+  ipfs:
     build:
       context: ..
-      dockerfile: apps/ipfs-mock/Dockerfile
+      dockerfile: apps/ipfs/Dockerfile
     command: ['serve', '--host', '0.0.0.0']
     ports:
       - '3000:3000'
