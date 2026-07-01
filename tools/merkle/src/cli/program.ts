@@ -26,7 +26,7 @@ export function buildProgram(
   deps: CliDeps = { makeIcs: realMakeIcs, makeStrikes: realMakeStrikes },
 ): Command {
   const program = new Command()
-    .name('csm-merkle')
+    .name('sm-merkle')
     .description('Lido CSM Merkle tree builder — build a tree, pin it to IPFS, print root + CID')
     // We ship our own `help` command below; suppress the built-in to avoid a duplicate-command
     // collision. `.helpCommand(false)` is the non-deprecated replacement for `.addHelpCommand(false)`.
@@ -66,7 +66,7 @@ export function buildProgram(
     .command('help')
     .description('Print a self-contained usage cheat sheet')
     .action(() => {
-      console.log(`csm-merkle — Lido CSM Merkle tree builder
+      console.log(`sm-merkle — Lido CSM Merkle tree builder
 
 WHAT IT DOES
   Build a Merkle tree from input, pin it to IPFS, and print the root + CID.

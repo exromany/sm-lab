@@ -15,7 +15,7 @@
     "gateway"
   ],
   "bin": {
-    "csm-ipfs-mock": "dist/cli.mjs"
+    "sm-ipfs": "dist/cli.mjs"
   },
   "types": "./dist/index.d.mts",
   "exports": {

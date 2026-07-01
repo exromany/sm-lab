@@ -14,7 +14,7 @@
     "testing"
   ],
   "bin": {
-    "csm-keys": "dist/cli.mjs"
+    "sm-keys": "dist/cli.mjs"
   },
   "types": "./dist/index.d.mts",
   "exports": {

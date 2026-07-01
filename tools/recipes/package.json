@@ -33,7 +33,7 @@
     "README.md"
   ],
   "bin": {
-    "csm-recipes": "dist/cli.mjs"
+    "sm-recipes": "dist/cli.mjs"
   },
   "scripts": {
     "build": "tsdown",

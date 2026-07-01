@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { VALIDATOR_STATUSES, DEFAULT_PORT } from '../types';
 
-const GUIDE = `csm-cl-mock — Consensus Layer (Beacon API) mock for CSM testing
+const GUIDE = `sm-cl — Consensus Layer (Beacon API) mock for CSM testing
 
 PURPOSE
   In-memory Beacon API fake. You configure validators over an admin HTTP API,
@@ -9,12 +9,12 @@ PURPOSE
   running server process — no files, no DB. Restart = clean slate.
 
 TYPICAL WORKFLOW
-  1. Start server:        csm-cl-mock serve
-  2. Configure validators: csm-cl-mock config set <pubkey> <status> [eth]
+  1. Start server:        sm-cl serve
+  2. Configure validators: sm-cl config set <pubkey> <status> [eth]
   3. Consumers query:     GET /eth/v1/beacon/states/head/validators?id=<pubkey>
-     (or via CLI:         csm-cl-mock query <pubkey>)
-  4. Check health:        csm-cl-mock status
-  5. Shut down:           csm-cl-mock stop   (or Ctrl+C on the server)
+     (or via CLI:         sm-cl query <pubkey>)
+  4. Check health:        sm-cl status
+  5. Shut down:           sm-cl stop   (or Ctrl+C on the server)
 
 COMMANDS
   serve [--port N] [--host H]             start server (defaults: ${DEFAULT_PORT}, 127.0.0.1)
@@ -35,8 +35,8 @@ COMMANDS
 REMOTE TARGET
   config/query/status/stop default to http://127.0.0.1:${DEFAULT_PORT}.
   Override with --url <url> (on the root command) or env CL_MOCK_URL.
-    csm-cl-mock --url http://host:5052 config list
-    CL_MOCK_URL=http://host:5052 csm-cl-mock status
+    sm-cl --url http://host:5052 config list
+    CL_MOCK_URL=http://host:5052 sm-cl status
 
 PUBKEY FORMAT
   0x-prefixed 48-byte hex (96 hex chars). Case-insensitive at the store
@@ -68,7 +68,7 @@ BEACON API (consumer-facing)
   effective_balance comes from config; balance mirrors it (both default to 32 ETH).
 
 AGENT TIPS
-  • Always 'csm-cl-mock status' before assuming a server is up — it prints a
+  • Always 'sm-cl status' before assuming a server is up — it prints a
     machine-parseable line on failure and exits 1.
   • Use 'config statuses' (no HTTP) to discover valid status values.
   • Batch multiple validators via POST /admin/validators with a JSON array.

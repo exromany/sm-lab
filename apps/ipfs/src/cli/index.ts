@@ -7,7 +7,7 @@ import { stopCommand } from './stop';
 import { helpCommand } from './help';
 
 const program = new Command()
-  .name('csm-ipfs-mock')
+  .name('sm-ipfs')
   .description('Pinata-compatible IPFS pinning + gateway mock for CSM testing')
   .option('--url <url>', 'IPFS mock server URL (for status/stop commands)')
   .addHelpCommand(false);

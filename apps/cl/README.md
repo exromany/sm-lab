@@ -6,12 +6,12 @@ restart = clean slate. The beacon + validator API is **CORS-enabled** (permissiv
 browser consumers (csm-widget / SDK) can call it cross-origin.
 
 ```bash
-npx @sm-lab/cl serve            # binary is csm-cl-mock (unchanged)
-csm-cl-mock config set <pubkey> active_ongoing 31.5
-csm-cl-mock status
-csm-cl-mock query <pubkey>
-csm-cl-mock stop
-csm-cl-mock help                      # full agent-facing cheat sheet
+npx @sm-lab/cl serve            # binary is sm-cl (unchanged)
+sm-cl config set <pubkey> active_ongoing 31.5
+sm-cl status
+sm-cl query <pubkey>
+sm-cl stop
+sm-cl help                      # full agent-facing cheat sheet
 ```
 
 Or in-process (library):
@@ -27,7 +27,7 @@ tsdown (ESM, bundled) via the shared `@sm-lab/config` preset. Object entry keeps
 tree intact and emits two outputs:
 
 - `dist/index.mjs` — library export (`.`)
-- `dist/cli.mjs` — the `csm-cl-mock` bin (shebang + exec bit preserved by tsdown)
+- `dist/cli.mjs` — the `sm-cl` bin (shebang + exec bit preserved by tsdown)
 
 ```ts
 // tsdown.config.ts
@@ -52,4 +52,4 @@ Migrated verbatim except for changes the new toolchain required:
   for `noUncheckedIndexedAccess`.
 - **buildValidator** exported so the Vitest characterization tests can pin the beacon response.
 
-The binary name `csm-cl-mock` is unchanged; deprecate the old unscoped npm package pointing here.
+The binary name `sm-cl` is unchanged; deprecate the old unscoped npm package pointing here.

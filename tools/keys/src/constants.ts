@@ -17,7 +17,7 @@ export const DOMAIN_DEPOSIT: Hex = '0x03000000';
 export const DEPOSIT_AMOUNT_GWEI = 32_000_000_000;
 
 /** Cosmetic deposit_data.json field; not validated on-chain or by the widget. */
-export const DEPOSIT_CLI_VERSION = 'csm-keys/0.1.0';
+export const DEPOSIT_CLI_VERSION = 'sm-keys/0.1.0';
 
 // WithdrawalVault proxy addresses per Lido deployed-contracts (mainnet + hoodi),
 // fork versions + chainId per eth-clients (mainnet 0x00000000; hoodi 0x10000910, 560048).

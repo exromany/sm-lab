@@ -24,19 +24,19 @@ const info = await operatorInfo(ctx, { noId: 0n });
 `burner`) from `LidoLocator` on-chain and merges them onto a module-suite snapshot from
 `@sm-lab/receipts`. Override the snapshot per call: `connect({ module, rpcUrl, addresses })`.
 
-## CLI (`csm-recipes`)
+## CLI (`sm-recipes`)
 
 A run-and-exit CLI over the recipe surface. Same `bin` underpins every route:
 
 ```bash
 npx @sm-lab/recipes cm seed --rpc-url http://127.0.0.1:8545   # published
-npm i -g @sm-lab/recipes && csm-recipes --help                # global install
+npm i -g @sm-lab/recipes && sm-recipes --help                # global install
 node tools/recipes/dist/cli.mjs --help                         # built dist (repo dev)
 ```
 
 Global flags: `--rpc-url` (or `RPC_URL`, defaulting to anvil's `http://127.0.0.1:8545`),
 `--module <csm|cm>`, `--cl-mock-url` (or `CL_MOCK_URL`), `--json`. Amounts (`--amount`,
-`--exit-balance`, …) are in **ETH** (`0.000000000000000001` = 1 wei). `csm-recipes help [command]`
+`--exit-balance`, …) are in **ETH** (`0.000000000000000001` = 1 wei). `sm-recipes help [command]`
 mirrors `--help`.
 
 The `cm`/`csm` groups host their own recipes **and** mirror every shared recipe with the
@@ -44,11 +44,11 @@ module pre-bound — so a shared command works two ways: top-level with `--modul
 the group (no `--module` needed):
 
 ```bash
-csm-recipes --module csm operator-info --operator-id 0   # shared, module via flag
-csm-recipes csm operator-info --operator-id 0            # same, module from the group
-csm-recipes --module csm make-rewards --json
-csm-recipes cm seed --seed 0x01                          # cm-only recipe
-csm-recipes csm set-gate --address 0xabc... --address 0xdef...   # csm-only recipe
+sm-recipes --module csm operator-info --operator-id 0   # shared, module via flag
+sm-recipes csm operator-info --operator-id 0            # same, module from the group
+sm-recipes --module csm make-rewards --json
+sm-recipes cm seed --seed 0x01                          # cm-only recipe
+sm-recipes csm set-gate --address 0xabc... --address 0xdef...   # csm-only recipe
 ```
 
 Every **required, non-repeatable** option is also accepted **positionally**, in declaration
@@ -56,16 +56,16 @@ order — so the common case needs no flags. Flags still work and can be mixed w
 optional flags (e.g. `--seed`, `--pair`) stay flag-only by default.
 
 ```bash
-csm-recipes csm operator-info 0          # == --operator-id 0
-csm-recipes csm withdraw 0 1 32          # == --operator-id 0 --key-index 1 --exit-balance 32
-csm-recipes csm add-keys 0 5 --seed 0x01 # positional id+count, optional seed via flag
+sm-recipes csm operator-info 0          # == --operator-id 0
+sm-recipes csm withdraw 0 1 32          # == --operator-id 0 --key-index 1 --exit-balance 32
+sm-recipes csm add-keys 0 5 --seed 0x01 # positional id+count, optional seed via flag
 ```
 
 `set-gate` opts its `<selector>` (optional) and `<address...>` (repeatable, **variadic** —
 must come last) into the positional form, so the selector leads and the addresses follow:
 
 ```bash
-csm-recipes csm set-gate idvtc 0xabc... 0xdef...   # == --selector idvtc --address 0xabc... --address 0xdef...
+sm-recipes csm set-gate idvtc 0xabc... 0xdef...   # == --selector idvtc --address 0xabc... --address 0xdef...
 ```
 
 ## The `actAs` model

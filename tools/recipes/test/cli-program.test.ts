@@ -35,7 +35,7 @@ describe('buildProgram', () => {
     const viaCmd = captureProgram();
     await viaCmd.prog.parseAsync(['help'], { from: 'user' }).catch(() => undefined);
 
-    expect(viaCmd.get()).toContain('Usage: csm-recipes');
+    expect(viaCmd.get()).toContain('Usage: sm-recipes');
     expect(viaCmd.get()).toBe(viaFlag.get());
   });
 

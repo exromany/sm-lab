@@ -41,7 +41,7 @@ describe('readStrikesFile', () => {
 });
 
 describe('writeJsonFile', () => {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'csm-merkle-'));
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sm-merkle-'));
   afterAll(() => fs.rmSync(tmpDir, { recursive: true, force: true }));
 
   it('writes the { treeRoot, treeCid } handoff file, creating nested parent dirs', () => {

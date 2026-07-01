@@ -6,10 +6,10 @@ drop-in stand-in for Pinata in CSM testing. Same Hono + commander shape as `cl-m
 ## Quick start
 
 ```sh
-csm-ipfs-mock serve              # listens on 127.0.0.1:3000
-csm-ipfs-mock status             # health + pin count + configured gateway
-csm-ipfs-mock stop               # graceful shutdown
-csm-ipfs-mock help               # full agent-facing guide
+sm-ipfs serve              # listens on 127.0.0.1:3000
+sm-ipfs status             # health + pin count + configured gateway
+sm-ipfs stop               # graceful shutdown
+sm-ipfs help               # full agent-facing guide
 ```
 
 Point `@pinata/sdk` (or any fetch client) at `http://127.0.0.1:3000` — no code change.
@@ -54,8 +54,8 @@ CID → `400`, upstream unreachable → `502`, upstream timeout → `504`.
   `serve --gateway <url>`.
 
 ```sh
-IPFS_UPSTREAM_GATEWAY=https://ipfs.io csm-ipfs-mock serve
-csm-ipfs-mock serve --gateway https://ipfs.io
+IPFS_UPSTREAM_GATEWAY=https://ipfs.io sm-ipfs serve
+sm-ipfs serve --gateway https://ipfs.io
 ```
 
 ## Deterministic CIDs — and the UnixFS-parity caveat
@@ -77,7 +77,7 @@ In-memory by default (restart = clean slate). Pass `--persist <dir>` to mirror p
 disk (`<dir>/<cid>.bin` + `<cid>.json`) and replay them on the next start.
 
 ```sh
-csm-ipfs-mock serve --persist ./pins
+sm-ipfs serve --persist ./pins
 ```
 
 ## Library usage

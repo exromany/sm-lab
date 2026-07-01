@@ -11,7 +11,7 @@ export interface CliDeps {
 export function buildProgram(deps: CliDeps = { makeDepositKeys: realMakeDepositKeys }): Command {
   return (
     new Command()
-      .name('csm-keys')
+      .name('sm-keys')
       .description('Generate real BLS validator deposit data for Lido CSM (mainnet/hoodi)')
       .option('--chain <name>', 'mainnet | hoodi', 'hoodi')
       .option('--count <n>', 'number of validators', '1')
@@ -20,9 +20,9 @@ export function buildProgram(deps: CliDeps = { makeDepositKeys: realMakeDepositK
       .option('--wc <address>', 'override withdrawal address (default: Lido vault)')
       .option('--start-index <n>', 'first validator index', '0')
       .option('-o, --out <path>', 'write deposit_data.json to <path> (else stdout)')
-      // `csm-keys 2` == `csm-keys --count 2`; the positional wins when both are given.
+      // `sm-keys 2` == `sm-keys --count 2`; the positional wins when both are given.
       .argument('[count]', 'number of validators (positional alias for --count)')
-      // `csm-keys help` mirrors `--help` (matches the csm-recipes CLI).
+      // `sm-keys help` mirrors `--help` (matches the sm-recipes CLI).
       .helpCommand(true)
       .action(
         async (

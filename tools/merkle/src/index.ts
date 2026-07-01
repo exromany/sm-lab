@@ -1,6 +1,6 @@
 // Public library surface — pure, testable building blocks plus the build+pin pipeline.
 // Lets consumers (SDK / integration tests) build trees and pin to IPFS in-process instead
-// of shelling out to the `csm-merkle` binary (which lives in cli/).
+// of shelling out to the `sm-merkle` binary (which lives in cli/).
 
 // Pure deterministic core
 export {

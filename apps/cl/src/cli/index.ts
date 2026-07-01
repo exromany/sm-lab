@@ -9,7 +9,7 @@ import { stopCommand } from './stop';
 import { helpCommand } from './help';
 
 const program = new Command()
-  .name('csm-cl-mock')
+  .name('sm-cl')
   .description('Consensus Layer mock server for CSM testing')
   .option('--url <url>', 'CL mock server URL (for config/stop commands)')
   .helpCommand(false);

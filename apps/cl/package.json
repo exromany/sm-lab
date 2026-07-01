@@ -15,7 +15,7 @@
     "testing"
   ],
   "bin": {
-    "csm-cl-mock": "dist/cli.mjs"
+    "sm-cl": "dist/cli.mjs"
   },
   "types": "./dist/index.d.mts",
   "exports": {

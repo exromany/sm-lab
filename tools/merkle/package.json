@@ -13,7 +13,7 @@
     "testing"
   ],
   "bin": {
-    "csm-merkle": "dist/cli.mjs"
+    "sm-merkle": "dist/cli.mjs"
   },
   "types": "./dist/index.d.mts",
   "exports": {

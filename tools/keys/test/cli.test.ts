@@ -25,7 +25,7 @@ const muteConsole = () => {
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
 };
 
-describe('csm-keys CLI', () => {
+describe('sm-keys CLI', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('`help` prints the same output as `--help`', async () => {
@@ -34,7 +34,7 @@ describe('csm-keys CLI', () => {
     const viaCmd = harness();
     await viaCmd.prog.parseAsync(['help'], { from: 'user' }).catch(() => undefined);
 
-    expect(viaCmd.get()).toContain('Usage: csm-keys');
+    expect(viaCmd.get()).toContain('Usage: sm-keys');
     expect(viaCmd.get()).toBe(viaFlag.get());
   });
 

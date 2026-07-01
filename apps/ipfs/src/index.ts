@@ -1,6 +1,6 @@
 // Public library surface — lets consumers (e.g. SDK integration tests) boot the mock
 // in-process instead of shelling out to the CLI, and inject a stub upstream gateway.
-// The `csm-ipfs-mock` binary lives in cli/index.ts.
+// The `sm-ipfs` binary lives in cli/index.ts.
 export { app, createApp, startServer } from './server/app';
 export type { AppOptions, AppHandle, ServeOptions } from './server/app';
 export { store, PinStore } from './server/store';

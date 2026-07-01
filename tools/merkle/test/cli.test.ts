@@ -32,7 +32,7 @@ const muteConsole = () => {
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
 };
 
-describe('csm-merkle CLI', () => {
+describe('sm-merkle CLI', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('`ics <path>` calls makeIcs with the path and uploads by default', async () => {
@@ -81,7 +81,7 @@ describe('csm-merkle CLI', () => {
     const h = harness();
     await h.prog.parseAsync(['help'], { from: 'user' });
     const printed = logs.join('\n');
-    expect(printed).toContain('csm-merkle');
+    expect(printed).toContain('sm-merkle');
     expect(printed).toContain('WHAT IT DOES');
   });
 });

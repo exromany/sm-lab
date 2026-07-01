@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { DEFAULT_GATEWAY, DEFAULT_PORT } from '../types';
 
-const GUIDE = `csm-ipfs-mock — Pinata-compatible IPFS pinning + gateway mock for CSM testing
+const GUIDE = `sm-ipfs — Pinata-compatible IPFS pinning + gateway mock for CSM testing
 
 PURPOSE
   A drop-in stand-in for Pinata. Point @pinata/sdk (or any fetch client) at this
@@ -10,12 +10,12 @@ PURPOSE
   public IPFS gateway, so reads of production content still work offline-of-Pinata.
 
 TYPICAL WORKFLOW
-  1. Start server:   csm-ipfs-mock serve
+  1. Start server:   sm-ipfs serve
   2. Pin JSON:       POST /pinning/pinJSONToIPFS    → { IpfsHash, PinSize, Timestamp }
   3. Read it back:   GET  /ipfs/<IpfsHash>          → the stored bytes
   4. List / unpin:   GET  /data/pinList  •  DELETE /pinning/unpin/<cid>
-  5. Check health:   csm-ipfs-mock status
-  6. Shut down:      csm-ipfs-mock stop   (or Ctrl+C on the server)
+  5. Check health:   sm-ipfs status
+  6. Shut down:      sm-ipfs stop   (or Ctrl+C on the server)
 
 COMMANDS
   serve [--port N] [--host H] [--gateway URL] [--persist DIR]
@@ -46,8 +46,8 @@ IPFS GATEWAY (consumer-facing read path)
 UPSTREAM GATEWAY (for store-miss CIDs)
   Default:  ${DEFAULT_GATEWAY}
   Override (highest priority last): bundled default < env IPFS_UPSTREAM_GATEWAY < serve --gateway
-    IPFS_UPSTREAM_GATEWAY=https://ipfs.io csm-ipfs-mock serve
-    csm-ipfs-mock serve --gateway https://ipfs.io
+    IPFS_UPSTREAM_GATEWAY=https://ipfs.io sm-ipfs serve
+    sm-ipfs serve --gateway https://ipfs.io
 
 CID FORMAT — IMPORTANT
   CIDs are deterministic: CIDv1 / raw codec (0x55) / sha2-256 over the content bytes.
@@ -60,11 +60,11 @@ CID FORMAT — IMPORTANT
 REMOTE TARGET
   status/stop default to http://127.0.0.1:${DEFAULT_PORT}.
   Override with --url <url> (on the root command) or env IPFS_MOCK_URL.
-    csm-ipfs-mock --url http://host:${DEFAULT_PORT} status
-    IPFS_MOCK_URL=http://host:${DEFAULT_PORT} csm-ipfs-mock stop
+    sm-ipfs --url http://host:${DEFAULT_PORT} status
+    IPFS_MOCK_URL=http://host:${DEFAULT_PORT} sm-ipfs stop
 
 AGENT TIPS
-  • Always 'csm-ipfs-mock status' before assuming a server is up — it prints a
+  • Always 'sm-ipfs status' before assuming a server is up — it prints a
     machine-parseable line on failure and exits 1.
   • State is in-memory by default → restart = clean slate. Use --persist DIR to keep it.
   • A GET /ipfs/:cid that hits an unpinned CID WILL touch the network (the upstream

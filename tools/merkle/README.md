@@ -13,14 +13,14 @@ input JSON → build StandardMerkleTree → pin to IPFS → print { treeRoot, tr
 
 ## CLI
 
-Binary: `csm-merkle` (`npx @sm-lab/merkle …`).
+Binary: `sm-merkle` (`npx @sm-lab/merkle …`).
 
 ```bash
-csm-merkle ics addresses.json              # build ICS tree, pin, print root + CID
-csm-merkle strikes strikes.json            # build strikes tree, pin, print root + CID
-csm-merkle ics addresses.json --no-upload  # build/print root only, skip pinning
-csm-merkle ics addresses.json -o out.json  # also write { treeRoot, treeCid } to out.json
-csm-merkle help                            # self-contained cheat sheet
+sm-merkle ics addresses.json              # build ICS tree, pin, print root + CID
+sm-merkle strikes strikes.json            # build strikes tree, pin, print root + CID
+sm-merkle ics addresses.json --no-upload  # build/print root only, skip pinning
+sm-merkle ics addresses.json -o out.json  # also write { treeRoot, treeCid } to out.json
+sm-merkle help                            # self-contained cheat sheet
 ```
 
 Flags: `--no-upload` (root only, skip IPFS) · `-o, --out <path>` (also write a
