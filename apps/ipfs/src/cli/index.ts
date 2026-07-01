@@ -10,7 +10,7 @@ const program = new Command()
   .name('sm-ipfs')
   .description('Pinata-compatible IPFS pinning + gateway mock for CSM testing')
   .option('--url <url>', 'IPFS mock server URL (for status/stop commands)')
-  .addHelpCommand(false);
+  .helpCommand(false);
 
 program.addCommand(serveCommand);
 program.addCommand(statusCommand);

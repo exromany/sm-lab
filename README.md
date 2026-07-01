@@ -38,12 +38,3 @@ All tooling config is centralized in `@sm-lab/config`.
 
 - [`docs/architecture.md`](./docs/architecture.md) — design of record
 - [`docs/decisions/`](./docs/decisions) — ADRs (why each choice was made)
-- [`docs/migration.md`](./docs/migration.md) — how the seed repos fold in
-
-## Status
-
-Migration steps 1–6 are done: `cl-mock`, `ipfs-mock`, `merkle`, `keys`, `recipes` (+ the
-`sm-recipes` CLI), `receipts`, and the shared `core`/`config` packages are built, tested,
-and green. CI runs turbo checks + Changesets releases; the coordinated first npm publish of
-`recipes`/`merkle`/`receipts` is the remaining release action. See
-[`docs/migration.md`](./docs/migration.md) for per-step detail.

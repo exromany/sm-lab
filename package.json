@@ -6,7 +6,7 @@
   "description": "Monorepo of testing & emulation utilities for Lido CSM (Community Staking Module)",
   "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "pnpm": {
     "overrides": {

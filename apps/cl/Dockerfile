@@ -1,6 +1,6 @@
 # Built from the monorepo root (see docker/compose.yaml: context: ..).
 # The image is a thin wrapper over the SAME bin published to npm — no parallel build.
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 RUN corepack enable
 WORKDIR /repo
 
@@ -11,7 +11,7 @@ RUN pnpm --filter @sm-lab/cl build
 # `pnpm deploy` produces a self-contained dir (package.json + dist + pruned prod node_modules)
 RUN pnpm --filter @sm-lab/cl deploy --prod /app
 
-FROM node:22-alpine
+FROM node:24-alpine
 WORKDIR /app
 COPY --from=build /app .
 EXPOSE 5052

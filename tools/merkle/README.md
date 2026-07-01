@@ -42,7 +42,7 @@ Tree leaf encodings: ICS `["address"]` · strikes `["uint256", "string", "uint25
 
 | Var                                    | Purpose                                                                                                                                                                                                |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `IPFS_API_URL`                         | Pinning endpoint. **Unset → real Pinata** (`https://api.pinata.cloud`). Point at `@sm-lab/ipfs` for local runs (e.g. `http://127.0.0.1:3000`) — a custom endpoint pins **without** Pinata credentials. |
+| `IPFS_API_URL`                         | Pinning endpoint. **Unset → real Pinata** (`https://api.pinata.cloud`). Point at `@sm-lab/ipfs` for local runs (e.g. `http://127.0.0.1:5001`) — a custom endpoint pins **without** Pinata credentials. |
 | `PINATA_API_KEY` / `PINATA_API_SECRET` | Pinata credentials (`pinata_api_key` / `pinata_secret_api_key` headers).                                                                                                                               |
 | `PINATA_JWT`                           | Alternative to key/secret (`Authorization: Bearer …`).                                                                                                                                                 |
 
@@ -68,13 +68,3 @@ export default libConfig({
   platform: 'node',
 });
 ```
-
-## Migration notes (from `csm-test-tree`)
-
-- **ts-node / CommonJS → ESM + tsdown.** Explicit paths instead of `__dirname`-relative.
-- **Scope trimmed to build + pin.** The original `set` phase (push root/CID on-chain via
-  Foundry `cast`, read addresses from `DEPLOY_JSON_PATH`) was removed — that work moves to
-  `@sm-lab/receipts`. The `make-ics`/`set-ics`/… npm-script soup collapsed to `ics` / `strikes`.
-- **First tests.** Vitest pins the deterministic core — stable ICS/strikes roots, leaf
-  encodings, proof round-trips, address/strikes parsing, and the IPFS client's URL/credential
-  resolution + request shape (mocked `fetch`, no network).

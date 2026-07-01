@@ -57,6 +57,6 @@
     "@types/node": "catalog:"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   }
 }

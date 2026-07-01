@@ -6,18 +6,15 @@ drop-in stand-in for Pinata in CSM testing. Same Hono + commander shape as `cl-m
 ## Quick start
 
 ```sh
-sm-ipfs serve              # listens on 127.0.0.1:3000
+sm-ipfs serve              # listens on 127.0.0.1:5001
 sm-ipfs status             # health + pin count + configured gateway
 sm-ipfs stop               # graceful shutdown
 sm-ipfs help               # full agent-facing guide
 ```
 
-Point `@pinata/sdk` (or any fetch client) at `http://127.0.0.1:3000` — no code change.
+Point `@pinata/sdk` (or any fetch client) at `http://127.0.0.1:5001` — no code change.
 
 ## API surface
-
-All routes are **CORS-enabled** (permissive `*`), so browser consumers (csm-widget) can
-pin and read back cross-origin.
 
 ### Pinata-compatible pinning API
 

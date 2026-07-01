@@ -1,4 +1,4 @@
-export const DEFAULT_PORT = 3000;
+export const DEFAULT_PORT = 5001;
 export const DEFAULT_HOST = '127.0.0.1';
 
 /**

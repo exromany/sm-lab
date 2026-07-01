@@ -82,7 +82,7 @@ FLAGS
 
 ENV
   IPFS_API_URL         pinning endpoint; unset → real Pinata (https://api.pinata.cloud).
-                       Point at @sm-lab/ipfs locally (e.g. http://127.0.0.1:3000) —
+                       Point at @sm-lab/ipfs locally (e.g. http://127.0.0.1:5001) —
                        a custom endpoint pins without Pinata credentials.
   PINATA_API_KEY/SECRET   Pinata credentials (or PINATA_JWT). Ignored by the mock.
 
