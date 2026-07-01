@@ -2,7 +2,7 @@
 
 Real BLS12-381 validator **deposit-data** generator for Lido CSM (mainnet / hoodi).
 Pure TypeScript — no chain, no Foundry, no external binary. Replaces `eth-staking-smith`
-for csm-lab / consumer test suites.
+for sm-lab / consumer test suites.
 
 Keys are EIP-2333/2334 derived from a BIP-39 mnemonic and signed against the deposit
 domain, so they pass the CSM SDK's on-upload BLS validation.

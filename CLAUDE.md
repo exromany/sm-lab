@@ -5,7 +5,7 @@ Guidance for Claude Code working in this repo. See `docs/architecture.md` for th
 
 ## What this is
 
-`csm-lab` — monorepo of **testing & emulation utilities** for Lido CSM. Not CSM itself: the
+`sm-lab` — monorepo of **testing & emulation utilities** for Lido CSM. Not CSM itself: the
 contracts (`community-staking-module`), SDK (`lido-csm-sdk`), and widget (`csm-widget`) are
 _consumers_, not members.
 
@@ -15,6 +15,13 @@ Top level splits by **lifecycle**, not topic:
 - `tools/*` — run-and-exit CLIs / libraries: `merkle`, `recipes`
 - `fixtures/*` — versioned data, zero runtime: `receipts`
 - `packages/*` — shared internals, bundled into consumers (not published): `core`, `config`
+
+## Repo rename note
+
+The codebase is already name-clean (`sm-lab` throughout). Renaming the GitHub repo and local
+working directory to `sm-lab` is a **manual owner action** (not done by code):
+1. GitHub Settings → Rename repository → `sm-lab`.
+2. Locally: `git remote set-url origin <new-url>` (GitHub redirects, but update anyway).
 
 ## Commands
 

@@ -2,7 +2,7 @@
 
 Status: **accepted** · Date: 2026-06-24
 
-Decisions made while bootstrapping `csm-lab`, with the alternatives that were weighed.
+Decisions made while bootstrapping `sm-lab`, with the alternatives that were weighed.
 
 | #   | Decision                 | Chosen                                        | Rejected alternatives                     | Why                                                                                                                                                                                                                                                   |
 | --- | ------------------------ | --------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

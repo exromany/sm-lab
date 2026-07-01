@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Shared internals for csm-lab — harvested from cl-mock & merkle during migration. Bundled into consumers, never published.",
+  "description": "Shared internals for sm-lab — harvested from cl-mock & merkle during migration. Bundled into consumers, never published.",
   "exports": {
     ".": "./src/index.ts"
   },

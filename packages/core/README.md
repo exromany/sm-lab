@@ -1,6 +1,6 @@
 # @sm-lab/core
 
-Shared internals consumed by the service packages (`apps/cl-mock`, `apps/ipfs-mock`).
+Shared internals consumed by the service packages (`apps/cl`, `apps/ipfs`).
 Private — **bundled into** each consumer's artifact via tsdown's `deps.alwaysBundle`
 (see `packages/config/tsdown.base.ts`), so it never ships as its own npm package and
 consumers get no transitive `@sm-lab/*` to resolve at runtime.

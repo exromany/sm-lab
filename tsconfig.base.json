@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "csm-lab base",
+  "display": "sm-lab base",
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2023"],

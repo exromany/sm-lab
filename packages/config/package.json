@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Shared build/type/lint presets for csm-lab. Internal only — not published.",
+  "description": "Shared build/type/lint presets for sm-lab. Internal only — not published.",
   "exports": {
     "./tsconfig.lib.json": "./tsconfig.lib.json",
     "./tsdown": "./tsdown.base.ts"

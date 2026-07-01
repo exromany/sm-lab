@@ -10,7 +10,7 @@ export interface StartServerOptions {
 }
 
 /**
- * Boot a Hono app on Node with graceful shutdown wired up — the scaffold every csm-lab
+ * Boot a Hono app on Node with graceful shutdown wired up — the scaffold every sm-lab
  * service shared verbatim. Builds a shutdown closure (close server → exit 0), registers it
  * for `POST /admin/shutdown` via setShutdownHandler, and binds SIGINT/SIGTERM to it.
  */

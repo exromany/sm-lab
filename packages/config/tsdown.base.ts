@@ -1,7 +1,7 @@
 import { defineConfig, type Options } from 'tsdown';
 
 /**
- * Shared tsdown preset for every publishable package in csm-lab.
+ * Shared tsdown preset for every publishable package in sm-lab.
  *
  * Why this exists: the build strategy (formats, dts, how workspace internals are
  * handled) is a single decision that should live in ONE place. Each package calls

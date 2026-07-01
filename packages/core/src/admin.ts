@@ -45,7 +45,7 @@ export interface AdminRoutesOptions {
 }
 
 /**
- * Register the admin surface shared by every csm-lab service:
+ * Register the admin surface shared by every sm-lab service:
  *   GET  /admin/status   → { ok, version, startedAt, uptimeSeconds, ...getStatus() }
  *   POST /admin/shutdown → graceful shutdown (deferred 50ms so the response flushes first)
  */

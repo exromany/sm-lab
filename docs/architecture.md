@@ -1,11 +1,11 @@
-# csm-lab — architecture
+# sm-lab — architecture
 
 > Monorepo of testing & emulation utilities for Lido CSM (Community Staking Module).
 > This document is the design of record. Decisions are logged in [`decisions/`](./decisions).
 
 ## What this is (and isn't)
 
-`csm-lab` houses the **tooling you use to test CSM**, not CSM itself. The contracts
+`sm-lab` houses the **tooling you use to test CSM**, not CSM itself. The contracts
 (`community-staking-module`), the SDK (`lido-csm-sdk`), and the widget (`csm-widget`) are
 **consumers**, never members — they depend on what this repo publishes (mocks + fixtures),
 which keeps their release cycles decoupled from ours.
@@ -20,7 +20,7 @@ A flat `packages/` would force every package to be treated identically. But this
 
 | Bucket       | Lifecycle                            | Artifacts                               | Members                     |
 | ------------ | ------------------------------------ | --------------------------------------- | --------------------------- |
-| `apps/*`     | **deployed** (long-running service)  | npm `bin` **+** Docker image **+** helm | `cl-mock`, `ipfs-mock`      |
+| `apps/*`     | **deployed** (long-running service)  | npm `bin` **+** Docker image **+** helm | `cl`, `ipfs`                |
 | `tools/*`    | **invoked** (run-and-exit CLI)       | npm `bin`                               | `merkle`, `keys`, `recipes` |
 | `fixtures/*` | **data** (refreshed, zero runtime)   | published typed JSON                    | `receipts`                  |
 | `packages/*` | **internal** (consumed by the above) | bundled in, not published               | `core`, `config`            |
@@ -29,10 +29,10 @@ The payoff: Turbo filters, Dockerfiles, and release rules target a whole bucket
 (`turbo run build --filter=./apps/*`) instead of special-casing each package.
 
 ```
-csm-lab/
+sm-lab/
 ├── apps/
-│   ├── cl-mock/      @sm-lab/cl     Beacon API mock (Hono)        ← csm-test-cl
-│   └── ipfs-mock/    @sm-lab/ipfs   Pinata/IPFS emulator (Hono)   ← NEW
+│   ├── cl/           @sm-lab/cl     Beacon API mock (Hono)        ← csm-test-cl
+│   └── ipfs/         @sm-lab/ipfs   Pinata/IPFS emulator (Hono)   ← NEW
 ├── tools/
 │   ├── merkle/       @sm-lab/merkle      ICS + strikes tree builder    ← csm-test-tree
 │   ├── keys/         @sm-lab/keys        BLS deposit-data generator    ← NEW

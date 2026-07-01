@@ -1,4 +1,4 @@
-// Shared internals for csm-lab services. Bundled into each consumer (never published) —
+// Shared internals for sm-lab services. Bundled into each consumer (never published) —
 // see packages/config/tsdown.base.ts `deps.alwaysBundle`.
 export { startServer } from './server';
 export type { StartServerOptions } from './server';

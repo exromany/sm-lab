@@ -136,7 +136,7 @@ pnpm --filter @sm-lab/receipts refresh -- \
   [--force]
 ```
 
-`--contracts` defaults to `../../../community-staking-module` — a sibling of the csm-lab repo root
+`--contracts` defaults to `../../../community-staking-module` — a sibling of the sm-lab repo root
 (relative paths resolve from the package root, `fixtures/receipts/`). `--force` bypasses
 the git-ref guard (see below).
 
