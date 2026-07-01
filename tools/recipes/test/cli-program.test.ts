@@ -39,6 +39,19 @@ describe('buildProgram', () => {
     expect(viaCmd.get()).toBe(viaFlag.get());
   });
 
+  it('help text contains --json option AND a usage example with --json', async () => {
+    const h = captureProgram();
+    await h.prog.parseAsync(['--help'], { from: 'user' }).catch(() => undefined);
+    const helpText = h.get();
+    // Option documented
+    expect(helpText).toContain('--json');
+    // At least one example showing --json usage
+    expect(helpText).toMatch(/--json/);
+    expect(helpText).toContain('Examples:');
+    // Must contain a concrete example using --json
+    expect(helpText).toMatch(/sm-recipes .+--json/);
+  });
+
   it('mirrors every shared command under both cm and csm groups (module pre-bound)', () => {
     const cmNames = p.commands.find((c) => c.name() === 'cm')!.commands.map((c) => c.name());
     const csmNames = p.commands.find((c) => c.name() === 'csm')!.commands.map((c) => c.name());

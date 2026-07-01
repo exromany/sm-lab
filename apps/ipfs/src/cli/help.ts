@@ -63,6 +63,15 @@ REMOTE TARGET
     sm-ipfs --url http://host:${DEFAULT_PORT} status
     IPFS_MOCK_URL=http://host:${DEFAULT_PORT} sm-ipfs stop
 
+FLAGS
+  --json   (on status) emit a single JSON value to stdout instead of human-readable text.
+           Exit code is still 0/1 (success/error). Nothing else is written to stdout.
+           Errors always go to stderr regardless of --json.
+
+  Examples:
+    sm-ipfs status --json
+    sm-ipfs --url http://host:${DEFAULT_PORT} status --json
+
 AGENT TIPS
   • Always 'sm-ipfs status' before assuming a server is up — it prints a
     machine-parseable line on failure and exits 1.

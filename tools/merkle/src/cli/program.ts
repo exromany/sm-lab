@@ -16,6 +16,9 @@ function run(fn: () => Promise<void>): void {
   });
 }
 
+const bigintReplacer = (_k: string, v: unknown): unknown =>
+  typeof v === 'bigint' ? v.toString() : v;
+
 function report(label: string, result: MakeResult): void {
   console.log(`${label} tree root: ${result.treeRoot}`);
   console.log(`${label} tree CID:  ${result.treeCid ?? '(upload skipped)'}`);
@@ -38,12 +41,15 @@ export function buildProgram(
     .argument('<addresses>', 'path to addresses.json (JSON array) or newline-delimited .txt')
     .option('--no-upload', 'build/print root only, skip IPFS pinning')
     .option('-o, --out <path>', 'also write { treeRoot, treeCid } JSON to this path')
-    .action((addresses: string, opts: { upload: boolean; out?: string }) => {
+    .option('--json', 'print result as JSON to stdout (machine-readable)')
+    .action((addresses: string, opts: { upload: boolean; out?: string; json?: boolean }) => {
       run(async () => {
-        report(
-          'ICS',
-          await deps.makeIcs(addresses, { noUpload: !opts.upload, configPath: opts.out }),
-        );
+        const result = await deps.makeIcs(addresses, { noUpload: !opts.upload, configPath: opts.out });
+        if (opts.json) {
+          console.log(JSON.stringify(result, bigintReplacer, 2));
+        } else {
+          report('ICS', result);
+        }
       });
     });
 
@@ -53,12 +59,15 @@ export function buildProgram(
     .argument('<strikes>', 'path to strikes.json')
     .option('--no-upload', 'build/print root only, skip IPFS pinning')
     .option('-o, --out <path>', 'also write { treeRoot, treeCid } JSON to this path')
-    .action((strikes: string, opts: { upload: boolean; out?: string }) => {
+    .option('--json', 'print result as JSON to stdout (machine-readable)')
+    .action((strikes: string, opts: { upload: boolean; out?: string; json?: boolean }) => {
       run(async () => {
-        report(
-          'Strikes',
-          await deps.makeStrikes(strikes, { noUpload: !opts.upload, configPath: opts.out }),
-        );
+        const result = await deps.makeStrikes(strikes, { noUpload: !opts.upload, configPath: opts.out });
+        if (opts.json) {
+          console.log(JSON.stringify(result, bigintReplacer, 2));
+        } else {
+          report('Strikes', result);
+        }
       });
     });
 
@@ -79,6 +88,7 @@ COMMANDS
 FLAGS
   --no-upload          build/print the root only, skip IPFS pinning
   -o, --out <path>     also write { treeRoot, treeCid } JSON to <path>
+  --json               print result as a single JSON value to stdout (machine-readable)
 
 ENV
   IPFS_API_URL         pinning endpoint; unset → real Pinata (https://api.pinata.cloud).
@@ -88,7 +98,12 @@ ENV
 
 DATA FORMATS
   addresses    JSON array ["0x..", ...] or newline-delimited text (# comments ok)
-  strikes      JSON array [{ nodeOperatorId, pubkey, strikes: number[] }]`);
+  strikes      JSON array [{ nodeOperatorId, pubkey, strikes: number[] }]
+
+EXAMPLES
+  sm-merkle ics addrs.json --json
+  sm-merkle strikes strikes.json --no-upload --json
+  sm-merkle ics addrs.json -o config.json`);
     });
 
   return program;

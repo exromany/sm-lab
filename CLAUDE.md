@@ -74,6 +74,9 @@ package has a build entry); per-package gates above are still the fastest done-c
   builds the commander program from injected implementations, `src/cli/index.ts` is a thin bootstrap —
   so command parsing is tested hermetically with fakes. Suppress the built-in help with `.helpCommand(false)`
   (not the deprecated `.addHelpCommand(false)`) when shipping a custom `help` cheat sheet.
+- **Machine-readable I/O:** every data-emitting command takes `--json`; with `--json` it prints one
+  JSON value to stdout (`JSON.stringify` with 2-space indent, bigints serialised as strings); errors go
+  to stderr as `Error: …` with exit 1; exit codes are 0 success / 1 error; help documents `--json`.
 - **Don't over-extract into `core` (YAGNI).** Domain validators and single-consumer helpers stay
   local; promote to core only when a _second_ consumer needs them.
 - **Tests are hermetic** — no network, no chain. Test Hono handlers via `app.request(...)`; inject

@@ -17,6 +17,15 @@ export function buildProgram(connectImpl: typeof connect = connect): Command {
     .option('--module <csm|cm>', 'target module for shared commands')
     .option('--cl-mock-url <url>', 'cl-mock URL for cl-activate (default: $CL_MOCK_URL)')
     .option('--json', 'emit the raw result as JSON')
+    .addHelpText(
+      'after',
+      `
+Examples:
+  sm-recipes operator-info 0 --module csm --json
+  sm-recipes csm operator-info 0 --json
+  sm-recipes add-keys 0 --module cm --json
+  sm-recipes cm seed --json`,
+    )
     // `sm-recipes help [cmd]` mirrors `--help` (and the cm/csm groups get it too).
     .helpCommand(true);
 

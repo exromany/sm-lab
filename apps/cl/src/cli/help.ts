@@ -21,16 +21,21 @@ COMMANDS
   config set <pubkey> <status> [eth]      register/update a validator
                                             [eth] = optional effective balance in
                                             ETH (e.g. 31.5); default 32
-  config list                             list configured validators
+  config list [--json]                    list configured validators
   config remove <pubkey>                  remove one validator
   config reset                            clear all validators
-  config statuses                         print valid statuses (offline)
-  query [pubkey...] [--state id]          fetch & pretty-print beacon response
+  config statuses [--json]               print valid statuses (offline)
+  query [pubkey...] [--state id] [--json] fetch & pretty-print beacon response
                                             (no args = query every configured validator)
   status [--json]                         server uptime, version, status breakdown
                                             exits 1 with "<url> offline (...)" if down
   stop                                    graceful shutdown
   help                                    this guide
+
+FLAGS
+  --json    output raw JSON to stdout (machine-parseable); exit 0 = success, 1 = error.
+            Applies to: config list, config statuses, query, status.
+            Errors always go to stderr regardless of --json.
 
 REMOTE TARGET
   config/query/status/stop default to http://127.0.0.1:${DEFAULT_PORT}.
@@ -48,6 +53,13 @@ VALID STATUSES
   Names ending in _slashed imply slashed:true. withdrawal_*_slashed are
   collapsed to their non-slashed counterparts in the API status field
   (matching real Beacon API behavior).
+
+EXAMPLES
+  sm-cl config list --json          # emit JSON array of validators
+  sm-cl config statuses --json      # emit JSON array of valid status strings
+  sm-cl query 0xabc... --json       # emit raw beacon API JSON response
+  sm-cl status --json               # emit JSON status object
+  sm-cl --url http://host:5052 config list --json
 
 ADMIN HTTP API (for direct scripting without the CLI)
   GET    /admin/validators           → [{ pubkey, status, effective_balance? }]
@@ -70,6 +82,8 @@ BEACON API (consumer-facing)
 AGENT TIPS
   • Always 'sm-cl status' before assuming a server is up — it prints a
     machine-parseable line on failure and exits 1.
+  • Use 'sm-cl status --json' to get the full status object as JSON.
+  • Use 'sm-cl config list --json' to enumerate validators in scripts.
   • Use 'config statuses' (no HTTP) to discover valid status values.
   • Batch multiple validators via POST /admin/validators with a JSON array.
   • State is ephemeral. If tests depend on a clean slate, call

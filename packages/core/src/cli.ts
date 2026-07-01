@@ -61,7 +61,7 @@ export function createStatusCommand<T extends BaseStatusResponse>(
       try {
         res = await fetch(`${url}/admin/status`);
       } catch (err) {
-        console.log(`${url}  offline (${err instanceof Error ? err.message : String(err)})`);
+        console.error('Error:', `${url} offline (${err instanceof Error ? err.message : String(err)})`);
         process.exit(1);
       }
       if (!res.ok) {
