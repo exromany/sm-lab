@@ -36,18 +36,18 @@
     "start": "node dist/cli.mjs serve"
   },
   "dependencies": {
-    "@sm-lab/core": "workspace:*",
-    "hono": "catalog:",
     "@hono/node-server": "catalog:",
+    "@sm-lab/core": "workspace:*",
     "commander": "catalog:",
-    "multiformats": "^14.0.2"
+    "hono": "catalog:",
+    "multiformats": "^14.0.3"
   },
   "devDependencies": {
     "@sm-lab/config": "workspace:*",
+    "@types/node": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:",
-    "@types/node": "catalog:"
+    "vitest": "catalog:"
   },
   "engines": {
     "node": ">=24"
