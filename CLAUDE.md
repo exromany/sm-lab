@@ -5,7 +5,7 @@ Guidance for Claude Code working in this repo. See `docs/architecture.md` for th
 
 ## What this is
 
-`sm-lab` — monorepo of **testing & emulation utilities** for Lido CSM. Not CSM itself: the
+`sm-lab` — monorepo of **testing & emulation utilities** for Lido SM (Staking Modules) — CSM is one module. Not the modules themselves: the
 contracts (`community-staking-module`), SDK (`lido-csm-sdk`), and widget (`csm-widget`) are
 _consumers_, not members.
 
@@ -18,11 +18,8 @@ Top level splits by **lifecycle**, not topic:
 
 ## Repo rename note
 
-The codebase is already name-clean (`sm-lab` throughout). Renaming the GitHub repo and local
-working directory to `sm-lab` is a **manual owner action** (not done by code):
-
-1. GitHub Settings → Rename repository → `sm-lab`.
-2. Locally: `git remote set-url origin <new-url>` (GitHub redirects, but update anyway).
+Fully renamed to `sm-lab` — codebase name-clean, local working dir renamed, GitHub repo renamed
+(`exromany/sm-lab`), and `origin` repointed. Old GitHub URLs redirect.
 
 ## Commands
 
@@ -65,7 +62,7 @@ package has a build entry); per-package gates above are still the fastest done-c
   the catalog + reference `catalog:`. After changing any deps, run `pnpm install` (CI is `--frozen-lockfile`).
 - **Lint/format:** oxlint (`.oxlintrc.json`) + prettier (single quotes, width 100, trailing commas).
   Prefer `Array#toSorted()` over `.sort()`.
-- **Releases:** Changesets (`access: public`; `core`/`config` are ignored/private).
+- **Releases:** Changesets (`access: public`; `core`/`config` are private, never published).
 - **Services** mirror the `cl` shape: Hono + commander, `serve`/`status`/`stop`/`help`, in-memory
   store, and core's `registerAdminRoutes` for `/admin/status` + `/admin/shutdown`. `serve --state <file>`
   persists the store (load-on-boot, save-on-shutdown) via core's state helpers, plus `/admin/save` +
@@ -171,4 +168,4 @@ Steps 1–6 (cl, ipfs, merkle, keys, core, receipts, recipes + CLI) are complete
 
 **Deferred (non-blocking):** comment-cleanup; `/admin/*` auth-token + loopback-only hardening;
 faithful epoch-relay on the `cl` proxy; the **coordinated first npm publish** (changeset bodies are
-de-staled / publish-ready); and the manual GitHub-repo + local-dir rename (see Repo rename note).
+de-staled / publish-ready).

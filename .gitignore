@@ -13,5 +13,8 @@ coverage/
 .data/
 tmp/
 
+# agent working artifacts (superpowers briefs/reports — transient, per-machine)
+.superpowers/
+
 .DS_Store
 *.log

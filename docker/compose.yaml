@@ -1,4 +1,4 @@
-# One-command local CSM test bed: beacon mock + IPFS mock + execution layer.
+# One-command local SM test bed: beacon mock + IPFS mock + execution layer.
 # `pnpm stack:up` (from repo root) brings the whole thing online offline.
 #
 # Each app image is a thin wrapper over the same `bin` the package publishes to npm —

@@ -1,17 +1,17 @@
 # sm-lab — architecture
 
-> Monorepo of testing & emulation utilities for Lido CSM (Community Staking Module).
+> Monorepo of testing & emulation utilities for Lido SM (Staking Modules).
 > This document is the design of record. Decisions are logged in [`decisions/`](./decisions).
 
 ## What this is (and isn't)
 
-`sm-lab` houses the **tooling you use to test CSM**, not CSM itself. The contracts
+`sm-lab` houses the **tooling you use to test Lido staking modules**, not the modules themselves. The contracts
 (`community-staking-module`), the SDK (`lido-csm-sdk`), and the widget (`csm-widget`) are
 **consumers**, never members — they depend on what this repo publishes (mocks + fixtures),
 which keeps their release cycles decoupled from ours.
 
 Scope is deliberately **lean**: testing/emulation utilities and the fixtures they need.
-Broader CSM dev/ops tooling stays in its own repos.
+Broader SM dev/ops tooling stays in its own repos.
 
 ## The core idea: four buckets by lifecycle
 
@@ -34,9 +34,9 @@ sm-lab/
 │   ├── cl/           @sm-lab/cl     Beacon API mock (Hono)        ← csm-test-cl
 │   └── ipfs/         @sm-lab/ipfs   Pinata/IPFS emulator (Hono)   ← NEW
 ├── tools/
-│   ├── merkle/       @sm-lab/merkle      ICS + strikes tree builder    ← csm-test-tree
-│   ├── keys/         @sm-lab/keys        BLS deposit-data generator    ← NEW
-│   └── recipes/      @sm-lab/recipes     anvil CSM-state recipes + CLI ← fork.just
+│   ├── merkle/       @sm-lab/merkle      addresses (vetted gate) + strikes + rewards tree builder ← csm-test-tree
+│   ├── keys/         @sm-lab/keys        BLS deposit-data generator                               ← NEW
+│   └── recipes/      @sm-lab/recipes     anvil SM-state recipes + CLI                             ← fork.just
 ├── fixtures/
 │   └── receipts/     @sm-lab/receipts    typed anvil/deploy snapshots  ← contracts repo
 ├── packages/
@@ -76,16 +76,16 @@ bundled into consumers (`noExternal`), so it never ships as its own package.
 ## Data flow — the offline test bed
 
 ```
-  merkle   ──build + pin──►  ipfs-mock      (deterministic CIDs: ICS / gate / rewards trees)
+  merkle   ──build + pin──►  ipfs-mock      (deterministic CIDs: addresses / gate / rewards trees)
 
   recipes  ──impersonate──►  anvil (EL)         ┐
            ──clActivate───►  cl-mock (beacon)   ├──►  widget / SDK / contracts read the
-                                                ┘     prepared offline CSM environment
+                                                ┘     prepared offline SM environment
 
         addresses come from @sm-lab/receipts (no DEPLOY_JSON_PATH)
 ```
 
-`docker compose up` yields a complete offline CSM environment; consumer repos pull
+`docker compose up` yields a complete offline SM environment; consumer repos pull
 `@sm-lab/receipts` + the mocks as ordinary dependencies.
 
 ## Conventions every package follows

@@ -29,14 +29,14 @@ consumers stop duplicating.
 
 | #   | Decision                          | Notes                                                                                                                                                       |
 | --- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Allowlist + strict types**      | Write only the typed fields. Drop the `[key: string]` catch-all and `AddressBookExtra`. refresh **warns** per dropped source key so a new contract is loud.  |
-| 2   | **Enrich: used-only (6)**         | Bake `stakingRouter`, `validatorsExitBusOracle`, `lido`, `withdrawalQueue`, `burner`, `withdrawalVault` into a nested `protocol` block. YAGNI on the rest.   |
-| 3   | **RPC optional; skip + warn**     | `--rpc` / env. No RPC → skip enrichment, **carry forward** the prior file's `protocol`, warn. ABI-only refreshes stay offline. Consumers fall back.           |
-| 4   | **Update both consumers**         | `connect()` prefers baked `protocol`, runtime LidoLocator reads as fallback. keys prefers baked `withdrawalVault`, hardcoded constant as fallback.            |
-| 5   | **Validation gate**               | After curation, throw if a required typed field is missing or not a valid 20-byte address. Turns deploy-JSON drift into a hard error at refresh time.        |
-| 6   | **Provenance: resolved-at block** | Record `{ chainId, block }` per snapshot in `manifest.json` when enrichment runs; carry forward on skip.                                                      |
-| 7   | **Package stays zero-runtime**    | `viem` is added as a **devDependency** for the refresh script only. No runtime `import` of viem in shipped `dist/` or the data path.                          |
-| 8   | **Non-breaking by construction**  | `protocol` is optional; both consumers fall back. An un-enriched / offline refresh degrades cleanly to today's behavior.                                     |
+| 1   | **Allowlist + strict types**      | Write only the typed fields. Drop the `[key: string]` catch-all and `AddressBookExtra`. refresh **warns** per dropped source key so a new contract is loud. |
+| 2   | **Enrich: used-only (6)**         | Bake `stakingRouter`, `validatorsExitBusOracle`, `lido`, `withdrawalQueue`, `burner`, `withdrawalVault` into a nested `protocol` block. YAGNI on the rest.  |
+| 3   | **RPC optional; skip + warn**     | `--rpc` / env. No RPC → skip enrichment, **carry forward** the prior file's `protocol`, warn. ABI-only refreshes stay offline. Consumers fall back.         |
+| 4   | **Update both consumers**         | `connect()` prefers baked `protocol`, runtime LidoLocator reads as fallback. keys prefers baked `withdrawalVault`, hardcoded constant as fallback.          |
+| 5   | **Validation gate**               | After curation, throw if a required typed field is missing or not a valid 20-byte address. Turns deploy-JSON drift into a hard error at refresh time.       |
+| 6   | **Provenance: resolved-at block** | Record `{ chainId, block }` per snapshot in `manifest.json` when enrichment runs; carry forward on skip.                                                    |
+| 7   | **Package stays zero-runtime**    | `viem` is added as a **devDependency** for the refresh script only. No runtime `import` of viem in shipped `dist/` or the data path.                        |
+| 8   | **Non-breaking by construction**  | `protocol` is optional; both consumers fall back. An un-enriched / offline refresh degrades cleanly to today's behavior.                                    |
 
 ## Scope
 
@@ -78,8 +78,8 @@ broader LidoLocator getter set; anvil state. `forkVersion` stays a keys-local CL
     "lido": "0x…",
     "withdrawalQueue": "0x…",
     "burner": "0x…",
-    "withdrawalVault": "0x…"
-  }
+    "withdrawalVault": "0x…",
+  },
 }
 ```
 
@@ -139,7 +139,7 @@ Steps 1–2 (git-ref guard, ABI extraction) are unchanged. Step 3 (address write
      First-ever refresh with no RPC → `protocol` omitted (optional); consumers fall back.
 5. **Write** curated+enriched book → `data/<chain>/<module>.json`.
 6. **Manifest** — abi hashes + snapshot ref (as today) + `protocolResolvedAt[chain/module] =
-   { chainId, block }` when enriched, carried forward on skip.
+{ chainId, block }` when enriched, carried forward on skip.
 
 **Hermetic seam.** Enrichment takes an injected locator-reader
 (`(locator: Hex, getters: string[]) => Promise<Record<string, Hex>>` + a `blockNumber()`),

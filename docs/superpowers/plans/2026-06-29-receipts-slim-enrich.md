@@ -25,11 +25,13 @@
 ### Task 1: Curation schema + `curate()` + strict types
 
 **Files:**
+
 - Modify: `fixtures/receipts/src/types.ts` (add `ProtocolAddresses`; strict books; delete index signature + `AddressBookExtra`)
 - Modify: `fixtures/receipts/scripts/refresh-lib.ts` (add `FieldSpec`, `CSM_SCHEMA`, `CM_SCHEMA`, `curate`)
 - Test: `fixtures/receipts/test/refresh-lib.test.ts`
 
 **Interfaces:**
+
 - Produces:
   - `interface ProtocolAddresses { stakingRouter: Hex; validatorsExitBusOracle: Hex; lido: Hex; withdrawalQueue: Hex; burner: Hex; withdrawalVault: Hex }`
   - `type FieldKind = 'address' | 'address[]' | 'number' | 'string'`
@@ -307,10 +309,12 @@ git commit -m "feat(receipts): allowlist curate() + strict address-book types"
 ### Task 2: Enrichment helper + manifest provenance
 
 **Files:**
+
 - Modify: `fixtures/receipts/scripts/refresh-lib.ts` (add `assertProtocol`; extend `Manifest` + `mergeManifest`)
 - Test: `fixtures/receipts/test/refresh-lib.test.ts`
 
 **Interfaces:**
+
 - Consumes: `ProtocolAddresses` (from `../src/types`).
 - Produces:
   - `function assertProtocol(raw: Record<string, unknown>): ProtocolAddresses` — validates the 6 keys are present non-zero addresses; throws otherwise.
@@ -483,6 +487,7 @@ git commit -m "feat(receipts): assertProtocol + manifest protocolResolvedAt prov
 ### Task 3: Wire curation + enrichment into `runRefresh` (+ viem devDep, expanded fixtures)
 
 **Files:**
+
 - Modify: `fixtures/receipts/scripts/refresh.ts` (curate, enrich seam, carry-forward, `--rpc`/env, real viem client)
 - Modify: `fixtures/receipts/package.json` (add `viem` devDependency)
 - Modify: `fixtures/receipts/test/fixtures/artifacts/hoodi/deploy-hoodi.json` (full required csm set)
@@ -490,6 +495,7 @@ git commit -m "feat(receipts): assertProtocol + manifest protocolResolvedAt prov
 - Test: `fixtures/receipts/test/refresh.test.ts`
 
 **Interfaces:**
+
 - Consumes: `curate`, `CSM_SCHEMA`, `CM_SCHEMA`, `assertProtocol`, `mergeManifest` (Task 1–2); `ProtocolAddresses` (types).
 - Produces:
   - `type EnrichFn = (locator: string) => Promise<{ protocol: ProtocolAddresses; chainId: number; block: number }>`
@@ -727,7 +733,9 @@ export async function runRefresh(opts: RefreshOptions): Promise<RefreshResult> {
 
 function readPriorProtocol(addressFile: string): ProtocolAddresses | undefined {
   if (!fs.existsSync(addressFile)) return undefined;
-  const prior = JSON.parse(fs.readFileSync(addressFile, 'utf8')) as { protocol?: ProtocolAddresses };
+  const prior = JSON.parse(fs.readFileSync(addressFile, 'utf8')) as {
+    protocol?: ProtocolAddresses;
+  };
   return prior.protocol;
 }
 ```
@@ -737,7 +745,8 @@ function readPriorProtocol(addressFile: string): ProtocolAddresses | undefined {
 In `parseArgs`, also read the RPC and return it:
 
 ```ts
-const rpcUrl = get('--rpc') ?? process.env[`${chain.toUpperCase()}_RPC_URL`] ?? process.env.ETH_RPC_URL;
+const rpcUrl =
+  get('--rpc') ?? process.env[`${chain.toUpperCase()}_RPC_URL`] ?? process.env.ETH_RPC_URL;
 ```
 
 Add `rpcUrl` to the return type and object. Then in `main()`, build the real `enrich` only when an RPC is present (import viem + the locator ABI lazily so non-enrich runs need neither network nor viem):
@@ -850,12 +859,14 @@ git commit -m "feat(receipts): curate+enrich in runRefresh; optional --rpc proto
 ### Task 4: Re-slim the committed data files
 
 **Files:**
+
 - Modify: `fixtures/receipts/data/hoodi/csm.json`
 - Modify: `fixtures/receipts/data/mainnet/csm.json`
 - Modify: `fixtures/receipts/data/hoodi/cm.json`
 - Temp (not committed): `fixtures/receipts/scripts/_reslim.ts`
 
 **Interfaces:**
+
 - Consumes: `curate`, `CSM_SCHEMA`, `CM_SCHEMA` (Task 1). No network — re-curates the already-committed JSON (each committed file is itself a valid snapshot).
 
 - [ ] **Step 1: Write the one-off re-slim script**
@@ -918,10 +929,12 @@ git commit -m "chore(receipts): re-slim committed address data to the allowlist"
 ### Task 5: recipes `connect()` prefers the baked protocol block
 
 **Files:**
+
 - Modify: `tools/recipes/src/context.ts` (prefer `book.protocol`, runtime fallback)
 - Modify: `tools/recipes/test/context.test.ts` (prefer-baked + fallback assertions)
 
 **Interfaces:**
+
 - Consumes: `CsmAddressBook.protocol` / `CmAddressBook.protocol` (`ProtocolAddresses`, Task 1).
 - Produces: `connect()` behavior unchanged in shape (`ResolvedAddresses` still exposes the 5: `stakingRouter`, `vebo`, `lido`, `withdrawalQueue`, `burner`).
 
@@ -1026,12 +1039,14 @@ git commit -m "feat(recipes): connect() prefers baked receipts protocol block, r
 ### Task 6: keys tool prefers the baked withdrawalVault
 
 **Files:**
+
 - Create: `tools/keys/src/receipts.ts` (chainId → baked `withdrawalVault` lookup)
 - Modify: `tools/keys/src/keys.ts` (use baked vault, fall back to constant)
 - Modify: `tools/keys/package.json` (add `@csm-lab/receipts` dependency)
 - Test: `tools/keys/test/receipts.test.ts` (create)
 
 **Interfaces:**
+
 - Consumes: `addresses`, `AddressBook` from `@csm-lab/receipts`; `CHAINS[chain].chainId` (constants).
 - Produces: `function protocolWithdrawalVault(chainId: number, books?): Hex | undefined`.
 
@@ -1061,7 +1076,10 @@ import { protocolWithdrawalVault } from '../src/receipts';
 
 const FAKE = {
   hoodi: {
-    csm: { ChainId: 560048, protocol: { withdrawalVault: '0x00000000000000000000000000000000000000aa' } },
+    csm: {
+      ChainId: 560048,
+      protocol: { withdrawalVault: '0x00000000000000000000000000000000000000aa' },
+    },
     cm: { ChainId: 560048 },
   },
   mainnet: { csm: { ChainId: 1 } },
@@ -1141,6 +1159,7 @@ git commit -m "feat(keys): prefer baked receipts withdrawalVault, fall back to c
 ### Task 7: Docs + changeset
 
 **Files:**
+
 - Modify: `fixtures/receipts/README.md`
 - Modify: `CLAUDE.md` (the receipts "Status" bullet)
 - Create: `.changeset/receipts-slim-enrich.md`

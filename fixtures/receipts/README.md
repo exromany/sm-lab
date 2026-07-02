@@ -1,6 +1,6 @@
 # @sm-lab/receipts
 
-Versioned, typed snapshots of CSM contract ABIs and deploy addresses. Replaces ad-hoc `deploy.json`
+Versioned, typed snapshots of Lido SM contract ABIs and deploy addresses. Replaces ad-hoc `deploy.json`
 files copied between repos and the `DEPLOY_JSON_PATH` env-var dance.
 
 ```ts
@@ -33,7 +33,7 @@ Available chains/modules: `hoodi.csm`, `hoodi.cm`, `mainnet.csm`.
 ## Address book shape
 
 Each `data/<chain>/<module>.json` is an **allowlist-curated, strictly-typed** set of addresses.
-Only proxy and gate contracts that CSM recipes actually use are included. `DeployParams`, `*Impl`
+Only proxy and gate contracts that SM recipes actually use are included. `DeployParams`, `*Impl`
 addresses, and linked library entries present in the upstream deploy config are intentionally
 dropped — committing them here would add noise without value and they change on every upgrade.
 
