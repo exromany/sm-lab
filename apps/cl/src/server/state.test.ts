@@ -50,12 +50,14 @@ describe('ValidatorStore.snapshot + restore', () => {
     s2.restore(snap);
 
     expect(s2.size).toBe(2);
-    expect(s2.get(PUBKEY_A)).toMatchObject({ status: 'active_ongoing', effective_balance: '32000000000' });
+    expect(s2.get(PUBKEY_A)).toMatchObject({
+      status: 'active_ongoing',
+      effective_balance: '32000000000',
+    });
     expect(s2.get(PUBKEY_B)).toMatchObject({ status: 'exited_unslashed', index: 5 });
   });
 
   it('full-fidelity file round-trip: all ValidatorEntry fields survive snapshot→file→restore', () => {
-    // M4: toEqual assertion on ALL fields through a real temp file, not partial matchers.
     const tmpDir = mkdtempSync(join(tmpdir(), 'cl-mock-state-rt-'));
     try {
       const file = join(tmpDir, 'full-rt.json');
@@ -77,10 +79,8 @@ describe('ValidatorStore.snapshot + restore', () => {
         slashed: true,
       });
 
-      // Persist to file.
       saveStateToFile(file, s.snapshot());
 
-      // Load from file and restore into a fresh store.
       const s2 = new ValidatorStore();
       s2.restore(loadStateFromFile(file));
 
@@ -128,9 +128,7 @@ describe('ValidatorStore.snapshot + restore', () => {
   it('restore() skips entries with invalid pubkey', () => {
     const s = new ValidatorStore();
     s.restore({
-      validators: [
-        { pubkey: 'not-a-pubkey', entry: { status: 'active_ongoing' } },
-      ],
+      validators: [{ pubkey: 'not-a-pubkey', entry: { status: 'active_ongoing' } }],
     });
     expect(s.size).toBe(0);
   });
@@ -163,12 +161,10 @@ describe('/admin/save and /admin/load', () => {
     dir = makeTmpDir();
     const file = join(dir, 'snap.json');
 
-    // Build a fresh app with a fresh store to avoid cross-test pollution.
-    // We use buildApp which wires registerStateRoutes; we must prime the
-    // store singleton used by the app, so we do it via the admin API.
+    // buildApp wires registerStateRoutes but shares the module-level store singleton —
+    // seed it through the admin API.
     const app = buildApp({ statePath: file });
 
-    // Seed the store via the admin validators route.
     await app.request('/admin/validators', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -198,10 +194,11 @@ describe('/admin/save and /admin/load', () => {
     const res = await app.request('/admin/load', { method: 'POST' });
     expect(res.status).toBe(200);
 
-    // Verify the store now contains PUBKEY_B.
     const listRes = await app.request('/admin/validators');
     const list = (await listRes.json()) as Array<{ pubkey: string; status: string }>;
-    expect(list.some((v) => v.pubkey === PUBKEY_B.toLowerCase() && v.status === 'exited_unslashed')).toBe(true);
+    expect(
+      list.some((v) => v.pubkey === PUBKEY_B.toLowerCase() && v.status === 'exited_unslashed'),
+    ).toBe(true);
   });
 
   it('POST /admin/load returns 404 when file is missing', async () => {
@@ -225,7 +222,9 @@ describe('/admin/save and /admin/load', () => {
     const stateFile = join(dir, 'state.json');
     const app = buildApp({ statePath: stateFile });
     const otherFile = join(dir, 'other.json');
-    const res = await app.request(`/admin/save?path=${encodeURIComponent(otherFile)}`, { method: 'POST' });
+    const res = await app.request(`/admin/save?path=${encodeURIComponent(otherFile)}`, {
+      method: 'POST',
+    });
     // Must use statePath (200), NOT write to otherFile.
     expect(res.status).toBe(200);
     expect(loadStateFromFile(otherFile)).toBeUndefined();

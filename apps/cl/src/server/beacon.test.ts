@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { app } from './app';
 import { buildValidator } from './beacon';
 
-// Characterization tests: pin the Beacon API response shape. The CLAUDE.md warns this
-// format is consumed by the SDK — these lock it so the tsdown migration can't drift it.
+// Characterization tests: pin the Beacon API response shape — it is consumed by the SDK.
 describe('buildValidator', () => {
   it('builds an active_ongoing validator with defaults', () => {
     const v = buildValidator('0xabc', { status: 'active_ongoing' }, 900000);

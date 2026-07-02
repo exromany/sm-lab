@@ -86,7 +86,6 @@ export function registerPinningRoutes(app: Hono, store: PinStore): void {
     return c.json({ count: rows.length, rows });
   });
 
-  // Remove a pin.
   app.delete('/pinning/unpin/:cid', (c) => {
     const cid = c.req.param('cid');
     const removed = store.delete(cid);

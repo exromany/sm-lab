@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { DEFAULT_GATEWAY, DEFAULT_PORT } from '../types';
 
-const GUIDE = `sm-ipfs — Pinata-compatible IPFS pinning + gateway mock for CSM testing
+const GUIDE = `sm-ipfs — Pinata-compatible IPFS pinning + gateway mock for Lido SM testing
 
 PURPOSE
   A drop-in stand-in for Pinata. Point @pinata/sdk (or any fetch client) at this
@@ -18,14 +18,19 @@ TYPICAL WORKFLOW
   6. Shut down:      sm-ipfs stop   (or Ctrl+C on the server)
 
 COMMANDS
-  serve [--port N] [--host H] [--gateway URL] [--persist DIR]
+  serve [--port N] [--host H] [--gateway URL] [--persist DIR] [--state FILE]
                                 start server (defaults: ${DEFAULT_PORT}, 127.0.0.1)
                                   --gateway  upstream IPFS gateway for store-miss CIDs
                                   --persist  mirror pins to DIR so they survive restarts
-                                             (in-memory only if omitted)
+                                  --state    load FILE on boot, save it on graceful shutdown
+                                  --persist is a per-pin directory mirror (written as pins
+                                  change); --state is a single JSON snapshot of the whole
+                                  store. In-memory only if both are omitted.
   status [--json]               server uptime, version, pin count, configured gateway
                                   exits 1 with "<url> offline (...)" if down
   stop                          graceful shutdown
+  completion <shell>            print a static bash/zsh/fish completion script
+                                  e.g. sm-ipfs completion fish | source
   help                          this guide
 
 PINATA-COMPATIBLE HTTP API
@@ -75,7 +80,8 @@ FLAGS
 AGENT TIPS
   • Always 'sm-ipfs status' before assuming a server is up — it prints a
     machine-parseable line on failure and exits 1.
-  • State is in-memory by default → restart = clean slate. Use --persist DIR to keep it.
+  • State is in-memory by default → restart = clean slate. Use --persist DIR or
+    --state FILE to keep it.
   • A GET /ipfs/:cid that hits an unpinned CID WILL touch the network (the upstream
     gateway). In hermetic tests, only read CIDs you pinned, or inject a stub fetcher
     via the createApp({ fetchUpstream }) library API.

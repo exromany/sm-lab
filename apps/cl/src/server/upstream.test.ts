@@ -91,7 +91,6 @@ describe('upstream proxy — cache miss', () => {
     expect(body.data).toHaveLength(1);
     expect(body.data[0]!.status).toBe('active_ongoing');
 
-    // fetch must have been called exactly once
     expect(fakeFetch).toHaveBeenCalledTimes(1);
     const calledUrl = (fakeFetch as ReturnType<typeof vi.fn>).mock.calls[0]![0] as string;
     expect(calledUrl).toContain('upstream:5052');
@@ -110,7 +109,6 @@ describe('upstream proxy — cache miss', () => {
     // First request: miss → fetch + cache.
     await app.request(`${VALIDATORS_ENDPOINT}?id=${PUBKEY_A}`);
 
-    // The store should now contain PUBKEY_A.
     expect(store.get(PUBKEY_A)).toBeDefined();
     expect(store.get(PUBKEY_A)?.status).toBe('active_ongoing');
   });
@@ -135,7 +133,6 @@ describe('upstream proxy — cache hit', () => {
     expect(body.data).toHaveLength(1);
     expect(body.data[0]!.status).toBe('active_ongoing');
 
-    // Upstream must NOT have been called.
     expect(fakeFetch).not.toHaveBeenCalled();
   });
 
@@ -170,9 +167,9 @@ describe('upstream proxy — cache hit', () => {
 
 describe('upstream proxy — upstream error fallback', () => {
   it('returns mock data (empty) when upstream throws a network error', async () => {
-    const fakeFetch = vi.fn().mockRejectedValue(
-      new Error('ECONNREFUSED'),
-    ) as unknown as typeof fetch;
+    const fakeFetch = vi
+      .fn()
+      .mockRejectedValue(new Error('ECONNREFUSED')) as unknown as typeof fetch;
 
     const app = buildBeaconApp(fakeFetch, 'http://upstream:5052');
 
@@ -253,16 +250,18 @@ describe('upstream cached entries appear in state snapshot', () => {
     } as unknown as Response) as unknown as typeof fetch;
 
     // Use buildApp so registerStateRoutes is wired.
-    const app = buildApp({ statePath: file, upstreamUrl: 'http://upstream:5052', fetchFn: fakeFetch });
+    const app = buildApp({
+      statePath: file,
+      upstreamUrl: 'http://upstream:5052',
+      fetchFn: fakeFetch,
+    });
 
     // Trigger a beacon request that will miss and fetch from upstream.
     await app.request(`${VALIDATORS_ENDPOINT}?id=${PUBKEY_A}`);
 
-    // Save state.
     const saveRes = await app.request('/admin/save', { method: 'POST' });
     expect(saveRes.status).toBe(200);
 
-    // The saved file should contain PUBKEY_A.
     const snap = loadStateFromFile<{ validators: Array<{ pubkey: string }> }>(file);
     expect(snap?.validators.some((v) => v.pubkey === PUBKEY_A.toLowerCase())).toBe(true);
   });

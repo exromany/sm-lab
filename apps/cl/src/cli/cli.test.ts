@@ -11,8 +11,10 @@
  *  • human output unchanged (default, no --json)
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { buildCompletionScript } from '@sm-lab/core';
 import { buildConfigCommand } from './config';
 import { buildQueryCommand } from './query';
+import { buildProgram } from './program';
 
 // ---- helpers ----------------------------------------------------------------
 
@@ -230,11 +232,9 @@ describe('query', () => {
     } finally {
       exitSpy.mockRestore();
     }
-    // error message goes to stderr
     expect(err.some((l) => l.includes('ECONNREFUSED') || l.includes('Failed to connect'))).toBe(
       true,
     );
-    // nothing printed to stdout
     expect(out).toHaveLength(0);
   });
 });
@@ -293,5 +293,22 @@ describe('status', () => {
     const parsed = JSON.parse(out[0]!);
     expect(parsed).toEqual(STATUS_PAYLOAD);
     expect(err).toHaveLength(0);
+  });
+});
+
+// ---- completion + version -----------------------------------------------------
+
+describe('completion command', () => {
+  it('fish script covers the bin name, subcommands and flags', () => {
+    const script = buildCompletionScript(buildProgram(), 'fish');
+    expect(script).toContain('complete -c sm-cl');
+    expect(script).toContain('serve');
+    expect(script).toContain('-l json');
+  });
+});
+
+describe('--version', () => {
+  it('root program registers -V/--version', () => {
+    expect(buildProgram().helpInformation()).toContain('-V, --version');
   });
 });

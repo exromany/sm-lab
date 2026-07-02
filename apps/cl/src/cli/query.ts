@@ -14,7 +14,11 @@ async function get(fetchImpl: typeof fetch, url: string, path: string): Promise<
 
 export function buildQueryCommand(fetchImpl: typeof fetch = fetch): Command {
   return new Command('query')
-    .description('Query beacon validators endpoint and print the JSON response')
+    .description(
+      'Fetch /eth/v1/beacon/states/<state>/validators for the given pubkeys (all configured ' +
+        'validators if omitted); human mode prints one `pubkey status balance` line per ' +
+        'validator, --json prints the raw Beacon API response',
+    )
     .argument('[pubkeys...]', 'validator pubkeys (omit to query all configured validators)')
     .option('--state <id>', 'beacon state id', 'head')
     .option('--json', 'output raw JSON (machine-parseable)')

@@ -1,12 +1,13 @@
 import { Command } from 'commander';
 import { VALIDATOR_STATUSES, DEFAULT_PORT } from '../types';
 
-const GUIDE = `sm-cl — Consensus Layer (Beacon API) mock for CSM testing
+const GUIDE = `sm-cl — Consensus Layer (Beacon API) mock for Lido SM testing
 
 PURPOSE
   In-memory Beacon API fake. You configure validators over an admin HTTP API,
-  then consumers hit the standard beacon endpoint. State lives only in the
-  running server process — no files, no DB. Restart = clean slate.
+  then consumers hit the standard beacon endpoint. State lives in the running
+  server process — restart = clean slate — unless serve --state snapshots it
+  to a file (load on boot, save on graceful shutdown).
 
 TYPICAL WORKFLOW
   1. Start server:        sm-cl serve
@@ -17,7 +18,13 @@ TYPICAL WORKFLOW
   5. Shut down:           sm-cl stop   (or Ctrl+C on the server)
 
 COMMANDS
-  serve [--port N] [--host H]             start server (defaults: ${DEFAULT_PORT}, 127.0.0.1)
+  serve [--port N] [--host H] [--state FILE] [--upstream URL]
+                                          start server (defaults: ${DEFAULT_PORT}, 127.0.0.1)
+                                            --state     load FILE on boot, save it on
+                                                        graceful shutdown (env: CL_MOCK_STATE)
+                                            --upstream  proxy-and-cache a real Beacon API
+                                                        for pubkeys not configured locally
+                                                        (env: CL_UPSTREAM_URL)
   config set <pubkey> <status> [eth]      register/update a validator
                                             [eth] = optional effective balance in
                                             ETH (e.g. 31.5); default 32
@@ -30,6 +37,8 @@ COMMANDS
   status [--json]                         server uptime, version, status breakdown
                                             exits 1 with "<url> offline (...)" if down
   stop                                    graceful shutdown
+  completion <shell>                      print a static bash/zsh/fish completion script
+                                            e.g. sm-cl completion fish | source
   help                                    this guide
 
 FLAGS

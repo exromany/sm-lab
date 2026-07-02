@@ -49,7 +49,7 @@ export function buildConfigCommand(fetchImpl: typeof fetch = fetch): Command {
     .command('set')
     .description('Set a validator status (and optionally effective balance in ETH)')
     .argument('<pubkey>', 'validator public key (0x-prefixed, 96 hex chars)')
-    .argument('[status]', `validator status`)
+    .argument('<status>', 'validator status (run `sm-cl config statuses` for valid values)')
     .argument(
       '[effective-balance]',
       'effective balance in ETH (e.g. 32, 31.5); defaults to 32 if omitted',
@@ -57,13 +57,13 @@ export function buildConfigCommand(fetchImpl: typeof fetch = fetch): Command {
     .action(
       async (
         pubkey: string,
-        status: string | undefined,
+        status: string,
         effectiveBalanceEth: string | undefined,
         _opts,
         cmd: Command,
       ) => {
-        if (!status || !isValidStatus(status)) {
-          console.error(status ? `Unknown status: ${status}` : 'Missing status argument');
+        if (!isValidStatus(status)) {
+          console.error(`Unknown status: ${status}`);
           console.error('Available statuses:');
           for (const s of VALIDATOR_STATUSES) console.error(`  ${s}`);
           process.exit(1);

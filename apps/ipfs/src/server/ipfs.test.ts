@@ -254,7 +254,6 @@ describe('admin status', () => {
 describe('snapshotStore / restoreStore', () => {
   it('round-trips JSON pins: content is retrievable after restore', async () => {
     const source = new PinStore();
-    // Pin some JSON content.
     const bytes = jsonToBytes(FIXTURE);
     source.set({
       cid: FIXTURE_CID,
@@ -275,7 +274,6 @@ describe('snapshotStore / restoreStore', () => {
     expect(pin?.cid).toBe(FIXTURE_CID);
     expect(pin?.name).toBe('tree.json');
     expect(pin?.contentType).toBe('application/json');
-    // Data bytes are identical.
     expect(new Uint8Array(pin!.data)).toEqual(bytes);
   });
 
@@ -340,12 +338,16 @@ describe('snapshotStore / restoreStore', () => {
   });
 
   it('restoreStore skips malformed items and keeps valid ones (no throw)', () => {
-    // I2: a state file with a malformed item (e.g. data: null) must not crash restore.
-    // The valid item in the same array must still be restored.
     const validBytes = jsonToBytes(FIXTURE);
     const raw = [
       // malformed: data is null (not a string)
-      { cid: 'bad-cid', size: 0, data: null, contentType: 'application/json', pinnedAt: '2026-01-01T00:00:00.000Z' },
+      {
+        cid: 'bad-cid',
+        size: 0,
+        data: null,
+        contentType: 'application/json',
+        pinnedAt: '2026-01-01T00:00:00.000Z',
+      },
       // malformed: missing contentType
       { cid: 'also-bad', size: 0, data: 'aGVsbG8=', pinnedAt: '2026-01-01T00:00:00.000Z' },
       // valid

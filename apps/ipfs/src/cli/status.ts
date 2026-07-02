@@ -15,6 +15,10 @@ interface IpfsStatus extends BaseStatusResponse {
 export const statusCommand = createStatusCommand<IpfsStatus>({
   envVar: 'IPFS_MOCK_URL',
   defaultPort: DEFAULT_PORT,
+  description:
+    `GET /admin/status on the target IPFS mock (root --url / IPFS_MOCK_URL / ` +
+    `127.0.0.1:${DEFAULT_PORT}); prints version, uptime, pin count/bytes and the upstream ` +
+    `gateway; exits 1 with "Error: <url> offline (...)" if unreachable`,
   render: (data) => {
     console.log(`Gateway:    ${data.gateway}`);
     console.log(`Pins:       ${data.pins.total} (${formatBytes(data.pins.totalBytes)})`);

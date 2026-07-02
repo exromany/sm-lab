@@ -98,10 +98,7 @@ export function registerBeaconRoutes(app: Hono, opts: BeaconRoutesOptions = {}):
               };
               const pubkey = v.validator?.pubkey;
               const rawStatus = v.status;
-              if (
-                typeof pubkey !== 'string' ||
-                typeof rawStatus !== 'string'
-              ) {
+              if (typeof pubkey !== 'string' || typeof rawStatus !== 'string') {
                 continue;
               }
               const entry: ValidatorEntry = {

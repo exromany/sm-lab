@@ -67,7 +67,6 @@ export function createApp(options: AppOptions = {}): AppHandle {
       return { gateway, pins: { total: store.size, totalBytes } };
     },
   });
-  // State routes are always registered; defaultPath is set when --state / statePath is given.
   registerStateRoutes(app, { snapshot, restore, defaultPath: options.statePath });
 
   return { app, store, gateway };

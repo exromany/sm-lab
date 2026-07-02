@@ -1,5 +1,5 @@
 /**
- * Hermetic CLI tests for sm-ipfs status --json compliance.
+ * Hermetic CLI tests for sm-ipfs: status --json compliance + completion/version wiring.
  *
  * Stubs global fetch so no network is required. Spies on console.log / console.error
  * to verify the --json contract: exactly one JSON value on stdout, nothing on stderr;
@@ -7,7 +7,9 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Command } from 'commander';
+import { buildCompletionScript } from '@sm-lab/core';
 import { statusCommand } from './status';
+import { buildProgram as buildCli } from './program';
 
 /** Build a minimal root program with the given --url and attach the status sub-command. */
 function buildProgram(url?: string): Command {
@@ -78,7 +80,6 @@ describe('status --json', () => {
 
     const parsed = JSON.parse(logs[0]!);
     expect(parsed).toEqual(STATUS_PAYLOAD);
-    // 2-space indent: must match JSON.stringify with 2 spaces
     expect(logs[0]).toBe(JSON.stringify(STATUS_PAYLOAD, null, 2));
   });
 
@@ -193,6 +194,35 @@ describe('status error handling', () => {
       }
     });
     expect(jsonLogs).toHaveLength(0);
+  });
+});
+
+describe('completion command', () => {
+  it('fish script covers the bin name, subcommands and flags', () => {
+    const script = buildCompletionScript(buildCli(), 'fish');
+    expect(script).toContain('complete -c sm-ipfs');
+    expect(script).toContain('serve');
+    expect(script).toContain('-l gateway');
+  });
+
+  it('`completion fish` prints the script to stdout', async () => {
+    const chunks: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation((s: unknown) => {
+      chunks.push(String(s));
+      return true;
+    });
+
+    await buildCli().exitOverride().parseAsync(['completion', 'fish'], { from: 'user' });
+
+    const out = chunks.join('');
+    expect(out).toContain('complete -c sm-ipfs');
+    expect(out).toContain('status');
+  });
+});
+
+describe('--version', () => {
+  it('root program registers -V/--version', () => {
+    expect(buildCli().helpInformation()).toContain('-V, --version');
   });
 });
 

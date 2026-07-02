@@ -1,17 +1,25 @@
 # @sm-lab/cl
 
-Consensus Layer (Beacon API) mock server for CSM integration testing. Configure validators
+Consensus Layer (Beacon API) mock server for Lido SM integration testing. Configure validators
 over an admin HTTP API; consumers then hit the standard beacon endpoint. State is in-memory —
-restart = clean slate.
+restart = clean slate — unless `serve --state` snapshots it to a file.
 
 ```bash
-npx @sm-lab/cl serve            # binary is sm-cl (unchanged)
+npx @sm-lab/cl serve            # binary is sm-cl
 sm-cl config set <pubkey> active_ongoing 31.5
 sm-cl status
 sm-cl query <pubkey>
 sm-cl stop
 sm-cl help                      # full agent-facing cheat sheet
+sm-cl completion fish | source  # shell completion (bash/zsh/fish)
 ```
+
+## State & upstream
+
+- `serve --state <file>` — load the file on boot, save it on graceful shutdown
+  (env: `CL_MOCK_STATE`).
+- `serve --upstream <url>` — proxy-and-cache a real Beacon API for pubkeys not configured locally
+  (env: `CL_UPSTREAM_URL`).
 
 Or in-process (library):
 

@@ -1,7 +1,7 @@
 # @sm-lab/ipfs
 
 Pinata-compatible IPFS pinning service **and** gateway, with deterministic CIDs — a
-drop-in stand-in for Pinata in CSM testing. Same Hono + commander shape as `cl-mock`.
+drop-in stand-in for Pinata in Lido SM testing. Same Hono + commander shape as `cl-mock`.
 
 ## Quick start
 
@@ -70,11 +70,17 @@ are reproducible.
 
 ## State & persistence
 
-In-memory by default (restart = clean slate). Pass `--persist <dir>` to mirror pins to
-disk (`<dir>/<cid>.bin` + `<cid>.json`) and replay them on the next start.
+In-memory by default (restart = clean slate). Two independent ways to keep pins:
+
+- `--persist <dir>` — per-pin directory mirror, written as pins change
+  (`<dir>/<cid>.bin` + `<cid>.json`), replayed on the next start.
+- `--state <file>` — single JSON snapshot of the whole store: loaded on boot, saved on
+  graceful shutdown. Also enables `POST /admin/save` + `POST /admin/load`, bound to the
+  configured path only (never a client-supplied one). Env fallback: `IPFS_MOCK_STATE`.
 
 ```sh
 sm-ipfs serve --persist ./pins
+sm-ipfs serve --state ./ipfs-state.json
 ```
 
 ## Library usage
