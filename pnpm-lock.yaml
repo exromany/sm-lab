@@ -88,9 +88,6 @@ importers:
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.0.6(hono@4.12.27)
-      '@sm-lab/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       commander:
         specifier: 'catalog:'
         version: 15.0.0
@@ -101,6 +98,9 @@ importers:
       '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@sm-lab/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.0
@@ -119,9 +119,6 @@ importers:
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.0.6(hono@4.12.27)
-      '@sm-lab/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       commander:
         specifier: 'catalog:'
         version: 15.0.0
@@ -135,6 +132,9 @@ importers:
       '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@sm-lab/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.0
@@ -226,6 +226,9 @@ importers:
       '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@sm-lab/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.0
@@ -254,6 +257,9 @@ importers:
       '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@sm-lab/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.0
@@ -291,6 +297,9 @@ importers:
       '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@sm-lab/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.0

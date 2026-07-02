@@ -1,14 +1,19 @@
 {
   "name": "@sm-lab/ipfs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
-  "description": "Pinata-compatible IPFS pinning + gateway emulator with deterministic CIDs, for CSM testing",
+  "description": "Pinata-compatible IPFS pinning + gateway emulator with deterministic CIDs, for Lido SM testing",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exromany/sm-lab.git",
+    "directory": "apps/ipfs"
+  },
   "keywords": [
     "ipfs",
     "pinata",
     "mock",
-    "csm",
+    "staking-modules",
     "lido",
     "testing",
     "cid",
@@ -37,12 +42,12 @@
   },
   "dependencies": {
     "@hono/node-server": "catalog:",
-    "@sm-lab/core": "workspace:*",
     "commander": "catalog:",
     "hono": "catalog:",
     "multiformats": "^14.0.3"
   },
   "devDependencies": {
+    "@sm-lab/core": "workspace:*",
     "@sm-lab/config": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",

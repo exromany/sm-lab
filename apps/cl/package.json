@@ -1,9 +1,14 @@
 {
   "name": "@sm-lab/cl",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
-  "description": "Standalone Consensus Layer (Beacon API) mock server for CSM integration testing",
+  "description": "Standalone Consensus Layer (Beacon API) mock server for Lido SM integration testing",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exromany/sm-lab.git",
+    "directory": "apps/cl"
+  },
   "keywords": [
     "ethereum",
     "beacon",
@@ -36,12 +41,12 @@
     "start": "node dist/cli.mjs serve"
   },
   "dependencies": {
-    "@sm-lab/core": "workspace:*",
     "hono": "catalog:",
     "@hono/node-server": "catalog:",
     "commander": "catalog:"
   },
   "devDependencies": {
+    "@sm-lab/core": "workspace:*",
     "@sm-lab/config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",

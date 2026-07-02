@@ -1,9 +1,14 @@
 {
   "name": "@sm-lab/receipts",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
-  "description": "Versioned CSM anvil/deploy receipts — typed, importable contract addresses & ABIs",
+  "description": "Versioned Lido SM anvil/deploy receipts — typed, importable contract addresses & ABIs",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exromany/sm-lab.git",
+    "directory": "fixtures/receipts"
+  },
   "keywords": [
     "csm",
     "lido",

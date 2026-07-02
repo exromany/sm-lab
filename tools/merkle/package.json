@@ -1,17 +1,22 @@
 {
   "name": "@sm-lab/merkle",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
-  "description": "Merkle tree builder for Lido CSM — ICS (vetted gate) and strikes pipelines",
+  "description": "Merkle tree builder for Lido SM (Staking Modules) — addresses (vetted gate), strikes, and rewards pipelines",
   "license": "MIT",
   "keywords": [
     "merkle",
     "csm",
     "lido",
-    "ics",
+    "vetted-gate",
     "strikes",
     "testing"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exromany/sm-lab.git",
+    "directory": "tools/merkle"
+  },
   "bin": {
     "sm-merkle": "dist/cli.mjs"
   },
@@ -38,6 +43,7 @@
     "dotenv": "catalog:"
   },
   "devDependencies": {
+    "@sm-lab/core": "workspace:*",
     "@sm-lab/config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",

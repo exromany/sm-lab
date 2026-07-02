@@ -30,5 +30,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # setup-node's registry-url exports a user-level .npmrc reading NODE_AUTH_TOKEN,
+          # which SHADOWS the ~/.npmrc changesets/action writes from NPM_TOKEN — without
+          # this line the publish step hits the registry unauthenticated and 401s.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   # NOTE: a follow-up job builds & pushes Docker images for apps/* on release tags
   # (the npm side and the image side come from the same package — see architecture.md).

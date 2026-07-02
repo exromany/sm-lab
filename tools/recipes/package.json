@@ -1,9 +1,14 @@
 {
   "name": "@sm-lab/recipes",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
-  "description": "TypeScript recipes to prepare CSM on-chain state on an anvil fork (rewritten fork.just; no Foundry)",
+  "description": "TypeScript recipes to prepare Lido SM on-chain state on an anvil fork (rewritten fork.just; no Foundry)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exromany/sm-lab.git",
+    "directory": "tools/recipes"
+  },
   "keywords": [
     "csm",
     "lido",
@@ -22,10 +27,6 @@
     "./cm": {
       "types": "./dist/cm.d.mts",
       "import": "./dist/cm.mjs"
-    },
-    "./csm": {
-      "types": "./dist/csm.d.mts",
-      "import": "./dist/csm.mjs"
     }
   },
   "files": [
@@ -51,6 +52,7 @@
     "viem": "catalog:"
   },
   "devDependencies": {
+    "@sm-lab/core": "workspace:*",
     "@sm-lab/config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",

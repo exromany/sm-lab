@@ -1,9 +1,14 @@
 {
   "name": "@sm-lab/keys",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
-  "description": "Real BLS12-381 validator deposit-data generator for Lido CSM (mainnet/hoodi)",
+  "description": "Real BLS12-381 validator deposit-data generator for Lido SM (mainnet/hoodi)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exromany/sm-lab.git",
+    "directory": "tools/keys"
+  },
   "keywords": [
     "bls",
     "deposit",
@@ -42,6 +47,7 @@
     "commander": "catalog:"
   },
   "devDependencies": {
+    "@sm-lab/core": "workspace:*",
     "@sm-lab/config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",

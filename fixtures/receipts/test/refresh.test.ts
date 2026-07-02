@@ -9,10 +9,9 @@ import type { ProtocolAddresses } from '../src/types';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const fixtures = path.join(here, 'fixtures');
 
-// A fake contracts checkout: out/ has Foo + IBar; artifacts/ has the hoodi deploy.
-// CONTRACT_SOURCES expects the full set, so this test points at a trimmed map via
-// a contracts dir whose out/ only needs the two fixtures — we assert on those by
-// running against a custom outDir layout. To keep it hermetic we use a temp pkg dir.
+// Fake contracts checkout: out/ stubs an artifact for every CONTRACT_SOURCES entry
+// (extractAbis requires the full set); artifacts/ holds the hoodi deploy snapshots.
+// All writes go to a temp pkg dir to keep the suite hermetic.
 
 const tmpPkg = fs.mkdtempSync(path.join(os.tmpdir(), 'receipts-pkg-'));
 afterAll(() => fs.rmSync(tmpPkg, { recursive: true, force: true }));

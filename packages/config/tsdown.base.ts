@@ -1,4 +1,4 @@
-import { defineConfig, type Options } from 'tsdown';
+import { defineConfig, type UserConfig } from 'tsdown';
 
 /**
  * Shared tsdown preset for every publishable package in sm-lab.
@@ -12,7 +12,7 @@ import { defineConfig, type Options } from 'tsdown';
  * deps. That keeps core private/unpublished and gives consumers a self-contained artifact
  * with no transitive `@sm-lab/*` to resolve. Third-party deps stay external as usual.
  */
-export function libConfig(overrides: Options = {}): Options {
+export function libConfig(overrides: UserConfig = {}): UserConfig {
   return defineConfig({
     entry: ['src/index.ts'],
     format: ['esm', 'cjs'],
@@ -22,16 +22,24 @@ export function libConfig(overrides: Options = {}): Options {
     clean: true,
     treeshake: true,
     sourcemap: true,
+    inputOptions: {
+      onLog(level, log, defaultHandler) {
+        // rolldown-plugin-dts emits a map-less `export {};` for EMPTY dts chunks (cli entries with
+        // zero type exports), which `sourcemap: true` flags — mute only this exact code+plugin pair.
+        if (log.code === 'SOURCEMAP_BROKEN' && log.plugin === 'rolldown-plugin-dts:fake-js') return;
+        defaultHandler(level, log);
+      },
+    },
     deps: {
       alwaysBundle: [/^@sm-lab\//],
       dts: { alwaysBundle: [/^@sm-lab\//] },
     },
     ...overrides,
-  }) as Options;
+  }) as UserConfig;
 }
 
 /** Preset for executable packages (CLIs / services): single binary entry, Node platform. */
-export function binConfig(overrides: Options = {}): Options {
+export function binConfig(overrides: UserConfig = {}): UserConfig {
   return libConfig({
     entry: ['src/index.ts', 'src/cli.ts'],
     format: ['esm'],
