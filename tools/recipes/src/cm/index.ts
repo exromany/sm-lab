@@ -1,4 +1,4 @@
-import { buildIcsTree } from '@sm-lab/merkle';
+import { buildAddressesTree } from '@sm-lab/merkle';
 import { curatedGateAbi, metaRegistryAbi } from '@sm-lab/receipts';
 import type { CmAddressBook, Hex } from '@sm-lab/receipts';
 import { concat, keccak256, toHex, zeroAddress } from 'viem';
@@ -49,7 +49,7 @@ export async function createCuratedOperator(
   const admin = await roleMember(ctx, gate, DEFAULT_ADMIN_ROLE);
 
   // N=2 OZ ['address'] tree; prove by value (OZ sorts leaves, so index is unreliable).
-  const tree = buildIcsTree([opts.operator, extra]);
+  const tree = buildAddressesTree([opts.operator, extra]);
   const tmpRoot = tree.root as Hex;
   const proof = tree.getProof([opts.operator]) as Hex[];
   const tmpCid = `tmp-cid-${opts.operator.toLowerCase()}`;
@@ -108,7 +108,6 @@ export async function createCuratedOperator(
     await actAs(ctx, opts.operator, () => ctx.client.writeContract({ ...request, chain: null }));
     return { noId };
   } finally {
-    // Restore the original tree as admin.
     await actAs(ctx, admin, (from) =>
       ctx.client.writeContract({
         ...gate,

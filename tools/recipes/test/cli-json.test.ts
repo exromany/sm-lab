@@ -1,4 +1,3 @@
-// tools/recipes/test/cli-json.test.ts
 // Hermetic tests for the --json contract on real named commands via buildProgram.
 //
 // Contract: with --json → exactly one JSON value to stdout (2-space, bigints as strings).
@@ -71,18 +70,22 @@ describe('--json contract: operator-info', () => {
   it('with --json emits exactly one JSON object to stdout; bigintReplacer applies', async () => {
     const { prog } = makeProgram({ getNodeOperator: OPERATOR_INFO });
     const stdoutLines: string[] = [];
-    const log = vi.spyOn(console, 'log').mockImplementation((...a) => stdoutLines.push(a.join(' ')));
+    const log = vi
+      .spyOn(console, 'log')
+      .mockImplementation((...a) => stdoutLines.push(a.join(' ')));
 
-    await prog.parseAsync(
-      ['--module', 'csm', '--json', 'operator-info', '--operator-id', '0'],
-      { from: 'user' },
-    );
+    await prog.parseAsync(['--module', 'csm', '--json', 'operator-info', '--operator-id', '0'], {
+      from: 'user',
+    });
     await tick();
     log.mockRestore();
 
     expect(stdoutLines).toHaveLength(1);
     const parsed = JSON.parse(stdoutLines[0]!);
-    expect(parsed).toMatchObject({ totalAddedKeys: 3, managerAddress: OPERATOR_INFO.managerAddress });
+    expect(parsed).toMatchObject({
+      totalAddedKeys: 3,
+      managerAddress: OPERATOR_INFO.managerAddress,
+    });
     // exact 2-space-indent format (no bigints in this result, so null replacer same as bigintReplacer)
     expect(stdoutLines[0]).toBe(JSON.stringify(OPERATOR_INFO, null, 2));
   });
@@ -90,12 +93,13 @@ describe('--json contract: operator-info', () => {
   it('without --json emits human-readable lines, not a JSON object', async () => {
     const { prog } = makeProgram({ getNodeOperator: OPERATOR_INFO });
     const stdoutLines: string[] = [];
-    const log = vi.spyOn(console, 'log').mockImplementation((...a) => stdoutLines.push(a.join(' ')));
+    const log = vi
+      .spyOn(console, 'log')
+      .mockImplementation((...a) => stdoutLines.push(a.join(' ')));
 
-    await prog.parseAsync(
-      ['--module', 'csm', 'operator-info', '--operator-id', '0'],
-      { from: 'user' },
-    );
+    await prog.parseAsync(['--module', 'csm', 'operator-info', '--operator-id', '0'], {
+      from: 'user',
+    });
     await tick();
     log.mockRestore();
 
@@ -111,7 +115,9 @@ describe('--json contract: get-key-balance (bigint result)', () => {
   it('with --json serialises a bigint scalar result as a decimal string', async () => {
     const { prog } = makeProgram({ getKeyAllocatedBalances: [KEY_BALANCE] });
     const stdoutLines: string[] = [];
-    const log = vi.spyOn(console, 'log').mockImplementation((...a) => stdoutLines.push(a.join(' ')));
+    const log = vi
+      .spyOn(console, 'log')
+      .mockImplementation((...a) => stdoutLines.push(a.join(' ')));
 
     await prog.parseAsync(
       ['--module', 'csm', '--json', 'get-key-balance', '--operator-id', '0', '--key-index', '0'],
@@ -131,7 +137,9 @@ describe('--json contract: snapshot (Hex string result)', () => {
   it('with --json emits the snapshot id as a JSON string', async () => {
     const { prog } = makeProgram({}, SNAPSHOT_ID);
     const stdoutLines: string[] = [];
-    const log = vi.spyOn(console, 'log').mockImplementation((...a) => stdoutLines.push(a.join(' ')));
+    const log = vi
+      .spyOn(console, 'log')
+      .mockImplementation((...a) => stdoutLines.push(a.join(' ')));
 
     await prog.parseAsync(['--module', 'csm', '--json', 'snapshot'], { from: 'user' });
     await tick();
@@ -144,7 +152,9 @@ describe('--json contract: snapshot (Hex string result)', () => {
   it('without --json emits "snapshot id: <hex>" human text', async () => {
     const { prog } = makeProgram({}, SNAPSHOT_ID);
     const stdoutLines: string[] = [];
-    const log = vi.spyOn(console, 'log').mockImplementation((...a) => stdoutLines.push(a.join(' ')));
+    const log = vi
+      .spyOn(console, 'log')
+      .mockImplementation((...a) => stdoutLines.push(a.join(' ')));
 
     await prog.parseAsync(['--module', 'csm', 'snapshot'], { from: 'user' });
     await tick();
@@ -160,8 +170,12 @@ describe('--json contract: errors must NOT appear on stdout', () => {
     const { prog } = makeProgram();
     const stdoutLines: string[] = [];
     const stderrLines: string[] = [];
-    const log = vi.spyOn(console, 'log').mockImplementation((...a) => stdoutLines.push(a.join(' ')));
-    const err = vi.spyOn(console, 'error').mockImplementation((...a) => stderrLines.push(a.join(' ')));
+    const log = vi
+      .spyOn(console, 'log')
+      .mockImplementation((...a) => stdoutLines.push(a.join(' ')));
+    const err = vi
+      .spyOn(console, 'error')
+      .mockImplementation((...a) => stderrLines.push(a.join(' ')));
     // Swallow process.exit — throwing from inside run()'s .catch() causes an unhandled rejection.
     const exitSpy = vi.spyOn(process, 'exit').mockReturnValue(undefined as never);
 

@@ -1,6 +1,7 @@
 import type { Hex } from '@sm-lab/receipts';
 import {
   identity,
+  toAddresses,
   toAddressValue,
   toBigInt,
   toHexValue,
@@ -14,8 +15,19 @@ import {
   setBondCurveWeight,
   seedCm,
 } from '../../cm';
+import { resolveGate } from '../../context';
+import { setGateAddrs } from '../../recipes/set-gate';
 
-const operatorId = { flag: '--operator-id <id>', key: 'noId', coerce: toBigInt, required: true };
+const operatorId = {
+  flag: '--operator-id <id>',
+  key: 'noId',
+  coerce: toBigInt,
+  required: true,
+  description: 'node operator id (uint)',
+};
+
+const cmSelectorHelp =
+  'gate selector: po|pto|pgo|do|eeo|iodc|iodcp, gate index 0-6, or 0x… address';
 
 export const cmCommands: RecipeCommand[] = [
   {
@@ -23,8 +35,18 @@ export const cmCommands: RecipeCommand[] = [
     summary: 'seed a realistic cm fork (3 operators, a group, keyed/deposited/topped-up)',
     module: 'cm',
     options: [
-      { flag: '--selector <name>', key: 'selector', coerce: identity },
-      { flag: '--seed <hex>', key: 'seed', coerce: toHexValue },
+      {
+        flag: '--selector <name>',
+        key: 'selector',
+        coerce: identity,
+        description: `${cmSelectorHelp} (default: po)`,
+      },
+      {
+        flag: '--seed <hex>',
+        key: 'seed',
+        coerce: toHexValue,
+        description: 'deterministic seed (0x-hex); omit for fresh randomness',
+      },
     ],
     run: (ctx, o: { selector?: string; seed?: Hex }) => seedCm(ctx, o),
     report: (r: { noIds: bigint[]; operators: Hex[] }) => [
@@ -34,10 +56,17 @@ export const cmCommands: RecipeCommand[] = [
   },
   {
     name: 'create-curated-operator',
-    summary: 'create a curated operator via a cm gate',
+    summary:
+      "create a curated node operator through a cm gate as --operator (the new operator's address); prints the new operator id",
     module: 'cm',
     options: [
-      { flag: '--selector <name>', key: 'selector', coerce: identity, required: true },
+      {
+        flag: '--selector <name>',
+        key: 'selector',
+        coerce: identity,
+        required: true,
+        description: cmSelectorHelp,
+      },
       { flag: '--operator <address>', key: 'operator', coerce: toAddressValue, required: true },
     ],
     run: (ctx, o: { selector: string; operator: Hex }) => createCuratedOperator(ctx, o),
@@ -76,7 +105,8 @@ export const cmCommands: RecipeCommand[] = [
   },
   {
     name: 'set-bond-curve-weight',
-    summary: 'set a bond curve weight',
+    summary:
+      'set the MetaRegistry bond-curve weight for a curve id (impersonates the role holder read from the contract)',
     module: 'cm',
     options: [
       { flag: '--curve-id <n>', key: 'curveId', coerce: toBigInt, required: true },
@@ -84,5 +114,56 @@ export const cmCommands: RecipeCommand[] = [
     ],
     run: (ctx, o: { curveId: bigint; weight: bigint }) => setBondCurveWeight(ctx, o),
     report: (r: { curveId: bigint; weight: bigint }) => [`curve ${r.curveId} weight=${r.weight}`],
+  },
+  {
+    name: 'set-gate',
+    summary: 'build + install a gate address tree (pins to IPFS unless --cid)',
+    module: 'cm',
+    // Positional form leads with the selector, then the variadic addresses:
+    //   `cm set-gate pto 0xabc… 0xdef…` == `cm set-gate --selector pto --address 0xabc… --address 0xdef…`
+    options: [
+      {
+        flag: '--selector <name>',
+        key: 'selector',
+        coerce: identity,
+        positional: true,
+        description: `${cmSelectorHelp} (default: po)`,
+      },
+      {
+        flag: '--address <addr>',
+        key: 'addresses',
+        coerce: toAddresses,
+        repeatable: true,
+        required: true,
+        positional: true,
+      },
+      {
+        flag: '--cid <cid>',
+        key: 'cid',
+        coerce: identity,
+        description: 'skip IPFS pinning by supplying the CID — no running sm-ipfs needed',
+      },
+    ],
+    run: (ctx, o: { addresses: Hex[]; selector?: string; cid?: string }) => setGateAddrs(ctx, o),
+    report: (r: { treeRoot: Hex; treeCid: string }) => [
+      `tree root: ${r.treeRoot}`,
+      `tree CID:  ${r.treeCid}`,
+    ],
+  },
+  {
+    name: 'resolve-gate',
+    summary: 'resolve a cm gate contract address by selector (read-only); prints the address',
+    module: 'cm',
+    options: [
+      {
+        flag: '--selector <name>',
+        key: 'selector',
+        coerce: identity,
+        required: true,
+        description: cmSelectorHelp,
+      },
+    ],
+    run: (ctx, o: { selector: string }) => resolveGate(ctx, o.selector),
+    report: (r: Hex, o: { selector: string }) => [`${o.selector} → ${r}`],
   },
 ];

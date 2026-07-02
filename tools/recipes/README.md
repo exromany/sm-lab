@@ -1,6 +1,6 @@
 # @sm-lab/recipes
 
-TypeScript recipes that prepare CSM on-chain state on an **anvil fork** — the rewritten,
+TypeScript recipes that prepare Lido SM on-chain state on an **anvil fork** — the rewritten,
 Foundry-free successor to the contracts repo's `fork.just`. Recipes **prepare state and
 return what they did**; they do not assert (verification is the calling test's job).
 
@@ -8,7 +8,8 @@ return what they did**; they do not assert (verification is the calling test's j
 
     pnpm add @sm-lab/recipes
 
-Peer runtime: a running anvil fork with CSM already deployed (`anvil --fork-url <RPC>`).
+Peer runtime: a running anvil fork with the target staking module already deployed
+(`anvil --fork-url <RPC>`).
 
 ## Quick start
 
@@ -37,7 +38,8 @@ node tools/recipes/dist/cli.mjs --help                         # built dist (rep
 Global flags: `--rpc-url` (or `RPC_URL`, defaulting to anvil's `http://127.0.0.1:8545`),
 `--module <csm|cm>`, `--cl-mock-url` (or `CL_MOCK_URL`), `--json`. Amounts (`--amount`,
 `--exit-balance`, …) are in **ETH** (`0.000000000000000001` = 1 wei). `sm-recipes help [command]`
-mirrors `--help`.
+mirrors `--help`. `sm-recipes completion <bash|zsh|fish>` prints a static shell-completion
+script (e.g. `sm-recipes completion fish | source`).
 
 The `cm`/`csm` groups host their own recipes **and** mirror every shared recipe with the
 module pre-bound — so a shared command works two ways: top-level with `--module`, or under
@@ -77,18 +79,24 @@ This replaces the Solidity `broadcast*` modifiers.
 ## Subpaths & gate selectors
 
 - `@sm-lab/recipes` — shared: `connect`, `actAs`, `addKeys`, `operatorInfo`, `warpBy`,
-  `snapshot`, `revert`, `clActivate`.
+  `snapshot`, `revert`, `clActivate`, plus the module-agnostic gate helpers `resolveGate`
+  and `setGateAddrs` (both dispatch on `ctx.module` — see gate selectors below).
 - `@sm-lab/recipes/cm` — `createCuratedOperator` (cm gates `po/pto/pgo/do/eeo/iodc/iodcp` →
   `CuratedGates[0..6]`), MetaRegistry group/curve recipes `createOperatorGroup`,
   `resetOperatorGroup`, `setBondCurveWeight`, and `seedCm` — seed a realistic cm fork in one call
   (3 gate operators, a 34/33/33 operator group, keyed/deposited/topped-up across rounds; pass `seed`
   to make the operator addresses + keys deterministic).
-- `@sm-lab/recipes/csm` — `setGateAddrs` (selector `ics` → `VettedGate`). `idvtc` →
-  `IdentifiedDVTClusterGate` (v3-only, hoodi; resolves the address only — throws on
-  mainnet/v2 snapshots that lack it).
 
-`setGateAddrs` pins the tree to IPFS (set `IPFS_API_URL` to a local `@sm-lab/ipfs`,
-or `PINATA_*`), or pass `cid` to skip pinning.
+**Gate selectors** (`resolveGate` / `setGateAddrs`, dispatched by `ctx.module`):
+
+- csm — `ics` → `VettedGate` (default); `idvtc` → `IdentifiedDVTClusterGate` (v3-only, hoodi;
+  throws on mainnet/v2 snapshots that lack it).
+- cm — `po/pto/pgo/do/eeo/iodc/iodcp` or a numeric index → `CuratedGates[0..6]` (`po` is the default).
+- any — a raw `0x…` gate address is used as-is.
+
+`setGateAddrs` builds the gate's address tree and installs it on whichever gate the selector
+resolves to (VettedGate and CuratedGate share the same `setTreeParams` surface). It pins the tree to
+IPFS (set `IPFS_API_URL` to a local `@sm-lab/ipfs`, or `PINATA_*`), or pass `cid` to skip pinning.
 
 ## Top-up (`allocateDeposits` as the StakingRouter)
 

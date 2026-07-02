@@ -1,5 +1,5 @@
-// tools/recipes/test/cli-program.test.ts
 import { describe, expect, it } from 'vitest';
+import { buildCompletionScript } from '@sm-lab/core';
 import { buildProgram } from '../src/cli/program';
 
 /** A fresh program that captures help/usage output instead of writing to the real streams. */
@@ -52,6 +52,32 @@ describe('buildProgram', () => {
     expect(helpText).toMatch(/sm-recipes .+--json/);
   });
 
+  it('registers the completion command and --version', () => {
+    expect(p.commands.map((c) => c.name())).toContain('completion');
+    expect(p.options.map((o) => o.long)).toContain('--version');
+  });
+
+  it('completion: the fish script covers the bin, a nested cm command, and known flags', () => {
+    const fish = buildCompletionScript(buildProgram(), 'fish');
+    expect(fish).toContain('complete -c sm-recipes');
+    expect(fish).toContain('-a add-keys');
+    // nested: the cm group's own `seed` command is offered only after the `cm` token
+    expect(fish).toMatch(/__fish_seen_subcommand_from cm.*-a seed /);
+    expect(fish).toContain('-l operator-id');
+    expect(fish).toContain('-l json');
+  });
+
+  it('leaf help shows global options and the positional-order line', () => {
+    const leaf = buildProgram().commands.find((c) => c.name() === 'withdraw')!;
+    let out = '';
+    leaf.configureOutput({ writeOut: (s) => (out += s) });
+    leaf.outputHelp();
+    expect(out).toContain('Global Options:');
+    expect(out).toContain('--json');
+    expect(out).toContain('node operator id (uint)');
+    expect(out).toContain('positionally in this order: operator-id, key-index, exit-balance');
+  });
+
   it('mirrors every shared command under both cm and csm groups (module pre-bound)', () => {
     const cmNames = p.commands.find((c) => c.name() === 'cm')!.commands.map((c) => c.name());
     const csmNames = p.commands.find((c) => c.name() === 'csm')!.commands.map((c) => c.name());
@@ -63,5 +89,8 @@ describe('buildProgram', () => {
     // group-specific commands still present alongside the mirrored shared ones
     expect(cmNames).toContain('seed');
     expect(csmNames).toContain('set-gate');
+    // gate commands now exist under both groups (each with its module's gate list)
+    expect(cmNames).toContain('set-gate');
+    expect(cmNames).toContain('resolve-gate');
   });
 });

@@ -100,14 +100,29 @@ export function run(fn: () => Promise<void>): void {
 
 const collect = (v: string, acc: string[]): string[] => [...acc, v];
 
+// Help fallback derived from the coercer's contract, so a spec without a `description`
+// never renders as a bare flag in --help. Keyed by identity — descriptors reference the
+// exported coercers directly. `identity` stays undescribed (nothing can be inferred).
+const COERCER_HELP: ReadonlyMap<unknown, string> = new Map<unknown, string>([
+  [toEth, 'amount in ETH (decimal, 1-wei exact)'],
+  [toBigInt, 'unsigned integer'],
+  [toNumber, 'number'],
+  [toHexValue, '0x-prefixed hex value'],
+  [toAddressValue, '0x… address'],
+  [toAddresses, '0x… address'],
+  [toPairs, 'noId:bps pair'],
+]);
+
+const optionHelp = (o: OptionSpec): string => o.description ?? COERCER_HELP.get(o.coerce) ?? '';
+
 /** Whether an option is also accepted positionally — explicit `positional`, else required && !repeatable. */
 const isPositional = (o: OptionSpec): boolean => o.positional ?? (!!o.required && !o.repeatable);
 
 export function defineCommand(desc: RecipeCommand, connectImpl: typeof connect = connect): Command {
   const cmd = new Command(desc.name).description(desc.summary);
   for (const o of desc.options) {
-    if (o.repeatable) cmd.option(o.flag, o.description ?? '', collect, []);
-    else cmd.option(o.flag, o.description ?? '');
+    if (o.repeatable) cmd.option(o.flag, optionHelp(o), collect, []);
+    else cmd.option(o.flag, optionHelp(o));
   }
   // Selected options are ALSO accepted positionally, in declaration order:
   // `operator-info 0` == `operator-info --operator-id 0`. Default: every required,
@@ -119,7 +134,16 @@ export function defineCommand(desc: RecipeCommand, connectImpl: typeof connect =
   if (variadicAt >= 0 && variadicAt !== positionals.length - 1)
     throw new Error(`${desc.name}: a repeatable positional must be declared last (it is variadic)`);
   for (const o of positionals)
-    cmd.argument(`[${flagName(o.flag)}${o.repeatable ? '...' : ''}]`, o.description ?? '');
+    cmd.argument(`[${flagName(o.flag)}${o.repeatable ? '...' : ''}]`, optionHelp(o));
+  // The positional-alias feature is invisible in commander's generated usage ("[options]"),
+  // so surface the accepted order explicitly in every command's help.
+  if (positionals.length > 0) {
+    const order = positionals.map((o) => flagName(o.flag) + (o.repeatable ? '...' : '')).join(', ');
+    cmd.addHelpText(
+      'after',
+      `\nRequired options may be passed positionally in this order: ${order}`,
+    );
+  }
 
   // commander calls the action with (...positionalValues, localOpts, command); we ignore the
   // leading values + local opts and read everything off `command` — robust to the arg count.

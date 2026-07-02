@@ -1,4 +1,4 @@
-import { buildIcsTree } from '@sm-lab/merkle';
+import { buildAddressesTree } from '@sm-lab/merkle';
 import { describe, expect, it } from 'vitest';
 import {
   createCuratedOperator,
@@ -41,7 +41,7 @@ describe('createCuratedOperator', () => {
     });
     expect(res.noId).toBe(7n);
 
-    const tree = buildIcsTree([OPERATOR, EXTRA]);
+    const tree = buildAddressesTree([OPERATOR, EXTRA]);
     const writes = byMethod('writeContract') as any[];
 
     // temp tree installed with the computed root + a synthetic non-empty cid, as admin

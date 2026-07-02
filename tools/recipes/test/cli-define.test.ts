@@ -1,4 +1,3 @@
-// tools/recipes/test/cli-define.test.ts
 import { describe, expect, it, vi } from 'vitest';
 import { Command } from 'commander';
 import {

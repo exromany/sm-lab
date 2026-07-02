@@ -1,4 +1,3 @@
-// tools/recipes/test/cli-shared.test.ts
 import { describe, expect, it } from 'vitest';
 import { sharedCommands } from '../src/cli/commands/shared';
 import { flagProp } from '../src/cli/define';

@@ -33,8 +33,30 @@ import { clActivate } from '../../recipes/cl-activate';
 import { getPubkey, getKeyBalance } from '../../recipes/reads';
 import { warpBy, snapshot, revert } from '../../recipes/chain';
 
-const operatorId = { flag: '--operator-id <id>', key: 'noId', coerce: toBigInt, required: true };
-const keyIndex = { flag: '--key-index <i>', key: 'keyIndex', coerce: toBigInt, required: true };
+const operatorId = {
+  flag: '--operator-id <id>',
+  key: 'noId',
+  coerce: toBigInt,
+  required: true,
+  description: 'node operator id (uint)',
+};
+const keyIndex = {
+  flag: '--key-index <i>',
+  key: 'keyIndex',
+  coerce: toBigInt,
+  required: true,
+  description: 'zero-based key index within the operator',
+};
+const seedHex = {
+  flag: '--seed <hex>',
+  key: 'seed',
+  coerce: toHexValue,
+  description: 'deterministic seed (0x-hex); omit for fresh randomness',
+};
+const cidEscape = (which: string) => ({
+  coerce: identity,
+  description: `skip IPFS pinning by supplying the ${which} CID — no running sm-ipfs needed`,
+});
 
 export const sharedCommands: RecipeCommand[] = [
   {
@@ -43,7 +65,7 @@ export const sharedCommands: RecipeCommand[] = [
     options: [
       operatorId,
       { flag: '--count <n>', key: 'count', coerce: toNumber, required: true },
-      { flag: '--seed <hex>', key: 'seed', coerce: toHexValue },
+      seedHex,
     ],
     run: (ctx, o: { noId: bigint; count: number; seed?: Hex }) => addKeys(ctx, o),
     report: (r: { publicKeys: Hex[] }, o: { noId: bigint; count: number }) => [
@@ -53,7 +75,8 @@ export const sharedCommands: RecipeCommand[] = [
   },
   {
     name: 'operator-info',
-    summary: 'read a node operator record',
+    summary:
+      "read a node operator's on-chain record (addresses + key counts); one field per line, --json for the raw object",
     options: [operatorId],
     run: (ctx, o: { noId: bigint }) => operatorInfo(ctx, o),
     report: (r: Record<string, unknown>, o: { noId: bigint }) => [
@@ -106,7 +129,8 @@ export const sharedCommands: RecipeCommand[] = [
   },
   {
     name: 'top-up-active-keys',
-    summary: 'top up every active key of an operator (FIFO)',
+    summary:
+      'allocate deposit balance to every active key of an operator, in key-index order (TopUpQueueOps FIFO), as the StakingRouter; capped at 2016 ETH per key',
     options: [operatorId],
     run: (ctx, o: { noId: bigint }) => topUpActiveKeys(ctx, o),
     report: (r: { toppedUp: number }) => [`topped up ${r.toppedUp} key(s)`],
@@ -233,9 +257,9 @@ export const sharedCommands: RecipeCommand[] = [
     name: 'make-rewards',
     summary: 'build the cumulative rewards tree + pin to IPFS (no submit)',
     options: [
-      { flag: '--seed <hex>', key: 'seed', coerce: toHexValue },
-      { flag: '--tree-cid <cid>', key: 'treeCid', coerce: identity },
-      { flag: '--log-cid <cid>', key: 'logCid', coerce: identity },
+      seedHex,
+      { flag: '--tree-cid <cid>', key: 'treeCid', ...cidEscape('tree') },
+      { flag: '--log-cid <cid>', key: 'logCid', ...cidEscape('report-log') },
     ],
     run: (ctx, o: { seed?: Hex; treeCid?: string; logCid?: string }) => makeRewards(ctx, o),
     report: (r: { treeRoot: Hex; treeCid: string; logCid: string; distributed: bigint }) => [
@@ -249,9 +273,9 @@ export const sharedCommands: RecipeCommand[] = [
     name: 'submit-rewards',
     summary: 'build AND submit a rewards report (warps to the next frame)',
     options: [
-      { flag: '--seed <hex>', key: 'seed', coerce: toHexValue },
-      { flag: '--tree-cid <cid>', key: 'treeCid', coerce: identity },
-      { flag: '--log-cid <cid>', key: 'logCid', coerce: identity },
+      seedHex,
+      { flag: '--tree-cid <cid>', key: 'treeCid', ...cidEscape('tree') },
+      { flag: '--log-cid <cid>', key: 'logCid', ...cidEscape('report-log') },
     ],
     run: async (ctx, o: { seed?: Hex; treeCid?: string; logCid?: string }) =>
       submitRewards(ctx, await makeRewards(ctx, o)),
@@ -262,7 +286,8 @@ export const sharedCommands: RecipeCommand[] = [
   },
   {
     name: 'cl-activate',
-    summary: 'mark a key active_ongoing on a running cl-mock',
+    summary:
+      'mark a key active_ongoing on a running cl-mock (requires --cl-mock-url or CL_MOCK_URL)',
     needsClMock: true,
     options: [operatorId, keyIndex],
     run: (ctx, o: { noId: bigint; keyIndex: bigint }) => clActivate(ctx, o),

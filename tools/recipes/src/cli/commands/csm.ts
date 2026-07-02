@@ -1,7 +1,9 @@
 import type { Hex } from '@sm-lab/receipts';
 import { identity, toAddresses, type RecipeCommand } from '../define';
 import { resolveGate } from '../../context';
-import { setGateAddrs } from '../../csm';
+import { setGateAddrs } from '../../recipes/set-gate';
+
+const csmSelectorHelp = 'gate selector: ics (VettedGate) | idvtc (v3-only) | 0x… gate address';
 
 export const csmCommands: RecipeCommand[] = [
   {
@@ -11,7 +13,13 @@ export const csmCommands: RecipeCommand[] = [
     // Positional form leads with the selector, then the variadic addresses:
     //   `set-gate idvtc 0xabc… 0xdef…` == `set-gate --selector idvtc --address 0xabc… --address 0xdef…`
     options: [
-      { flag: '--selector <name>', key: 'selector', coerce: identity, positional: true },
+      {
+        flag: '--selector <name>',
+        key: 'selector',
+        coerce: identity,
+        positional: true,
+        description: `${csmSelectorHelp} (default: ics)`,
+      },
       {
         flag: '--address <addr>',
         key: 'addresses',
@@ -20,9 +28,14 @@ export const csmCommands: RecipeCommand[] = [
         required: true,
         positional: true,
       },
-      { flag: '--cid <cid>', key: 'cid', coerce: identity },
+      {
+        flag: '--cid <cid>',
+        key: 'cid',
+        coerce: identity,
+        description: 'skip IPFS pinning by supplying the CID — no running sm-ipfs needed',
+      },
     ],
-    run: (ctx, o: { addresses: Hex[]; selector?: 'ics'; cid?: string }) => setGateAddrs(ctx, o),
+    run: (ctx, o: { addresses: Hex[]; selector?: string; cid?: string }) => setGateAddrs(ctx, o),
     report: (r: { treeRoot: Hex; treeCid: string }) => [
       `tree root: ${r.treeRoot}`,
       `tree CID:  ${r.treeCid}`,
@@ -30,9 +43,17 @@ export const csmCommands: RecipeCommand[] = [
   },
   {
     name: 'resolve-gate',
-    summary: 'resolve a gate address by selector (read-only)',
+    summary: 'resolve a csm gate contract address by selector (read-only); prints the address',
     module: 'csm',
-    options: [{ flag: '--selector <name>', key: 'selector', coerce: identity, required: true }],
+    options: [
+      {
+        flag: '--selector <name>',
+        key: 'selector',
+        coerce: identity,
+        required: true,
+        description: csmSelectorHelp,
+      },
+    ],
     run: (ctx, o: { selector: string }) => resolveGate(ctx, o.selector),
     report: (r: Hex, o: { selector: string }) => [`${o.selector} → ${r}`],
   },

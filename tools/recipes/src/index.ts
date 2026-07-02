@@ -47,6 +47,9 @@ export {
 
 export { addBond, createBondDebt } from './recipes/bond';
 
+export { setGateAddrs } from './recipes/set-gate';
+export type { SetGateAddrsOptions, SetGateAddrsResult } from './recipes/set-gate';
+
 export { makeRewards, submitRewards } from './recipes/rewards';
 export type { RewardsReport, MakeRewardsOptions, SubmitRewardsResult } from './recipes/rewards';
 

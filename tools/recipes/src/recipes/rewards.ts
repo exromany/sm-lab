@@ -1,8 +1,4 @@
-import {
-  makeRewards as makeRewardsTree,
-  shouldAttemptPin,
-  type TreeDump,
-} from '@sm-lab/merkle';
+import { makeRewards as makeRewardsTree, shouldAttemptPin, type TreeDump } from '@sm-lab/merkle';
 import { encodeAbiParameters, keccak256, parseAbiParameters, parseEther, toBytes } from 'viem';
 import {
   feeDistributorAbi,
@@ -123,14 +119,14 @@ export async function makeRewards(ctx: Ctx, opts: MakeRewardsOptions = {}): Prom
   if (leaves.length === 1) leaves.push([PAD_NO_ID, 0n]);
 
   if (leaves.length === 0) {
-    // Empty report: no tree, no pin. submitRewards (PR-2) will treat ZERO_ROOT as a graceful skip.
+    // Empty report: no tree, no pin. submitRewards treats ZERO_ROOT as a graceful skip.
     return { treeRoot: ZERO_ROOT, treeCid: '', logCid: '', distributed, rebate, cumulatives };
   }
 
   // Guard before the IPFS pin so hermetic tests with no IPFS env and no escape cids fail loudly
   // instead of hitting the wire. Mirrors `setGateAddrs.pinTree`. Sits AFTER the empty-report return
   // so an empty fork never needs IPFS configured.
-  // shouldAttemptPin() is now true by default (local-first); it returns false ONLY when
+  // shouldAttemptPin() is true by default (local-first); it returns false ONLY when
   // IPFS_API_URL points at real Pinata with no credentials. That is the canonical "not configured"
   // state tests can set to trigger this guard.
   const needsPin = opts.treeCid === undefined || opts.logCid === undefined;

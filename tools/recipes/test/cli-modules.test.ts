@@ -10,8 +10,10 @@ describe('cm/csm commands', () => {
         'create-curated-operator',
         'create-operator-group',
         'reset-operator-group',
+        'resolve-gate',
         'seed',
         'set-bond-curve-weight',
+        'set-gate',
       ].toSorted(),
     );
     expect(cmCommands.every((c) => c.module === 'cm')).toBe(true);
@@ -40,5 +42,15 @@ describe('cm/csm commands', () => {
     const args = defineCommand(sg).registeredArguments;
     expect(args.map((a) => a.name())).toEqual(['selector', 'address']);
     expect(args.map((a) => a.variadic)).toEqual([false, true]);
+  });
+  it('cm mirrors the gate commands (set-gate + resolve-gate) forcing module cm', () => {
+    const sg = cmCommands.find((c) => c.name === 'set-gate')!;
+    expect(sg.module).toBe('cm');
+    const args = defineCommand(sg).registeredArguments;
+    expect(args.map((a) => a.name())).toEqual(['selector', 'address']);
+    expect(args.map((a) => a.variadic)).toEqual([false, true]);
+
+    const rg = cmCommands.find((c) => c.name === 'resolve-gate')!;
+    expect(rg.report('0xabc' as never, { selector: 'pto' })).toEqual(['pto → 0xabc']);
   });
 });
