@@ -1,6 +1,6 @@
 # @sm-lab/keys
 
-Real BLS12-381 validator **deposit-data** generator for Lido CSM (mainnet / hoodi).
+Real BLS12-381 validator **deposit-data** generator for Lido SM (mainnet / hoodi).
 Pure TypeScript — no chain, no Foundry, no external binary. Replaces `eth-staking-smith`
 for sm-lab / consumer test suites.
 
@@ -19,6 +19,7 @@ sm-keys --count 2 --wc 0xCustomAddress  # withdrawal address override
 sm-keys --count 5 -o deposit_data.json  # write file (mnemonic → stderr)
 sm-keys --count 2 --json                # structured JSON result to stdout (mnemonic + keys)
 sm-keys help                            # mirrors --help
+sm-keys completion fish | source        # shell completion (bash | zsh | fish)
 ```
 
 `count` is also a positional argument, so `sm-keys 2` == `sm-keys --count 2` (the positional
@@ -26,15 +27,15 @@ wins if both are given). `sm-keys help` mirrors `sm-keys --help`.
 
 ### FLAGS
 
-| flag                       | default    | notes                                                       |
-| -------------------------- | ---------- | ----------------------------------------------------------- |
-| `--chain <mainnet\|hoodi>` | `hoodi`    |                                                             |
-| `--count <n>`              | `1`        |                                                             |
-| `--type <0x01\|0x02>`      | `0x01`     | `0x02` = compounding                                        |
-| `--mnemonic <phrase>`      | random     | BIP-39 (128-bit when omitted)                               |
-| `--wc <address>`           | Lido vault | eth1 address override                                       |
-| `--start-index <n>`        | `0`        | first validator index                                       |
-| `-o, --out <path>`         | —          | write `deposit_data.json`; else stdout                      |
+| flag                       | default    | notes                                                      |
+| -------------------------- | ---------- | ---------------------------------------------------------- |
+| `--chain <mainnet\|hoodi>` | `hoodi`    |                                                            |
+| `--count <n>`              | `1`        |                                                            |
+| `--type <0x01\|0x02>`      | `0x01`     | `0x02` = compounding                                       |
+| `--mnemonic <phrase>`      | random     | BIP-39 (128-bit when omitted)                              |
+| `--wc <address>`           | Lido vault | eth1 address override                                      |
+| `--start-index <n>`        | `0`        | first validator index                                      |
+| `-o, --out <path>`         | —          | write `deposit_data.json`; else stdout                     |
 | `--json`                   | —          | emit `{ mnemonic, keys[] }` as JSON to stdout; exit 0 or 1 |
 
 With `--json` the output is a single JSON value (`JSON.stringify`, 2-space indent) on stdout.

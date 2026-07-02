@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { buildCompletionScript } from '@sm-lab/core';
 import { buildProgram } from '../src/cli/program';
 import type { DepositKey, MakeDepositKeysOptions, MakeDepositKeysResult } from '../src/keys';
 
@@ -55,9 +56,7 @@ describe('sm-keys CLI', () => {
     const h = harness();
     await h.prog.parseAsync(['--help'], { from: 'user' }).catch(() => undefined);
     const helpText = h.get();
-    // Option is listed
     expect(helpText).toContain('--json');
-    // Must also contain an example showing --json usage
     expect(helpText).toContain('Examples:');
     expect(helpText).toMatch(/sm-keys .+--json/);
   });
@@ -101,8 +100,10 @@ describe('sm-keys CLI --json', () => {
 
     expect(logged).toHaveLength(1);
     const parsed = JSON.parse(logged[0]!);
-    expect(parsed).toMatchObject({ mnemonic: 'a b c', keys: [expect.objectContaining({ pubkey: '0xaabbcc' })] });
-    // 2-space indent: verify the raw string
+    expect(parsed).toMatchObject({
+      mnemonic: 'a b c',
+      keys: [expect.objectContaining({ pubkey: '0xaabbcc' })],
+    });
     expect(logged[0]).toBe(JSON.stringify(RESULT, undefined, 2));
   });
 
@@ -129,7 +130,6 @@ describe('sm-keys CLI --json', () => {
     const h = harness(RESULT);
     await h.prog.parseAsync(['--json'], { from: 'user' });
 
-    // Only one call to console.log (the JSON), no mnemonic line
     expect(stdoutLines).toHaveLength(1);
     expect(stdoutLines[0]).not.toContain('mnemonic:');
   });
@@ -166,9 +166,7 @@ describe('sm-keys CLI --json', () => {
 
     // stdout must be empty — no JSON error object
     expect(stdoutLines).toHaveLength(0);
-    // stderr gets the error message
     expect(stderrLines.some((l) => l.includes('keygen failed'))).toBe(true);
-    // exit(1) was called
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
@@ -193,11 +191,51 @@ describe('sm-keys CLI --json', () => {
     const h = harness(RESULT);
     await h.prog.parseAsync([], { from: 'user' });
 
-    // Human mode: one console.log call with the deposit-data JSON (no 0x prefix)
     expect(stdoutLines).toHaveLength(1);
     const parsed = JSON.parse(stdoutLines[0]!) as Array<{ pubkey: string }>;
     // toDepositDataJson strips 0x prefix
     expect(parsed[0]?.pubkey).not.toMatch(/^0x/);
     expect(parsed[0]?.pubkey).toBe('aabbcc');
+  });
+});
+
+describe('sm-keys CLI completion + option validation', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('`completion fish` prints a static script covering the bin, a subcommand, and flags', async () => {
+    const writes: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
+      writes.push(String(chunk));
+      return true;
+    });
+
+    const h = harness();
+    await h.prog.parseAsync(['completion', 'fish'], { from: 'user' });
+
+    const script = writes.join('');
+    expect(script).toContain('complete -c sm-keys');
+    expect(script).toContain('-a completion');
+    expect(script).toContain('-l json');
+    expect(script).toBe(buildCompletionScript(h.prog, 'fish'));
+  });
+
+  it('completion script offers the --chain / --type choices', () => {
+    const script = buildCompletionScript(harness().prog, 'fish');
+    expect(script).toContain("-l chain -x -a 'mainnet hoodi'");
+    expect(script).toContain("-l type -x -a '0x01 0x02'");
+  });
+
+  it('invalid --chain / --type values are native commander usage errors', async () => {
+    const chain = harness();
+    await expect(chain.prog.parseAsync(['--chain', 'sepolia'], { from: 'user' })).rejects.toThrow(
+      /--chain/,
+    );
+    expect(chain.calls).toHaveLength(0);
+
+    const type = harness();
+    await expect(type.prog.parseAsync(['--type', '0x03'], { from: 'user' })).rejects.toThrow(
+      /--type/,
+    );
+    expect(type.calls).toHaveLength(0);
   });
 });

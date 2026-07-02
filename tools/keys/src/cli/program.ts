@@ -1,7 +1,12 @@
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
+import { createCompletionCommand, readPackageVersion } from '@sm-lab/core';
 import { makeDepositKeys as realMakeDepositKeys } from '../keys';
+import { CHAINS } from '../constants';
 import type { ChainName, WcType } from '../constants';
 import { toDepositDataJson, writeDepositDataFile } from '../io';
+
+const CHAIN_CHOICES = Object.keys(CHAINS) as ChainName[];
+const WC_TYPE_CHOICES: WcType[] = ['0x01', '0x02'];
 
 /** Injectable seam: tests pass a fake keygen so CLI parsing is verified hermetically. */
 export interface CliDeps {
@@ -24,10 +29,20 @@ export function buildProgram(deps: CliDeps = { makeDepositKeys: realMakeDepositK
   return (
     new Command()
       .name('sm-keys')
-      .description('Generate real BLS validator deposit data for Lido CSM (mainnet/hoodi)')
-      .option('--chain <name>', 'mainnet | hoodi', 'hoodi')
+      .description(
+        'Generate real BLS validator deposit data for Lido SM (mainnet/hoodi); ' +
+          'human mode: deposit_data.json to stdout (or --out), mnemonic to stderr',
+      )
+      .version(readPackageVersion(import.meta.url))
+      .addOption(
+        new Option('--chain <name>', 'target chain').choices(CHAIN_CHOICES).default('hoodi'),
+      )
       .option('--count <n>', 'number of validators', '1')
-      .option('--type <wc>', 'withdrawal credentials type: 0x01 | 0x02', '0x01')
+      .addOption(
+        new Option('--type <wc>', 'withdrawal credentials type')
+          .choices(WC_TYPE_CHOICES)
+          .default('0x01'),
+      )
       .option('--mnemonic <phrase>', 'BIP-39 mnemonic (random if omitted)')
       .option('--wc <address>', 'override withdrawal address (default: Lido vault)')
       .option('--start-index <n>', 'first validator index', '0')
@@ -45,6 +60,7 @@ Examples:
       .argument('[count]', 'number of validators (positional alias for --count)')
       // `sm-keys help` mirrors `--help` (matches the sm-recipes CLI).
       .helpCommand(true)
+      .addCommand(createCompletionCommand())
       .action(
         (
           countArg: string | undefined,
@@ -71,8 +87,8 @@ Examples:
             const { mnemonic, keys } = result;
 
             if (opts.json) {
-              // --json: single structured value to stdout; mnemonic is included in the result.
-              // Exit code 0. Nothing else on stdout.
+              // Unlike human mode (mnemonic → stderr), --json deliberately includes the
+              // mnemonic in the stdout JSON.
               console.log(JSON.stringify(result, bigintReplacer, 2));
               return;
             }
