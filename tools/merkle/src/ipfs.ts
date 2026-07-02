@@ -80,7 +80,6 @@ export function hasCustomIpfsEndpoint(opts: IpfsClientOptions = ipfsOptionsFromE
  * Use the CLI's `--no-upload` / `MakeOptions.noUpload` to explicitly skip pinning.
  */
 export function shouldAttemptPin(opts: IpfsClientOptions = ipfsOptionsFromEnv()): boolean {
-  // Explicit endpoint set to real Pinata but no creds — cannot pin.
   const raw = (opts.apiUrl ?? process.env.IPFS_API_URL ?? '').replace(/\/+$/, '');
   if (raw === DEFAULT_IPFS_API_URL && !hasPinataCredentials(opts)) return false;
   // All other cases: custom endpoint (including no env, which falls through to LOCAL) or Pinata creds.

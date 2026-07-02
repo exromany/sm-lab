@@ -109,7 +109,7 @@ describe('pinJsonToIpfs', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    const cid = await pinJsonToIpfs({ hello: 'world' }, 'merkle-tree-ics', {
+    const cid = await pinJsonToIpfs({ hello: 'world' }, 'merkle-tree-addresses', {
       apiUrl: 'http://127.0.0.1:3000',
       apiKey: 'k',
       apiSecret: 's',
@@ -122,7 +122,7 @@ describe('pinJsonToIpfs', () => {
     expect(init.method).toBe('POST');
     expect(JSON.parse(init.body)).toEqual({
       pinataContent: { hello: 'world' },
-      pinataMetadata: { name: 'merkle-tree-ics' },
+      pinataMetadata: { name: 'merkle-tree-addresses' },
     });
     expect(init.headers.pinata_api_key).toBe('k');
     expect(init.headers.pinata_secret_api_key).toBe('s');

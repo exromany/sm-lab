@@ -1,4 +1,4 @@
-import { buildIcsTree, buildRewardsTree, buildStrikesTree } from './tree';
+import { buildAddressesTree, buildRewardsTree, buildStrikesTree } from './tree';
 import { readStrikesFile, writeJsonFile } from './io';
 import { pinJsonToIpfs, shouldAttemptPin } from './ipfs';
 import type { TreeConfig } from './io';
@@ -59,13 +59,17 @@ function finish(treeRoot: string, treeCid: string | undefined, configPath?: stri
 }
 
 /**
- * ICS: build the address tree from a resolved address list, pin it, return `{ treeRoot, treeCid }`.
- * The CLI resolves file/inline/flag inputs to `string[]` before calling this — keeping this function
- * pure so it can be called directly from TS consumers without touching the filesystem.
+ * Addresses (vetted gate): build the address tree from a resolved address list, pin it, return
+ * `{ treeRoot, treeCid }`. The CLI resolves file/inline/flag inputs to `string[]` before calling
+ * this — keeping this function pure so it can be called directly from TS consumers without
+ * touching the filesystem.
  */
-export async function makeIcs(addresses: string[], opts: MakeOptions = {}): Promise<MakeResult> {
-  const tree = buildIcsTree(addresses);
-  const treeCid = await maybePin(tree.dump(), 'merkle-tree-ics', opts.noUpload);
+export async function makeAddresses(
+  addresses: string[],
+  opts: MakeOptions = {},
+): Promise<MakeResult> {
+  const tree = buildAddressesTree(addresses);
+  const treeCid = await maybePin(tree.dump(), 'merkle-tree-addresses', opts.noUpload);
   return finish(tree.root, treeCid, opts.configPath);
 }
 
@@ -96,7 +100,6 @@ export async function makeRewards(
   opts: MakeOptions & { log?: unknown } = {},
 ): Promise<MakeRewardsResult> {
   const tree = buildRewardsTree(leaves);
-  // Serialize bigints in the tree dump before pinning and before returning.
   // OZ dump() returns leaf values as bigints; JSON.stringify(dump) would throw without this.
   const treeDump: TreeDump = JSON.parse(JSON.stringify(tree.dump(), bigintReplacer));
   const treeCid = await maybePin(treeDump, 'merkle-tree-rewards', opts.noUpload);

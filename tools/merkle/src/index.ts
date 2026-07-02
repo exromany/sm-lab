@@ -4,10 +4,10 @@
 
 // Pure deterministic core
 export {
-  buildIcsTree,
+  buildAddressesTree,
   buildStrikesTree,
   buildRewardsTree,
-  ICS_LEAF_ENCODING,
+  ADDRESSES_LEAF_ENCODING,
   STRIKES_LEAF_ENCODING,
   REWARDS_LEAF_ENCODING,
 } from './tree';
@@ -37,5 +37,5 @@ export {
 export type { IpfsClientOptions, PinResponse } from './ipfs';
 
 // Build + pin pipeline (root + CID; on-chain work belongs to @sm-lab/receipts)
-export { makeIcs, makeStrikes, makeRewards } from './pipelines';
+export { makeAddresses, makeStrikes, makeRewards } from './pipelines';
 export type { MakeResult, MakeOptions, MakeRewardsResult } from './pipelines';

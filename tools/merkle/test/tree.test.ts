@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import {
-  buildIcsTree,
+  buildAddressesTree,
   buildStrikesTree,
   buildRewardsTree,
-  ICS_LEAF_ENCODING,
+  ADDRESSES_LEAF_ENCODING,
   STRIKES_LEAF_ENCODING,
   REWARDS_LEAF_ENCODING,
   type StrikesEntry,
@@ -34,7 +34,7 @@ const STRIKES: StrikesEntry[] = [
 
 // Pinned against `@openzeppelin/merkle-tree` output — regenerate only on a deliberate
 // algorithm change, never to "make the test pass".
-const ICS_ROOT = '0xff0cbba3ac8dfd35745552844b38c43c278b824d5bf0f52a51bc81d5e4e02931';
+const ADDRESSES_ROOT = '0xff0cbba3ac8dfd35745552844b38c43c278b824d5bf0f52a51bc81d5e4e02931';
 const STRIKES_ROOT = '0x773efb050b1f9108d3f18adee2a21b71faa1d05c375230d639e31be0d9cd8d38';
 const REWARDS_ROOT = '0x1d08fbbe3c5d6f757c8eb1d8a1f1481ef3508fa7b8d8cdeeba724282918d61ba';
 
@@ -44,20 +44,20 @@ const REWARDS: [bigint, bigint][] = [
 ];
 const PAD_NO_ID = (1n << 64n) - 1n; // type(uint64).max — the FeeDistributor pad-leaf id
 
-describe('buildIcsTree', () => {
+describe('buildAddressesTree', () => {
   it('produces a stable root for fixed addresses', () => {
-    expect(buildIcsTree(ADDRESSES).root).toBe(ICS_ROOT);
+    expect(buildAddressesTree(ADDRESSES).root).toBe(ADDRESSES_ROOT);
   });
 
   it('uses the ["address"] leaf encoding', () => {
-    const tree = buildIcsTree(ADDRESSES);
-    expect(ICS_LEAF_ENCODING).toEqual(['address']);
+    const tree = buildAddressesTree(ADDRESSES);
+    expect(ADDRESSES_LEAF_ENCODING).toEqual(['address']);
     // dump() records the leaf-value encoding the tree was built with
     expect(tree.dump().leafEncoding).toEqual(['address']);
   });
 
   it('round-trips: a leaf proof verifies against the root', () => {
-    const tree = buildIcsTree(ADDRESSES);
+    const tree = buildAddressesTree(ADDRESSES);
     const [entry] = ADDRESSES;
     const proof = tree.getProof([entry!]);
     expect(StandardMerkleTree.verify(tree.root, ['address'], [entry!], proof)).toBe(true);
@@ -65,7 +65,7 @@ describe('buildIcsTree', () => {
 
   it('is order-independent in root (OZ sorts leaves)', () => {
     const reversed = ADDRESSES.toReversed();
-    expect(buildIcsTree(reversed).root).toBe(ICS_ROOT);
+    expect(buildAddressesTree(reversed).root).toBe(ADDRESSES_ROOT);
   });
 });
 

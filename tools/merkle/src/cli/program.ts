@@ -1,6 +1,7 @@
 import { Command } from 'commander';
+import { createCompletionCommand, readPackageVersion } from '@sm-lab/core';
 import {
-  makeIcs as realMakeIcs,
+  makeAddresses as realMakeAddresses,
   makeStrikes as realMakeStrikes,
   makeRewards as realMakeRewards,
 } from '../pipelines';
@@ -9,7 +10,10 @@ import type { MakeResult } from '../pipelines';
 
 /** Injectable seam: tests pass fake pipelines so CLI parsing is verified hermetically. */
 export interface CliDeps {
-  makeIcs: (addresses: string[], opts: Parameters<typeof realMakeIcs>[1]) => Promise<MakeResult>;
+  makeAddresses: (
+    addresses: string[],
+    opts: Parameters<typeof realMakeAddresses>[1],
+  ) => Promise<MakeResult>;
   makeStrikes: typeof realMakeStrikes;
   makeRewards: typeof realMakeRewards;
 }
@@ -34,14 +38,15 @@ function report(label: string, result: MakeResult & { logCid?: string }): void {
 
 export function buildProgram(
   deps: CliDeps = {
-    makeIcs: realMakeIcs,
+    makeAddresses: realMakeAddresses,
     makeStrikes: realMakeStrikes,
     makeRewards: realMakeRewards,
   },
 ): Command {
   const program = new Command()
     .name('sm-merkle')
-    .description('Lido CSM Merkle tree builder — build a tree, pin it to IPFS, print root + CID')
+    .description('Lido SM Merkle tree builder — build a tree, pin it to IPFS, print root + CID')
+    .version(readPackageVersion(import.meta.url))
     // We ship our own `help` command below; suppress the built-in to avoid a duplicate-command
     // collision. `.helpCommand(false)` is the non-deprecated replacement for `.addHelpCommand(false)`.
     .helpCommand(false);
@@ -51,7 +56,7 @@ export function buildProgram(
   // ---------------------------------------------------------------------------
   program
     .command('addresses', { isDefault: true })
-    .description('Build the ICS address tree, pin it to IPFS, print root + CID')
+    .description('Build the addresses (vetted gate) tree, pin it to IPFS, print root + CID')
     .argument('[addresses...]', 'whitelist addresses (inline, or use --input / --source)')
     .option(
       '--input <addr>',
@@ -96,14 +101,14 @@ export function buildProgram(
               'No addresses supplied. Provide positional addresses, --input <addr>, or --source <file>.',
             );
           }
-          const result = await deps.makeIcs(addresses, {
+          const result = await deps.makeAddresses(addresses, {
             noUpload: !opts.upload,
             configPath: opts.out,
           });
           if (opts.json) {
             console.log(JSON.stringify(result, bigintReplacer, 2));
           } else {
-            report('ICS', result);
+            report('Addresses', result);
           }
         });
       },
@@ -115,7 +120,10 @@ export function buildProgram(
   program
     .command('strikes')
     .description('Build the strikes tree, pin it to IPFS, print root + CID')
-    .argument('<strikes>', 'path to strikes.json')
+    .argument(
+      '<strikes>',
+      'path to strikes.json — JSON array [{ nodeOperatorId, pubkey, strikes: number[] }]',
+    )
     .option('--source <file>', 'alternative flag for the strikes file path (same as positional)')
     .option('--no-upload', 'build/print root only, skip IPFS pinning')
     .option('-o, --out <path>', 'also write { treeRoot, treeCid } JSON to this path')
@@ -146,18 +154,15 @@ export function buildProgram(
   program
     .command('rewards')
     .description('Build the rewards tree from [nodeOperatorId, cumulativeShares] pairs, pin it')
-    .option(
+    .requiredOption(
       '--source <file>',
       'JSON array of [nodeOperatorId, cumulativeShares] pairs (number or numeric-string)',
     )
     .option('--no-upload', 'build/print root only, skip IPFS pinning')
     .option('-o, --out <path>', 'also write { treeRoot, treeCid } JSON to this path')
     .option('--json', 'print result as JSON to stdout (machine-readable)')
-    .action((opts: { source?: string; upload: boolean; out?: string; json?: boolean }) => {
+    .action((opts: { source: string; upload: boolean; out?: string; json?: boolean }) => {
       run(async () => {
-        if (!opts.source) {
-          throw new Error('--source <file> is required for the rewards command.');
-        }
         const raw = readJsonFile<[unknown, unknown][]>(opts.source);
         if (raw.length === 0) {
           throw new Error(
@@ -193,16 +198,17 @@ export function buildProgram(
     .command('help')
     .description('Print a self-contained usage cheat sheet')
     .action(() => {
-      console.log(`sm-merkle — Lido CSM Merkle tree builder
+      console.log(`sm-merkle — Lido SM Merkle tree builder
 
 WHAT IT DOES
   Build a Merkle tree from input, pin it to IPFS, and print the root + CID.
   Pushing the root/CID on-chain is NOT this tool's job — that's @sm-lab/receipts.
 
 COMMANDS
-  addresses [addresses...]   build the ICS address tree (DEFAULT — bare args route here)
+  addresses [addresses...]   build the addresses (vetted gate) tree (DEFAULT — bare args route here)
   strikes <strikes>          build the strikes tree, pin to IPFS, print root + CID
   rewards --source <file>    build the rewards tree from [noId, cumulativeShares] pairs
+  completion <shell>         print a bash|zsh|fish completion script (sm-merkle completion fish | source)
   help                       print this cheat sheet
 
 FLAGS (all commands)
@@ -226,13 +232,15 @@ DATA FORMATS
   rewards      JSON array [[nodeOperatorId, cumulativeShares], ...] (numbers or numeric strings)
 
 EXAMPLES
-  sm-merkle 0xABC 0xDEF                        # inline addresses → ICS tree
+  sm-merkle 0xABC 0xDEF                        # inline addresses → addresses (vetted gate) tree
   sm-merkle addresses --source addrs.json --json
   sm-merkle addresses --input 0xABC --input 0xDEF --no-upload
   sm-merkle strikes strikes.json --no-upload --json
   sm-merkle rewards --source rewards.json --json
   sm-merkle addresses addrs.json -o config.json`);
     });
+
+  program.addCommand(createCompletionCommand());
 
   return program;
 }

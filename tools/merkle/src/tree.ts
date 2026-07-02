@@ -5,13 +5,13 @@ import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
  * functions always produce the same root, which is exactly what the Vitest suite pins.
  *
  * Three OZ StandardMerkleTree shapes, one per CSM pipeline:
- *   - ICS:     leaf type ["address"]                       → VettedGate.setTreeParams
- *   - strikes: leaf type ["uint256","string","uint256[]"]  → CSStrikes.processOracleReport
- *   - rewards: leaf type ["uint256","uint256"]             → FeeDistributor cumulative tree
+ *   - addresses (vetted gate): ["address"]                      → VettedGate.setTreeParams
+ *   - strikes:                 ["uint256","string","uint256[]"] → CSStrikes.processOracleReport
+ *   - rewards:                 ["uint256","uint256"]            → FeeDistributor cumulative tree
  */
 
-/** Leaf encoding for the ICS (vetted gate) tree: one address per leaf. */
-export const ICS_LEAF_ENCODING = ['address'] as const;
+/** Leaf encoding for the addresses (vetted gate) tree: one address per leaf. */
+export const ADDRESSES_LEAF_ENCODING = ['address'] as const;
 
 /** Leaf encoding for the strikes tree: (nodeOperatorId, pubkey, strikes[]). */
 export const STRIKES_LEAF_ENCODING = ['uint256', 'string', 'uint256[]'] as const;
@@ -29,11 +29,11 @@ export interface StrikesEntry {
 /** The OZ tree dump shape we pin to IPFS (kept structural to avoid leaking OZ internals). */
 export type TreeDump = ReturnType<StandardMerkleTree<unknown[]>['dump']>;
 
-/** Build the ICS Merkle tree from a list of whitelisted addresses. */
-export function buildIcsTree(addresses: string[]): StandardMerkleTree<[string]> {
+/** Build the addresses (vetted gate) Merkle tree from a list of whitelisted addresses. */
+export function buildAddressesTree(addresses: string[]): StandardMerkleTree<[string]> {
   return StandardMerkleTree.of(
     addresses.map((address) => [address] as [string]),
-    [...ICS_LEAF_ENCODING],
+    [...ADDRESSES_LEAF_ENCODING],
   );
 }
 
@@ -53,7 +53,7 @@ export function buildStrikesTree(
  * Leaf values are `bigint` (not `number` like buildStrikesTree) because cumulative reward shares
  * are wei amounts that routinely overflow `Number.MAX_SAFE_INTEGER`. OZ serializes them as decimal
  * strings in `dump()` (JSON-safe). Callers shape the leaves — e.g. the FeeDistributor non-empty-proof
- * pad leaf is appended by the caller, not here (same division of labor as the ICS/strikes builders).
+ * pad leaf is appended by the caller, not here (same division of labor as the addresses/strikes builders).
  */
 export function buildRewardsTree(leaves: [bigint, bigint][]): StandardMerkleTree<[bigint, bigint]> {
   return StandardMerkleTree.of(leaves, [...REWARDS_LEAF_ENCODING]);

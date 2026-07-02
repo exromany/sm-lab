@@ -3,6 +3,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
+import { buildCompletionScript } from '@sm-lab/core';
 import { buildProgram } from '../src/cli/program';
 import type { MakeOptions, MakeResult } from '../src/pipelines';
 
@@ -27,19 +28,20 @@ function tmp(name: string, data: unknown): string {
   return p;
 }
 
-type IcsCall = { addresses: string[]; opts: MakeOptions };
+type AddressesCall = { addresses: string[]; opts: MakeOptions };
 type StrikesCall = { path: string; opts: MakeOptions };
 type RewardsCall = { leaves: [bigint, bigint][]; opts: MakeOptions & { log?: unknown } };
 
 /** buildProgram wired with recording fake pipelines + captured commander output. */
 const harness = () => {
   let out = '';
-  const ics: IcsCall[] = [];
+  let errOut = '';
+  const addresses: AddressesCall[] = [];
   const strikes: StrikesCall[] = [];
   const rewards: RewardsCall[] = [];
   const prog = buildProgram({
-    makeIcs: async (addresses, opts = {}) => {
-      ics.push({ addresses, opts });
+    makeAddresses: async (addrs, opts = {}) => {
+      addresses.push({ addresses: addrs, opts });
       return RESULT;
     },
     makeStrikes: async (p, opts = {}) => {
@@ -50,10 +52,15 @@ const harness = () => {
       rewards.push({ leaves, opts });
       return RESULT_WITH_LOG;
     },
-  })
-    .exitOverride()
-    .configureOutput({ writeOut: (s) => (out += s), writeErr: () => undefined });
-  return { prog, ics, strikes, rewards, get: () => out };
+  });
+  // Subcommands snapshot exitOverride/configureOutput at creation time (inside buildProgram),
+  // so applying them to the root alone would leave subcommand errors exiting the test process.
+  for (const cmd of [prog, ...prog.commands]) {
+    cmd
+      .exitOverride()
+      .configureOutput({ writeOut: (s) => (out += s), writeErr: (s) => (errOut += s) });
+  }
+  return { prog, addresses, strikes, rewards, get: () => out, getErr: () => errOut };
 };
 
 /** Silence the action's stdout/stderr (report lines) so test output stays pristine. */
@@ -69,20 +76,20 @@ describe('sm-merkle CLI', () => {
   // addresses command (default)
   // ---------------------------------------------------------------------------
 
-  it('`addresses <addr>` calls makeIcs with addresses array and uploads by default', async () => {
+  it('`addresses <addr>` calls makeAddresses with addresses array and uploads by default', async () => {
     muteConsole();
     const h = harness();
     await h.prog.parseAsync(['addresses', '0xABC', '0xDEF'], { from: 'user' });
-    expect(h.ics[0]?.addresses).toEqual(['0xABC', '0xDEF']);
-    expect(h.ics[0]?.opts.noUpload).toBe(false);
-    expect(h.ics[0]?.opts.configPath).toBeUndefined();
+    expect(h.addresses[0]?.addresses).toEqual(['0xABC', '0xDEF']);
+    expect(h.addresses[0]?.opts.noUpload).toBe(false);
+    expect(h.addresses[0]?.opts.configPath).toBeUndefined();
   });
 
-  it('bare positionals (default command) route to makeIcs', async () => {
+  it('bare positionals (default command) route to makeAddresses', async () => {
     muteConsole();
     const h = harness();
     await h.prog.parseAsync(['0xABC', '0xDEF'], { from: 'user' });
-    expect(h.ics[0]?.addresses).toEqual(['0xABC', '0xDEF']);
+    expect(h.addresses[0]?.addresses).toEqual(['0xABC', '0xDEF']);
   });
 
   it('`--input` flag accumulates addresses', async () => {
@@ -91,22 +98,22 @@ describe('sm-merkle CLI', () => {
     await h.prog.parseAsync(['addresses', '--input', '0xAAA', '--input', '0xBBB'], {
       from: 'user',
     });
-    expect(h.ics[0]?.addresses).toEqual(['0xAAA', '0xBBB']);
+    expect(h.addresses[0]?.addresses).toEqual(['0xAAA', '0xBBB']);
   });
 
   it('positionals and --input are merged', async () => {
     muteConsole();
     const h = harness();
     await h.prog.parseAsync(['addresses', '0xAAA', '--input', '0xBBB'], { from: 'user' });
-    expect(h.ics[0]?.addresses).toEqual(['0xAAA', '0xBBB']);
+    expect(h.addresses[0]?.addresses).toEqual(['0xAAA', '0xBBB']);
   });
 
   it('`--source` loads addresses from file via readAddressFile', async () => {
     muteConsole();
     const h = harness();
     await h.prog.parseAsync(['addresses', '--source', fixture('addresses.json')], { from: 'user' });
-    expect(Array.isArray(h.ics[0]?.addresses)).toBe(true);
-    expect((h.ics[0]?.addresses.length ?? 0) > 0).toBe(true);
+    expect(Array.isArray(h.addresses[0]?.addresses)).toBe(true);
+    expect((h.addresses[0]?.addresses.length ?? 0) > 0).toBe(true);
   });
 
   it('mixing --source and positionals throws an error', async () => {
@@ -145,14 +152,14 @@ describe('sm-merkle CLI', () => {
     muteConsole();
     const h = harness();
     await h.prog.parseAsync(['addresses', '0xABC', '--no-upload'], { from: 'user' });
-    expect(h.ics[0]?.opts.noUpload).toBe(true);
+    expect(h.addresses[0]?.opts.noUpload).toBe(true);
   });
 
   it('`-o, --out <path>` passes through as configPath', async () => {
     muteConsole();
     const h = harness();
     await h.prog.parseAsync(['addresses', '0xABC', '--out', 'cfg.json'], { from: 'user' });
-    expect(h.ics[0]?.opts.configPath).toBe('cfg.json');
+    expect(h.addresses[0]?.opts.configPath).toBe('cfg.json');
   });
 
   // ---------------------------------------------------------------------------
@@ -192,20 +199,12 @@ describe('sm-merkle CLI', () => {
     ]);
   });
 
-  it('`rewards` without --source throws', async () => {
-    const errors: string[] = [];
-    vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) =>
-      errors.push(args.map(String).join(' ')),
-    );
-    let exitCalled = false;
-    vi.spyOn(process, 'exit').mockImplementation(() => {
-      exitCalled = true;
-      return undefined as never;
-    });
+  it('`rewards` without --source fails with the native missing-option error', async () => {
     const h = harness();
-    await h.prog.parseAsync(['rewards'], { from: 'user' });
-    await vi.waitFor(() => exitCalled, { timeout: 500 });
-    expect(errors.join(' ')).toMatch(/--source/i);
+    await expect(h.prog.parseAsync(['rewards'], { from: 'user' })).rejects.toMatchObject({
+      code: 'commander.missingMandatoryOptionValue',
+    });
+    expect(h.getErr()).toContain("required option '--source <file>' not specified");
   });
 
   it('`rewards --no-upload` passes noUpload to makeRewards', async () => {
@@ -248,6 +247,14 @@ describe('sm-merkle CLI', () => {
     expect(logs.join('\n')).toContain('rewards');
   });
 
+  it('help cheat-sheet documents the `completion` command', async () => {
+    const logs: string[] = [];
+    vi.spyOn(console, 'log').mockImplementation((s: unknown) => logs.push(String(s)));
+    const h = harness();
+    await h.prog.parseAsync(['help'], { from: 'user' });
+    expect(logs.join('\n')).toContain('completion <shell>');
+  });
+
   it('help documents local IPFS default (not Pinata)', async () => {
     const logs: string[] = [];
     vi.spyOn(console, 'log').mockImplementation((s: unknown) => logs.push(String(s)));
@@ -255,6 +262,17 @@ describe('sm-merkle CLI', () => {
     await h.prog.parseAsync(['help'], { from: 'user' });
     const printed = logs.join('\n');
     expect(printed).toContain('127.0.0.1:5001');
+  });
+
+  // ---------------------------------------------------------------------------
+  // completion command
+  // ---------------------------------------------------------------------------
+
+  it('`completion fish` script covers the bin name, subcommands, and flags', () => {
+    const script = buildCompletionScript(harness().prog, 'fish');
+    expect(script).toContain('complete -c sm-merkle');
+    expect(script).toContain('-a strikes');
+    expect(script).toContain('-l no-upload');
   });
 
   // ---------------------------------------------------------------------------
@@ -290,7 +308,7 @@ describe('sm-merkle CLI', () => {
       vi.spyOn(console, 'error').mockImplementation(() => undefined);
       const h = harness();
       await h.prog.parseAsync(['addresses', '0xABC', '--json'], { from: 'user' });
-      expect(logs.join('\n')).not.toContain('ICS tree root');
+      expect(logs.join('\n')).not.toContain('Addresses tree root');
     });
 
     it('`strikes --json` prints a single JSON value matching MakeResult', async () => {
@@ -345,7 +363,7 @@ describe('sm-merkle CLI', () => {
         return undefined as never;
       });
       const prog = buildProgram({
-        makeIcs: async () => {
+        makeAddresses: async () => {
           throw new Error('pipeline failure');
         },
         makeStrikes: async () => ({ treeRoot: '0x0', treeCid: undefined }),
