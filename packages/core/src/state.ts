@@ -1,10 +1,4 @@
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  renameSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { Hono } from 'hono';
 
@@ -74,7 +68,8 @@ export function registerStateRoutes(app: Hono, opts: StateRoutesOptions): void {
   app.post('/admin/load', (c) => {
     if (!defaultPath)
       return c.json({ error: 'state path not configured; start serve with --state <file>' }, 400);
-    if (!existsSync(defaultPath)) return c.json({ error: `state file not found: ${defaultPath}` }, 404);
+    if (!existsSync(defaultPath))
+      return c.json({ error: `state file not found: ${defaultPath}` }, 404);
     const s = loadStateFromFile(defaultPath);
     restore(s as unknown);
     return c.json({ loaded: defaultPath });

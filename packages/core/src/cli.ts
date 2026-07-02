@@ -40,6 +40,8 @@ export interface BaseStatusResponse {
 }
 
 export interface StatusCommandOptions<T extends BaseStatusResponse> extends ClientTarget {
+  /** App-specific help text; defaults to 'Show status of a running server'. */
+  description?: string;
   /** Print app-specific lines after the shared header (URL/Status/Version/Started/Uptime). */
   render?: (data: T, url: string) => void;
 }
@@ -54,7 +56,7 @@ export function createStatusCommand<T extends BaseStatusResponse>(
   opts: StatusCommandOptions<T>,
 ): Command {
   return new Command('status')
-    .description('Show status of a running server')
+    .description(opts.description ?? 'Show status of a running server')
     .option('--json', 'output raw JSON')
     .action(async (cmdOpts: { json?: boolean }, cmd: Command) => {
       const url = resolveUrl(cmd, opts);
@@ -62,7 +64,10 @@ export function createStatusCommand<T extends BaseStatusResponse>(
       try {
         res = await fetch(`${url}/admin/status`);
       } catch (err) {
-        console.error('Error:', `${url} offline (${err instanceof Error ? err.message : String(err)})`);
+        console.error(
+          'Error:',
+          `${url} offline (${err instanceof Error ? err.message : String(err)})`,
+        );
         process.exit(1);
       }
       if (!res.ok) {
@@ -83,10 +88,15 @@ export function createStatusCommand<T extends BaseStatusResponse>(
     });
 }
 
+export interface StopCommandOptions extends ClientTarget {
+  /** App-specific help text; defaults to 'Stop a running server'. */
+  description?: string;
+}
+
 /** Build a `stop` command: POST /admin/shutdown to the resolved URL. */
-export function createStopCommand(target: ClientTarget): Command {
+export function createStopCommand(target: StopCommandOptions): Command {
   return new Command('stop')
-    .description('Stop a running server')
+    .description(target.description ?? 'Stop a running server')
     .action(async (_cmdOpts: unknown, cmd: Command) => {
       const url = resolveUrl(cmd, target);
       let res: Response;

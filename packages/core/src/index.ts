@@ -7,7 +7,15 @@ export { registerAdminRoutes, setShutdownHandler, readPackageVersion } from './a
 export type { AdminRoutesOptions, BaseStatus } from './admin';
 
 export { findRoot, resolveUrl, formatUptime, createStatusCommand, createStopCommand } from './cli';
-export type { ClientTarget, BaseStatusResponse, StatusCommandOptions } from './cli';
+export type {
+  ClientTarget,
+  BaseStatusResponse,
+  StatusCommandOptions,
+  StopCommandOptions,
+} from './cli';
+
+export { buildCompletionScript, createCompletionCommand } from './completion';
+export type { CompletionShell } from './completion';
 
 export { saveStateToFile, loadStateFromFile, registerStateRoutes } from './state';
 export type { StateRoutesOptions } from './state';

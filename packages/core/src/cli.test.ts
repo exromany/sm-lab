@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Command } from 'commander';
-import { findRoot, resolveUrl, formatUptime } from './cli';
+import { findRoot, resolveUrl, formatUptime, createStatusCommand, createStopCommand } from './cli';
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -41,4 +41,22 @@ describe('formatUptime', () => {
   it('seconds only', () => expect(formatUptime(5)).toBe('5s'));
   it('minutes + seconds', () => expect(formatUptime(65)).toBe('1m 5s'));
   it('hours + minutes + seconds', () => expect(formatUptime(3661)).toBe('1h 1m 1s'));
+});
+
+describe('command descriptions', () => {
+  const target = { envVar: 'TEST_MOCK_URL', defaultPort: 4242 };
+
+  it('status/stop keep the generic default', () => {
+    expect(createStatusCommand(target).description()).toBe('Show status of a running server');
+    expect(createStopCommand(target).description()).toBe('Stop a running server');
+  });
+
+  it('status/stop accept an app-specific override', () => {
+    expect(
+      createStatusCommand({ ...target, description: 'Show CL mock status' }).description(),
+    ).toBe('Show CL mock status');
+    expect(createStopCommand({ ...target, description: 'Stop the CL mock' }).description()).toBe(
+      'Stop the CL mock',
+    );
+  });
 });

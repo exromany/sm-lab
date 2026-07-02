@@ -52,7 +52,7 @@ describe('saveStateToFile', () => {
     const file = join(dir, 'state.json');
     saveStateToFile(file, { v: 1 });
     saveStateToFile(file, { v: 2 });
-    expect((loadStateFromFile<{ v: number }>(file))?.v).toBe(2);
+    expect(loadStateFromFile<{ v: number }>(file)?.v).toBe(2);
   });
 });
 
@@ -78,9 +78,8 @@ describe('loadStateFromFile', () => {
   });
 
   it('boot-restore degrades gracefully: wrapping in try/catch on a corrupt file does not throw', () => {
-    // This verifies the contract that loadStateFromFile throws (contract unchanged) AND that
-    // the server.ts boot-restore path — which wraps the call in try/catch and logs a warning
-    // instead of crashing — is safe to implement.
+    // loadStateFromFile deliberately still throws on corrupt JSON — graceful degradation is the
+    // caller's job (server.ts wraps the boot-restore in try/catch).
     dir = makeTmpDir();
     const file = join(dir, 'corrupt.json');
     writeFileSync(file, '{ "validators": [ truncated', 'utf8');

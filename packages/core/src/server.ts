@@ -25,7 +25,7 @@ export interface StartServerOptions {
  * for `POST /admin/shutdown` via setShutdownHandler, and binds SIGINT/SIGTERM to it.
  *
  * Optionally wires state persistence: restores from `statePath` on boot (if the file exists),
- * and saves to `statePath` on graceful shutdown. Backward-compatible — all state fields optional.
+ * and saves to `statePath` on graceful shutdown.
  */
 export function startServer(app: Hono, opts: StartServerOptions): ReturnType<typeof serve> {
   const { port, host, onListen, statePath, snapshot, restore } = opts;
