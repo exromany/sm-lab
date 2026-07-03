@@ -27,6 +27,7 @@ export function loadStateFromFile<T = unknown>(filePath: string): T | undefined 
   } catch (err) {
     throw new Error(
       `loadStateFromFile: malformed JSON in "${filePath}": ${err instanceof Error ? err.message : String(err)}`,
+      { cause: err },
     );
   }
 }
