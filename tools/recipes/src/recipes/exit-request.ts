@@ -9,6 +9,8 @@ import { stakingRouterAbi, vEBOAbi, type Hex } from '@sm-lab/receipts';
 import { actAs, roleMember } from '../act-as';
 import { contract, type Ctx } from '../context';
 import { DEFAULT_ADMIN_ROLE } from '../roles';
+import { setClValidator } from '../cl-mock';
+import { activeEffectiveBalanceGwei } from './cl-activate';
 
 export interface ExitRequestOptions {
   noId: bigint;
@@ -29,6 +31,8 @@ export interface ExitRequestResult {
   reportHash: Hex;
   /** the 48-byte BLS pubkey exited. */
   pubkey: Hex;
+  /** present iff ctx.clMockUrl was set: the validator was marked active_exiting on the cl-mock. */
+  clStatus?: 'active_exiting';
 }
 
 /** DATA_FORMAT_LIST — the single supported VEBO exit-request data format. */
@@ -54,6 +58,10 @@ const REPORT_DATA_PARAMS = parseAbiParameters(
  *
  * Module-agnostic: `contract(ctx,'module')` picks CSModule/CuratedModule by `ctx.module`, and the
  * module-id scan matches that same address — no csm/cm branching.
+ *
+ * Optional cl-mock reflection (beyond the source): when `ctx.clMockUrl` is set, the validator is
+ * additionally marked `active_exiting` on the running cl-mock (mirroring `clActivate`); skipped
+ * silently otherwise.
  *
  * Deliberate divergences from the source (identical on-chain effect):
  * - reuses the VEBO admin as the `submitReportData` submitter (source grants a fresh address);
@@ -146,6 +154,17 @@ export async function exitRequest(ctx: Ctx, opts: ExitRequestOptions): Promise<E
     });
   });
 
+  // 6. optional cl-mock reflection (opt-in via ctx.clMockUrl), mirroring clActivate. POST
+  // /admin/validators REPLACES the entry, so carry the effective balance (32 ETH + allocated) — a
+  // status-only flip would wipe the balance clActivate set. Skipped (not thrown) when clMockUrl is
+  // unset: the on-chain VEBO submit above is the primary effect.
+  let clStatus: 'active_exiting' | undefined;
+  if (ctx.clMockUrl) {
+    const effectiveBalanceGwei = await activeEffectiveBalanceGwei(ctx, opts);
+    await setClValidator(ctx.clMockUrl, { pubkey, status: 'active_exiting', effectiveBalanceGwei });
+    clStatus = 'active_exiting';
+  }
+
   return {
     noId: opts.noId,
     keyIndex: opts.keyIndex,
@@ -154,6 +173,7 @@ export async function exitRequest(ctx: Ctx, opts: ExitRequestOptions): Promise<E
     refSlot,
     reportHash,
     pubkey,
+    clStatus,
   };
 }
 

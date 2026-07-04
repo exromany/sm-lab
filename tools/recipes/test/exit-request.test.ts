@@ -1,8 +1,21 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { encodeAbiParameters, keccak256, parseAbiParameters } from 'viem';
 import { exitRequest } from '../src/recipes/exit-request';
 import { makeFakeClient } from './helpers/fake-client';
 import { A, fakeCtx } from './helpers/book';
+
+const CL_MOCK_URL = 'http://127.0.0.1:9596';
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 // A 48-byte BLS pubkey (0xab * 48) and the known packed data / hash for the vector below.
 const PUBKEY = `0x${'ab'.repeat(48)}` as const;
@@ -123,5 +136,52 @@ describe('exitRequest', () => {
       (r) => r.functionName === 'getSigningKeys',
     );
     expect(sk.address).toBe(A(0x21));
+  });
+});
+
+describe('exitRequest — optional cl-mock flip', () => {
+  it('marks the validator active_exiting on the cl-mock when ctx.clMockUrl is set', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ accepted: 1, errors: [] }));
+    vi.stubGlobal('fetch', fetchMock);
+    // 2 ETH allocated → 34 ETH effective, in gwei (mirrors clActivate's 32 ETH + allocated).
+    const fc = makeFakeClient({
+      reads: { ...reads(), getKeyAllocatedBalances: [2_000_000_000_000_000_000n] },
+    });
+    const ctx = fakeCtx('csm', fc.client, { CSModule: A(0x01) }, { clMockUrl: CL_MOCK_URL });
+
+    const res = await exitRequest(ctx, { noId: 7n, keyIndex: 1n });
+
+    expect(res.clStatus).toBe('active_exiting');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${CL_MOCK_URL}/admin/validators`);
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(init.body)).toEqual({
+      pubkey: PUBKEY,
+      status: 'active_exiting',
+      effective_balance: '34000000000',
+    });
+    // balance read used [noId, keyIndex, 1n]
+    const alloc = (fc.byMethod('readContract') as any[]).find(
+      (r) => r.functionName === 'getKeyAllocatedBalances',
+    );
+    expect(alloc.args).toEqual([7n, 1n, 1n]);
+  });
+
+  it('skips the cl-mock (no fetch, no clStatus, no balance read) when ctx.clMockUrl is unset', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const fc = makeFakeClient({ reads: reads() });
+    const ctx = fakeCtx('csm', fc.client, { CSModule: A(0x01) }); // no clMockUrl
+
+    const res = await exitRequest(ctx, { noId: 7n, keyIndex: 1n });
+
+    expect(res.clStatus).toBeUndefined();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(
+      (fc.byMethod('readContract') as any[]).find(
+        (r) => r.functionName === 'getKeyAllocatedBalances',
+      ),
+    ).toBeUndefined();
   });
 });

@@ -146,11 +146,12 @@ export const sharedCommands: RecipeCommand[] = [
     run: (ctx, o: { noId: bigint; keyIndex: bigint; validatorIndex?: bigint }) =>
       exitRequest(ctx, o),
     report: (
-      r: { moduleId: bigint; refSlot: bigint; reportHash: string },
+      r: { moduleId: bigint; refSlot: bigint; reportHash: string; clStatus?: string },
       o: { noId: bigint; keyIndex: bigint },
     ) => [
       `operator ${o.noId} key ${o.keyIndex}: exit requested (module ${r.moduleId}, refSlot ${r.refSlot})`,
       `reportHash ${r.reportHash}`,
+      ...(r.clStatus ? [`cl-mock: validator marked ${r.clStatus}`] : []),
     ],
   },
   {
