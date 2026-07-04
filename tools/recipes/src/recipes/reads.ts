@@ -39,3 +39,23 @@ export async function getKeyBalance(
   }
   return wei;
 }
+
+export interface BondCurveInterval {
+  minKeysCount: bigint;
+  minBond: bigint;
+  trend: bigint;
+}
+export interface BondCurveInfo {
+  intervals: BondCurveInterval[];
+}
+
+/** Read a bond curve by id from Accounting (read-only). */
+export async function getCurveInfo(ctx: Ctx, opts: { curveId: bigint }): Promise<BondCurveInfo> {
+  const acc = contract(ctx, 'Accounting');
+  const info = (await ctx.client.readContract({
+    ...acc,
+    functionName: 'getCurveInfo',
+    args: [opts.curveId],
+  })) as BondCurveInfo;
+  return info;
+}

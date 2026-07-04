@@ -57,6 +57,7 @@ export type { RewardsReport, MakeRewardsOptions, SubmitRewardsResult } from './r
 
 export { clActivate } from './recipes/cl-activate';
 export type { ClActivateResult } from './recipes/cl-activate';
-export { getPubkey, getKeyBalance } from './recipes/reads';
+export { getPubkey, getKeyBalance, getCurveInfo } from './recipes/reads';
+export type { BondCurveInfo, BondCurveInterval } from './recipes/reads';
 export { setClValidator } from './cl-mock';
 export type { SetValidatorInput } from './cl-mock';
