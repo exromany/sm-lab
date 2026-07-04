@@ -35,7 +35,7 @@ export async function exit(ctx: Ctx, opts: { noId: bigint; exitedKeys: bigint })
 export async function removeKey(
   ctx: Ctx,
   opts: { noId: bigint; keyIndex: bigint; count?: bigint },
-): Promise<void> {
+): Promise<{ noId: bigint; keyIndex: bigint; count: bigint }> {
   const count = opts.count ?? 1n;
   const m = contract(ctx, 'module');
   const op = await ctx.client.readContract({
@@ -53,4 +53,5 @@ export async function removeKey(
       chain: null,
     }),
   );
+  return { noId: opts.noId, keyIndex: opts.keyIndex, count };
 }

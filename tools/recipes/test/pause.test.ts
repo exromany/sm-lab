@@ -61,6 +61,12 @@ describe('pause', () => {
     expect(fc.byMethod('writeContract')).toHaveLength(0);
     expect(res.paused).toBe(true);
   });
+
+  it('throws on an unknown target', async () => {
+    const fc = makeFakeClient({ reads: { isPaused: false, getRoleMember: A(0xd0) } });
+    const ctx = fakeCtx('csm', fc.client);
+    await expect(pause(ctx, { target: 'nonsense' })).rejects.toThrow(/unknown/i);
+  });
 });
 
 describe('resume', () => {
