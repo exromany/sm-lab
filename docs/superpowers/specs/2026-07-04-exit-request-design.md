@@ -245,8 +245,9 @@ Model on the existing `validators` / `rewards` tests. Using `makeFakeClient({ re
   address; `'cm'` on the CuratedModule address.
 - **CLI:** `exit-request` appears in the shared command-name list and is mirrored under `csm`/`cm`.
 
-The `ANVIL_FORK_URL`-gated smoke performs one real `exitRequest` and asserts `submitted`/`refSlot`
-shape, mirroring the existing rewards smoke.
+The `ANVIL_FORK_URL`-gated smoke performs one real `exitRequest` and asserts the result shape
+(`pubkey` is a 48-byte BLS key, `moduleId` a bigint, `refSlot > 0`, `reportHash` a 32-byte hash),
+mirroring the existing rewards smoke.
 
 ## Open decision — CL-mock reflection (chosen out; documented follow-up)
 
