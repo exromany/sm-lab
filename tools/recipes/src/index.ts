@@ -32,7 +32,7 @@ export {
 } from './recipes/address-changes';
 
 export { nodeOperatorIdBytes, keyCountBytes } from './encode';
-export { unvet, exit } from './recipes/vetting';
+export { unvet, exit, removeKey } from './recipes/vetting';
 export { deposit } from './recipes/deposit';
 export { increaseAllocatedBalance, topUpActiveKeys } from './recipes/topup';
 

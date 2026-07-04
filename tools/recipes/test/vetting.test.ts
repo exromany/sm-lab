@@ -1,7 +1,7 @@
 import { toHex } from 'viem';
 import { describe, expect, it } from 'vitest';
 import { keyCountBytes, nodeOperatorIdBytes } from '../src/encode';
-import { exit, unvet } from '../src/recipes/vetting';
+import { exit, removeKey, unvet } from '../src/recipes/vetting';
 import { makeFakeClient } from './helpers/fake-client';
 import { A, fakeCtx } from './helpers/book';
 
@@ -33,5 +33,30 @@ describe('vetting recipes', () => {
     expect(w.functionName).toBe('updateExitedValidatorsCount');
     expect(w.args).toEqual([nodeOperatorIdBytes(2n), keyCountBytes(3n)]);
     expect(w.account).toBe(ctx.addresses.stakingRouter);
+  });
+});
+
+describe('removeKey', () => {
+  it('calls removeKeys(noId, keyIndex, count) as the operator manager (default count=1)', async () => {
+    const MANAGER = A(0xaa);
+    const fc = makeFakeClient({ reads: { getNodeOperator: { managerAddress: MANAGER } } });
+    const ctx = fakeCtx('csm', fc.client, { CSModule: A(0x01) });
+
+    await removeKey(ctx, { noId: 2n, keyIndex: 4n });
+
+    const w = fc.byMethod('writeContract')[0] as any;
+    expect(w.functionName).toBe('removeKeys');
+    expect(w.args).toEqual([2n, 4n, 1n]);
+    expect(w.account).toBe(MANAGER);
+    expect(fc.byMethod('impersonateAccount')[0]).toEqual({ address: MANAGER });
+  });
+
+  it('honours an explicit count', async () => {
+    const MANAGER = A(0xaa);
+    const fc = makeFakeClient({ reads: { getNodeOperator: { managerAddress: MANAGER } } });
+    const ctx = fakeCtx('cm', fc.client);
+    await removeKey(ctx, { noId: 0n, keyIndex: 0n, count: 3n });
+    const w = fc.byMethod('writeContract')[0] as any;
+    expect(w.args).toEqual([0n, 0n, 3n]);
   });
 });

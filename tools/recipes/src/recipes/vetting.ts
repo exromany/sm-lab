@@ -1,3 +1,4 @@
+import type { Hex } from '@sm-lab/receipts';
 import { actAs } from '../act-as';
 import { contract, type Ctx } from '../context';
 import { keyCountBytes, nodeOperatorIdBytes } from '../encode';
@@ -24,6 +25,30 @@ export async function exit(ctx: Ctx, opts: { noId: bigint; exitedKeys: bigint })
       ...m,
       functionName: 'updateExitedValidatorsCount',
       args: [nodeOperatorIdBytes(opts.noId), keyCountBytes(opts.exitedKeys)],
+      account: from,
+      chain: null,
+    }),
+  );
+}
+
+/** Remove `count` keys (default 1) from operator `noId` starting at `keyIndex`, as the operator's manager. */
+export async function removeKey(
+  ctx: Ctx,
+  opts: { noId: bigint; keyIndex: bigint; count?: bigint },
+): Promise<void> {
+  const count = opts.count ?? 1n;
+  const m = contract(ctx, 'module');
+  const op = await ctx.client.readContract({
+    ...m,
+    functionName: 'getNodeOperator',
+    args: [opts.noId],
+  });
+  const manager = (op as { managerAddress: Hex }).managerAddress;
+  await actAs(ctx, manager, (from) =>
+    ctx.client.writeContract({
+      ...m,
+      functionName: 'removeKeys',
+      args: [opts.noId, opts.keyIndex, count],
       account: from,
       chain: null,
     }),
