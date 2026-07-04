@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { Hex } from '@sm-lab/receipts';
-import { feeDistributorAbi } from '@sm-lab/receipts';
+import type { CsmAddressBook, Hex } from '@sm-lab/receipts';
+import { csModuleAbi, feeDistributorAbi } from '@sm-lab/receipts';
 import { connect } from '../src/context';
 import { operatorInfo } from '../src/recipes/operator-info';
 import { revert, snapshot, warpBy } from '../src/recipes/chain';
+import { pause, resume } from '../src/recipes/pause';
 import { makeRewards, submitRewards } from '../src/recipes/rewards';
 
 const FORK_URL = process.env.ANVIL_FORK_URL;
@@ -39,5 +40,22 @@ describe.skipIf(!FORK_URL)('fork smoke (ANVIL_FORK_URL)', () => {
       });
       expect(onChainRoot).toBe(report.treeRoot);
     }
+  });
+
+  it('pauses and resumes the module (round-trip, idempotent)', async () => {
+    const ctx = await connect({ module: 'csm', rpcUrl: FORK_URL as string });
+
+    const paused = await pause(ctx, { target: 'module' });
+    expect(paused.paused).toBe(true);
+    expect(
+      await ctx.client.readContract({
+        address: (ctx.addresses as CsmAddressBook).CSModule,
+        abi: csModuleAbi,
+        functionName: 'isPaused',
+      }),
+    ).toBe(true);
+
+    const resumed = await resume(ctx, { target: 'module' });
+    expect(resumed.paused).toBe(false);
   });
 });
