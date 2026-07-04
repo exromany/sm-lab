@@ -45,6 +45,7 @@ import {
 import { warpBy, snapshot, revert, topUpAccount } from '../../recipes/chain';
 import { setTargetLimit } from '../../recipes/target-limit';
 import { pause, resume } from '../../recipes/pause';
+import { exitRequest } from '../../recipes/exit-request';
 
 const operatorId = {
   flag: '--operator-id <id>',
@@ -126,6 +127,30 @@ export const sharedCommands: RecipeCommand[] = [
     run: (ctx, o: { noId: bigint; exitedKeys: bigint }) => exit(ctx, o),
     report: (_r, o: { noId: bigint; exitedKeys: bigint }) => [
       `operator ${o.noId}: exited=${o.exitedKeys}`,
+    ],
+  },
+  {
+    name: 'exit-request',
+    summary:
+      'request a validator exit via VEBO (impersonates the consensus contract + a submitter)',
+    options: [
+      operatorId,
+      keyIndex,
+      {
+        flag: '--validator-index <n>',
+        key: 'validatorIndex',
+        coerce: toBigInt,
+        description: 'CL validator index to pack into the report (default 900000)',
+      },
+    ],
+    run: (ctx, o: { noId: bigint; keyIndex: bigint; validatorIndex?: bigint }) =>
+      exitRequest(ctx, o),
+    report: (
+      r: { moduleId: bigint; refSlot: bigint; reportHash: string },
+      o: { noId: bigint; keyIndex: bigint },
+    ) => [
+      `operator ${o.noId} key ${o.keyIndex}: exit requested (module ${r.moduleId}, refSlot ${r.refSlot})`,
+      `reportHash ${r.reportHash}`,
     ],
   },
   {

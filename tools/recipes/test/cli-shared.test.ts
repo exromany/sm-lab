@@ -19,6 +19,7 @@ describe('sharedCommands', () => {
         'create-bond-debt',
         'deposit',
         'exit',
+        'exit-request',
         'get-curve-info',
         'get-gate-tree',
         'get-key-balance',
