@@ -186,10 +186,11 @@ optional `--validator-index`:
 }
 ```
 
-`operatorId` and `keyIndex` are declared `positional: true`, so
-`sm-recipes exit-request <noId> <keyIndex> [--validator-index n]` works, and the `csm`/`cm` groups
-mirror it with the module pre-bound. Because it lives in the shared registry, `program.ts`
-auto-mirrors it under `csm`/`cm` with no extra wiring — no CLI-machinery change.
+`operatorId` and `keyIndex` are `required`, so `define.ts`'s positional heuristic
+(`required && !repeatable`) accepts them positionally — `sm-recipes exit-request <noId> <keyIndex>
+[--validator-index n]` works — while the optional `--validator-index` stays flag-only. Because it
+lives in the shared registry, `program.ts` auto-mirrors it under `csm`/`cm` with the module
+pre-bound, no extra wiring — no CLI-machinery change.
 
 ## File plan
 
