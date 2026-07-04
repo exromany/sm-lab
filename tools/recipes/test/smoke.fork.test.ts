@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { CsmAddressBook, Hex } from '@sm-lab/receipts';
 import { csModuleAbi, feeDistributorAbi } from '@sm-lab/receipts';
 import { connect } from '../src/context';
+import { exitRequest } from '../src/recipes/exit-request';
 import { operatorInfo } from '../src/recipes/operator-info';
 import { revert, snapshot, warpBy } from '../src/recipes/chain';
 import { pause, resume } from '../src/recipes/pause';
@@ -57,5 +58,14 @@ describe.skipIf(!FORK_URL)('fork smoke (ANVIL_FORK_URL)', () => {
 
     const resumed = await resume(ctx, { target: 'module' });
     expect(resumed.paused).toBe(false);
+  });
+
+  it('requests a validator exit via VEBO for operator 0 key 0', async () => {
+    const ctx = await connect({ module: 'csm', rpcUrl: FORK_URL as string });
+    const res = await exitRequest(ctx, { noId: 0n, keyIndex: 0n });
+    expect(res.pubkey).toMatch(/^0x[0-9a-fA-F]{96}$/); // 48-byte BLS pubkey
+    expect(typeof res.moduleId).toBe('bigint');
+    expect(res.refSlot).toBeGreaterThan(0n);
+    expect(res.reportHash).toMatch(/^0x[0-9a-fA-F]{64}$/);
   });
 });

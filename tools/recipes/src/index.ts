@@ -74,3 +74,6 @@ export type { SetValidatorInput } from './cl-mock';
 
 export { pause, resume } from './recipes/pause';
 export type { PauseResult } from './recipes/pause';
+
+export { exitRequest } from './recipes/exit-request';
+export type { ExitRequestOptions, ExitRequestResult } from './recipes/exit-request';
