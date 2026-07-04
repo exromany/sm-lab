@@ -140,8 +140,8 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   required non-repeatable options are accepted positionally in declaration order (a repeatable one
   becomes the trailing variadic — `set-gate <selector> <address...>`); a `help` command mirrors
   `--help` on root + groups. `bin: sm-recipes → dist/cli.mjs`, v0.1.0, changeset added. Hermetic tests via the `connectImpl`
-  seam. **Published-for-npx is wired but the actual coordinated first publish of
-  recipes+merkle+receipts is a deferred release action** (none are on npm yet).
+  seam. **All packages are now published on npm** — `@sm-lab/{merkle,recipes,keys,cl,ipfs,receipts}`
+  (`recipes` shipped at v0.1.0, now 0.2.0); runnable via npx.
 
 Steps 1–6 (cl, ipfs, merkle, keys, core, receipts, recipes + CLI) are complete.
 
@@ -166,6 +166,4 @@ Steps 1–6 (cl, ipfs, merkle, keys, core, receipts, recipes + CLI) are complete
   corrupt-file-tolerant boot); both mocks gain `serve --state`; `cl` gains a cached upstream proxy
   (`serve --upstream`).
 
-**Deferred (non-blocking):** comment-cleanup; `/admin/*` auth-token + loopback-only hardening;
-faithful epoch-relay on the `cl` proxy; the **coordinated first npm publish** (changeset bodies are
-de-staled / publish-ready).
+**Deferred (non-blocking):** comment-cleanup; faithful epoch-relay on the `cl` proxy.
