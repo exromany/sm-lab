@@ -1,6 +1,7 @@
 import { formatEther } from 'viem';
 import type { Hex } from '@sm-lab/receipts';
 import {
+  bigintReplacer,
   identity,
   toAddressValue,
   toBigInt,
@@ -12,7 +13,7 @@ import {
 import { addKeys } from '../../recipes/add-keys';
 import { operatorInfo } from '../../recipes/operator-info';
 import { deposit } from '../../recipes/deposit';
-import { unvet, exit } from '../../recipes/vetting';
+import { unvet, exit, removeKey } from '../../recipes/vetting';
 import { increaseAllocatedBalance, topUpActiveKeys } from '../../recipes/topup';
 import { slash, withdraw } from '../../recipes/validators';
 import {
@@ -30,8 +31,10 @@ import {
 } from '../../recipes/address-changes';
 import { makeRewards, submitRewards } from '../../recipes/rewards';
 import { clActivate } from '../../recipes/cl-activate';
-import { getPubkey, getKeyBalance } from '../../recipes/reads';
+import { getPubkey, getKeyBalance, getCurveInfo } from '../../recipes/reads';
 import { warpBy, snapshot, revert } from '../../recipes/chain';
+import { setTargetLimit } from '../../recipes/target-limit';
+import { pause, resume } from '../../recipes/pause';
 
 const operatorId = {
   flag: '--operator-id <id>',
@@ -329,5 +332,101 @@ export const sharedCommands: RecipeCommand[] = [
     options: [{ flag: '--id <hex>', key: 'id', coerce: toHexValue, required: true }],
     run: (ctx, o: { id: Hex }) => revert(ctx, o.id),
     report: (_r, o: { id: Hex }) => [`reverted to ${o.id}`],
+  },
+  {
+    name: 'set-target-limit',
+    summary:
+      "set an operator's target validator limit (as the StakingRouter); mode 0=off, 1=soft, 2=forced",
+    options: [
+      operatorId,
+      {
+        flag: '--mode <0|1|2>',
+        key: 'mode',
+        coerce: toNumber,
+        required: true,
+        description: '0=off, 1=soft, 2=forced',
+      },
+      {
+        flag: '--limit <n>',
+        key: 'limit',
+        coerce: toBigInt,
+        description: 'target limit (ignored for mode 0; default 0)',
+      },
+    ],
+    run: (ctx, o: { noId: bigint; mode: number; limit?: bigint }) => setTargetLimit(ctx, o),
+    report: (r: { noId: bigint; mode: number; limit: bigint }) => [
+      `operator ${r.noId}: targetLimitMode=${r.mode}, limit=${r.limit}`,
+    ],
+  },
+  {
+    name: 'remove-key',
+    summary: 'remove key(s) from an operator starting at an index (as manager)',
+    options: [
+      operatorId,
+      keyIndex,
+      {
+        flag: '--count <n>',
+        key: 'count',
+        coerce: toBigInt,
+        description: 'number of keys to remove (default 1)',
+      },
+    ],
+    run: (ctx, o: { noId: bigint; keyIndex: bigint; count?: bigint }) => removeKey(ctx, o),
+    report: (_r, o: { noId: bigint; keyIndex: bigint; count?: bigint }) => [
+      `operator ${o.noId}: removed ${o.count ?? 1n} key(s) from index ${o.keyIndex}`,
+    ],
+  },
+  {
+    name: 'get-curve-info',
+    summary: 'read a bond curve by id (read-only)',
+    options: [
+      {
+        flag: '--curve-id <n>',
+        key: 'curveId',
+        coerce: toBigInt,
+        required: true,
+        description: 'bond curve id (uint)',
+      },
+    ],
+    run: (ctx, o: { curveId: bigint }) => getCurveInfo(ctx, o),
+    report: (r: unknown) => [JSON.stringify(r, bigintReplacer, 2)],
+  },
+  {
+    name: 'pause',
+    summary:
+      'pause a target: module | accounting | gate selector (grants PAUSE_ROLE + pauseFor max; idempotent)',
+    options: [
+      {
+        flag: '--target <name>',
+        key: 'target',
+        coerce: identity,
+        required: true,
+        positional: true,
+        description: 'module | accounting | gate selector (ics/idvtc/po…iodcp/index/0x…)',
+      },
+    ],
+    run: (ctx, o: { target: string }) => pause(ctx, o),
+    report: (r: { target: string; address: Hex; paused: boolean }) => [
+      `${r.target} (${r.address}): paused=${r.paused}`,
+    ],
+  },
+  {
+    name: 'resume',
+    summary:
+      'resume a target: module | accounting | gate selector (grants RESUME_ROLE + resume; idempotent)',
+    options: [
+      {
+        flag: '--target <name>',
+        key: 'target',
+        coerce: identity,
+        required: true,
+        positional: true,
+        description: 'module | accounting | gate selector (ics/idvtc/po…iodcp/index/0x…)',
+      },
+    ],
+    run: (ctx, o: { target: string }) => resume(ctx, o),
+    report: (r: { target: string; address: Hex; paused: boolean }) => [
+      `${r.target} (${r.address}): paused=${r.paused}`,
+    ],
   },
 ];

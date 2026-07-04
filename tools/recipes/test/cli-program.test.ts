@@ -86,6 +86,10 @@ describe('buildProgram', () => {
       expect(cmNames).toContain(shared);
       expect(csmNames).toContain(shared);
     }
+    for (const shared of ['pause', 'resume', 'set-target-limit', 'get-curve-info']) {
+      expect(cmNames).toContain(shared);
+      expect(csmNames).toContain(shared);
+    }
     // group-specific commands still present alongside the mirrored shared ones
     expect(cmNames).toContain('seed');
     expect(csmNames).toContain('set-gate');
