@@ -27,3 +27,16 @@ export function snapshot(ctx: Ctx): Promise<Hex> {
 export async function revert(ctx: Ctx, id: Hex): Promise<void> {
   await ctx.client.revert({ id });
 }
+
+/**
+ * Fund an account on the fork by setting its balance (anvil_setBalance). `amountWei` defaults to
+ * 100 ETH. Port of `NodeOperators` `topup`.
+ */
+export async function topUpAccount(
+  ctx: Ctx,
+  opts: { address: Hex; amountWei?: bigint },
+): Promise<{ address: Hex; amountWei: bigint }> {
+  const amountWei = opts.amountWei ?? 100n * 10n ** 18n;
+  await ctx.client.setBalance({ address: opts.address, value: amountWei });
+  return { address: opts.address, amountWei };
+}

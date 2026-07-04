@@ -18,7 +18,7 @@ export { addKeys } from './recipes/add-keys';
 export type { AddKeysOptions, AddKeysResult } from './recipes/add-keys';
 export { operatorInfo } from './recipes/operator-info';
 export type { OperatorInfo } from './recipes/operator-info';
-export { warpBy, warpTo, snapshot, revert } from './recipes/chain';
+export { warpBy, warpTo, snapshot, revert, topUpAccount } from './recipes/chain';
 export { setTargetLimit } from './recipes/target-limit';
 export type { SetTargetLimitOptions, SetTargetLimitResult } from './recipes/target-limit';
 
@@ -36,7 +36,7 @@ export { unvet, exit, removeKey } from './recipes/vetting';
 export { deposit } from './recipes/deposit';
 export { increaseAllocatedBalance, topUpActiveKeys } from './recipes/topup';
 
-export { slash, withdraw } from './recipes/validators';
+export { slash, withdraw, activateKeys, reportBalance } from './recipes/validators';
 export type { WithdrawnValidatorInfo } from './recipes/validators';
 
 export { REPORT_GENERAL_DELAYED_PENALTY_ROLE, SETTLE_GENERAL_DELAYED_PENALTY_ROLE } from './roles';
@@ -57,8 +57,18 @@ export type { RewardsReport, MakeRewardsOptions, SubmitRewardsResult } from './r
 
 export { clActivate } from './recipes/cl-activate';
 export type { ClActivateResult } from './recipes/cl-activate';
-export { getPubkey, getKeyBalance, getCurveInfo } from './recipes/reads';
-export type { BondCurveInfo, BondCurveInterval } from './recipes/reads';
+export {
+  getPubkey,
+  getKeyBalance,
+  getCurveInfo,
+  bondInfo,
+  operatorKeys,
+  keyBalances,
+  operatorsCount,
+  getLastOperator,
+  getGateTree,
+} from './recipes/reads';
+export type { BondCurveInfo, BondCurveInterval, BondInfo, GateTree } from './recipes/reads';
 export { setClValidator } from './cl-mock';
 export type { SetValidatorInput } from './cl-mock';
 

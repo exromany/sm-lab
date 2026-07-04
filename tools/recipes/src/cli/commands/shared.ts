@@ -15,7 +15,7 @@ import { operatorInfo } from '../../recipes/operator-info';
 import { deposit } from '../../recipes/deposit';
 import { unvet, exit, removeKey } from '../../recipes/vetting';
 import { increaseAllocatedBalance, topUpActiveKeys } from '../../recipes/topup';
-import { slash, withdraw } from '../../recipes/validators';
+import { slash, withdraw, activateKeys, reportBalance } from '../../recipes/validators';
 import {
   reportPenalty,
   cancelPenalty,
@@ -31,8 +31,18 @@ import {
 } from '../../recipes/address-changes';
 import { makeRewards, submitRewards } from '../../recipes/rewards';
 import { clActivate } from '../../recipes/cl-activate';
-import { getPubkey, getKeyBalance, getCurveInfo } from '../../recipes/reads';
-import { warpBy, snapshot, revert } from '../../recipes/chain';
+import {
+  getPubkey,
+  getKeyBalance,
+  getCurveInfo,
+  bondInfo,
+  operatorKeys,
+  keyBalances,
+  operatorsCount,
+  getLastOperator,
+  getGateTree,
+} from '../../recipes/reads';
+import { warpBy, snapshot, revert, topUpAccount } from '../../recipes/chain';
 import { setTargetLimit } from '../../recipes/target-limit';
 import { pause, resume } from '../../recipes/pause';
 
@@ -427,6 +437,109 @@ export const sharedCommands: RecipeCommand[] = [
     run: (ctx, o: { target: string }) => resume(ctx, o),
     report: (r: { target: string; address: Hex; paused: boolean }) => [
       `${r.target} (${r.address}): paused=${r.paused}`,
+    ],
+  },
+  {
+    name: 'activate-keys',
+    summary: 'activate N deposited keys on-chain (report 32 ETH + 1 gwei each, Verifier-gated)',
+    options: [operatorId, { flag: '--count <n>', key: 'count', coerce: toNumber, required: true }],
+    run: (ctx, o: { noId: bigint; count: number }) => activateKeys(ctx, o),
+    report: (r: { activated: number }) => [`activated ${r.activated} key(s)`],
+  },
+  {
+    name: 'report-balance',
+    summary: "report a key's CL balance on-chain (ETH, Verifier-gated)",
+    options: [
+      operatorId,
+      keyIndex,
+      { flag: '--balance <eth>', key: 'balanceWei', coerce: toEth, required: true },
+    ],
+    run: (ctx, o: { noId: bigint; keyIndex: bigint; balanceWei: bigint }) => reportBalance(ctx, o),
+    report: (r: { noId: bigint; keyIndex: bigint; balanceWei: bigint }) => [
+      `operator ${r.noId} key ${r.keyIndex}: reported ${formatEther(r.balanceWei)} ETH`,
+    ],
+  },
+  {
+    name: 'topup',
+    summary: 'fund an account by setting its balance (anvil_setBalance; default 100 ETH)',
+    options: [
+      {
+        flag: '--address <addr>',
+        key: 'address',
+        coerce: toAddressValue,
+        required: true,
+        positional: true,
+      },
+      {
+        flag: '--amount <eth>',
+        key: 'amountWei',
+        coerce: toEth,
+        description: 'ETH to set (default 100)',
+      },
+    ],
+    run: (ctx, o: { address: Hex; amountWei?: bigint }) => topUpAccount(ctx, o),
+    report: (r: { address: Hex; amountWei: bigint }) => [
+      `${r.address}: balance set to ${formatEther(r.amountWei)} ETH`,
+    ],
+  },
+  {
+    name: 'bond-info',
+    summary:
+      "read an operator's bond summary (read-only); one field per line, --json for the object",
+    options: [operatorId],
+    run: (ctx, o: { noId: bigint }) => bondInfo(ctx, o),
+    report: (r: Record<string, bigint>, o: { noId: bigint }) => [
+      `operator ${o.noId}:`,
+      ...Object.entries(r).map(([k, v]) => `  ${k}: ${v}`),
+    ],
+  },
+  {
+    name: 'operator-keys',
+    summary: "read all of an operator's pubkeys (read-only)",
+    options: [operatorId],
+    run: (ctx, o: { noId: bigint }) => operatorKeys(ctx, o),
+    report: (r: Hex[]) => (r.length ? r : ['(no keys)']),
+  },
+  {
+    name: 'key-balances',
+    summary: "read all of an operator's deposited-key allocated balances (read-only)",
+    options: [operatorId],
+    run: (ctx, o: { noId: bigint }) => keyBalances(ctx, o),
+    report: (r: bigint[]) =>
+      r.length ? r.map((b, i) => `  key ${i}: ${formatEther(b)} ETH`) : ['(no deposited keys)'],
+  },
+  {
+    name: 'operators-count',
+    summary: 'read the module operator count (read-only)',
+    options: [],
+    run: (ctx) => operatorsCount(ctx),
+    report: (r: bigint) => [`${r}`],
+  },
+  {
+    name: 'get-last-operator',
+    summary: 'read the highest operator id, count - 1 (read-only)',
+    options: [],
+    run: (ctx) => getLastOperator(ctx),
+    report: (r: bigint) => [`${r}`],
+  },
+  {
+    name: 'get-gate-tree',
+    summary: "read a gate's current merkle tree root + cid by selector (read-only)",
+    options: [
+      {
+        flag: '--selector <name>',
+        key: 'selector',
+        coerce: identity,
+        required: true,
+        positional: true,
+        description: 'gate selector (ics/idvtc for csm; po…iodcp for cm; 0x…)',
+      },
+    ],
+    run: (ctx, o: { selector: string }) => getGateTree(ctx, o),
+    report: (r: { selector: string; address: Hex; treeRoot: Hex; treeCid: string }) => [
+      `${r.selector} → ${r.address}`,
+      `root: ${r.treeRoot}`,
+      `cid:  ${r.treeCid}`,
     ],
   },
 ];
