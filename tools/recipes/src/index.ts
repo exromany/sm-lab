@@ -22,7 +22,7 @@ export { warpBy, warpTo, snapshot, revert } from './recipes/chain';
 export { setTargetLimit } from './recipes/target-limit';
 export type { SetTargetLimitOptions, SetTargetLimitResult } from './recipes/target-limit';
 
-export { DEFAULT_ADMIN_ROLE, SET_TREE_ROLE, RESUME_ROLE } from './roles';
+export { DEFAULT_ADMIN_ROLE, SET_TREE_ROLE, RESUME_ROLE, PAUSE_ROLE } from './roles';
 
 export {
   proposeManager,
@@ -61,3 +61,6 @@ export { getPubkey, getKeyBalance, getCurveInfo } from './recipes/reads';
 export type { BondCurveInfo, BondCurveInterval } from './recipes/reads';
 export { setClValidator } from './cl-mock';
 export type { SetValidatorInput } from './cl-mock';
+
+export { pause, resume } from './recipes/pause';
+export type { PauseResult } from './recipes/pause';
