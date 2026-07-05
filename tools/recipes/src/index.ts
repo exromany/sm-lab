@@ -18,9 +18,11 @@ export { addKeys } from './recipes/add-keys';
 export type { AddKeysOptions, AddKeysResult } from './recipes/add-keys';
 export { operatorInfo } from './recipes/operator-info';
 export type { OperatorInfo } from './recipes/operator-info';
-export { warpBy, warpTo, snapshot, revert } from './recipes/chain';
+export { warpBy, warpTo, snapshot, revert, topUpAccount } from './recipes/chain';
+export { setTargetLimit } from './recipes/target-limit';
+export type { SetTargetLimitOptions, SetTargetLimitResult } from './recipes/target-limit';
 
-export { DEFAULT_ADMIN_ROLE, SET_TREE_ROLE, RESUME_ROLE } from './roles';
+export { DEFAULT_ADMIN_ROLE, SET_TREE_ROLE, RESUME_ROLE, PAUSE_ROLE } from './roles';
 
 export {
   proposeManager,
@@ -30,11 +32,11 @@ export {
 } from './recipes/address-changes';
 
 export { nodeOperatorIdBytes, keyCountBytes } from './encode';
-export { unvet, exit } from './recipes/vetting';
+export { unvet, exit, removeKey } from './recipes/vetting';
 export { deposit } from './recipes/deposit';
 export { increaseAllocatedBalance, topUpActiveKeys } from './recipes/topup';
 
-export { slash, withdraw } from './recipes/validators';
+export { slash, withdraw, activateKeys, reportBalance } from './recipes/validators';
 export type { WithdrawnValidatorInfo } from './recipes/validators';
 
 export { REPORT_GENERAL_DELAYED_PENALTY_ROLE, SETTLE_GENERAL_DELAYED_PENALTY_ROLE } from './roles';
@@ -55,6 +57,23 @@ export type { RewardsReport, MakeRewardsOptions, SubmitRewardsResult } from './r
 
 export { clActivate } from './recipes/cl-activate';
 export type { ClActivateResult } from './recipes/cl-activate';
-export { getPubkey, getKeyBalance } from './recipes/reads';
+export {
+  getPubkey,
+  getKeyBalance,
+  getCurveInfo,
+  bondInfo,
+  operatorKeys,
+  keyBalances,
+  operatorsCount,
+  getLastOperator,
+  getGateTree,
+} from './recipes/reads';
+export type { BondCurveInfo, BondCurveInterval, BondInfo, GateTree } from './recipes/reads';
 export { setClValidator } from './cl-mock';
 export type { SetValidatorInput } from './cl-mock';
+
+export { pause, resume } from './recipes/pause';
+export type { PauseResult } from './recipes/pause';
+
+export { exitRequest } from './recipes/exit-request';
+export type { ExitRequestOptions, ExitRequestResult } from './recipes/exit-request';

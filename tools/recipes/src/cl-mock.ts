@@ -10,8 +10,11 @@ import type { Hex } from '@sm-lab/receipts';
 
 export interface SetValidatorInput {
   pubkey: Hex;
-  /** Only status clActivate sets; cl-mock's full union lives in the app, not here. */
-  status: 'active_ongoing';
+  /**
+   * The CL statuses the recipes bridge sets: `active_ongoing` (clActivate) / `active_exiting`
+   * (exitRequest's optional flip). cl-mock's full status union lives in the app, not here.
+   */
+  status: 'active_ongoing' | 'active_exiting';
   /** Serialized to a gwei integer string on the wire; omitted when undefined. */
   effectiveBalanceGwei?: bigint;
 }

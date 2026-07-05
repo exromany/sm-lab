@@ -26,6 +26,9 @@ export interface AppOptions {
   fetchFn?: typeof fetch;
 }
 
+const snapshot = () => store.snapshot();
+const restore = (s: unknown) => store.restore(s);
+
 export function buildApp(opts: AppOptions = {}): Hono {
   const { statePath, upstreamUrl, fetchFn } = opts;
 
@@ -37,9 +40,6 @@ export function buildApp(opts: AppOptions = {}): Hono {
 
   registerBeaconRoutes(app, { upstreamUrl, fetchFn });
   registerValidatorRoutes(app);
-
-  const snapshot = () => store.snapshot();
-  const restore = (s: unknown) => store.restore(s);
 
   registerAdminRoutes(app, {
     version: readPackageVersion(import.meta.url),
@@ -82,7 +82,7 @@ export function startServer(
     host,
     onListen: (url) => console.log(`CL mock server listening on ${url}`),
     statePath,
-    snapshot: () => store.snapshot(),
-    restore: (s) => store.restore(s),
+    snapshot,
+    restore,
   });
 }

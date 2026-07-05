@@ -7,6 +7,8 @@ export const DEFAULT_ADMIN_ROLE = `0x${'0'.repeat(64)}` as Hex;
 export const SET_TREE_ROLE = keccak256(toBytes('SET_TREE_ROLE'));
 /** PausableWithRoles: keccak256("RESUME_ROLE"). */
 export const RESUME_ROLE = keccak256(toBytes('RESUME_ROLE'));
+/** PausableWithRoles: keccak256("PAUSE_ROLE"). */
+export const PAUSE_ROLE = keccak256(toBytes('PAUSE_ROLE'));
 /** BaseModule: keccak256("REPORT_GENERAL_DELAYED_PENALTY_ROLE"). */
 export const REPORT_GENERAL_DELAYED_PENALTY_ROLE = keccak256(
   toBytes('REPORT_GENERAL_DELAYED_PENALTY_ROLE'),
