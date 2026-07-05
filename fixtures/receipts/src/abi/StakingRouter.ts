@@ -222,25 +222,6 @@ export const stakingRouterAbi = [
   },
   {
     "type": "function",
-    "name": "canDeposit",
-    "inputs": [
-      {
-        "name": "_stakingModuleId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "decreaseStakingModuleVettedKeysCountByNodeOperator",
     "inputs": [
       {

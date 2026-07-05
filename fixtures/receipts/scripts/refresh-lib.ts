@@ -7,6 +7,10 @@ export type FieldKind = 'address' | 'address[]' | 'number' | 'string';
 export interface FieldSpec {
   kind: FieldKind;
   optional?: boolean;
+  /** Input key in the raw deploy snapshot, when it differs from the output key (rename). */
+  source?: string;
+  /** When set, read `snapshot[source][index]` — splits a source array into named fields. */
+  index?: number;
 }
 
 const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
@@ -23,11 +27,10 @@ export const CSM_SCHEMA: Record<string, FieldSpec> = {
   Verifier: { kind: 'address' },
   Ejector: { kind: 'address' },
   ExitPenalties: { kind: 'address' },
-  GateSeal: { kind: 'address' },
   LidoLocator: { kind: 'address' },
-  VettedGate: { kind: 'address' },
+  IcsGate: { kind: 'address', source: 'VettedGate' },
   PermissionlessGate: { kind: 'address' },
-  IdentifiedDVTClusterGate: { kind: 'address', optional: true },
+  IdvtcGate: { kind: 'address', optional: true, source: 'IdentifiedDVTClusterGate' },
   ChainId: { kind: 'number' },
   'git-ref': { kind: 'string' },
 };
@@ -46,7 +49,15 @@ export const CM_SCHEMA: Record<string, FieldSpec> = {
   MetaRegistry: { kind: 'address' },
   CuratedGateFactory: { kind: 'address' },
   LidoLocator: { kind: 'address' },
-  CuratedGates: { kind: 'address[]' },
+  // Flattened from the deploy config's `CuratedGates` array (order fixed by the deploy script:
+  // PO, PTO, PGO, DO, EEO, IODC, IODCP — verified against lido-csm-sdk CONTRACT_NAMES).
+  CuratedGatePO: { kind: 'address', source: 'CuratedGates', index: 0 },
+  CuratedGatePTO: { kind: 'address', source: 'CuratedGates', index: 1 },
+  CuratedGatePGO: { kind: 'address', source: 'CuratedGates', index: 2 },
+  CuratedGateDO: { kind: 'address', source: 'CuratedGates', index: 3 },
+  CuratedGateEEO: { kind: 'address', source: 'CuratedGates', index: 4 },
+  CuratedGateIODC: { kind: 'address', source: 'CuratedGates', index: 5 },
+  CuratedGateIODCP: { kind: 'address', source: 'CuratedGates', index: 6 },
   ChainId: { kind: 'number' },
   'git-ref': { kind: 'string' },
 };
@@ -76,15 +87,20 @@ export function curate(
 ): { book: Record<string, unknown>; dropped: string[] } {
   const book: Record<string, unknown> = {};
   for (const [name, spec] of Object.entries(schema)) {
-    const value = snapshot[name];
+    const src = spec.source ?? name;
+    const raw = snapshot[src];
+    const value = spec.index === undefined ? raw : Array.isArray(raw) ? raw[spec.index] : undefined;
     if (value === undefined) {
       if (spec.optional) continue;
-      throw new Error(`curate: required field "${name}" missing from snapshot`);
+      const from = spec.index === undefined ? `"${src}"` : `"${src}[${spec.index}]"`;
+      throw new Error(`curate: required field "${name}" missing from snapshot (${from})`);
     }
     validateField(name, value, spec);
     book[name] = value;
   }
-  const dropped = Object.keys(snapshot).filter((k) => !(k in schema));
+  // Source keys are consumed (renamed/flattened), so they aren't "dropped".
+  const sources = new Set(Object.values(schema).flatMap((s) => (s.source ? [s.source] : [])));
+  const dropped = Object.keys(snapshot).filter((k) => !(k in schema) && !sources.has(k));
   return { book, dropped };
 }
 

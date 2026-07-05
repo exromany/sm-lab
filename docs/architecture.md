@@ -6,7 +6,7 @@
 ## What this is (and isn't)
 
 `sm-lab` houses the **tooling you use to test Lido staking modules**, not the modules themselves. The contracts
-(`community-staking-module`), the SDK (`lido-csm-sdk`), and the widget (`csm-widget`) are
+(`staking-modules`), the SDK (`lido-csm-sdk`), and the widget (`csm-widget`) are
 **consumers**, never members — they depend on what this repo publishes (mocks + fixtures),
 which keeps their release cycles decoupled from ours.
 

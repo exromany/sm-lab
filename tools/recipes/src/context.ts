@@ -57,6 +57,17 @@ const CM_SELECTORS: Record<string, number> = {
   iodcp: 6,
 };
 
+// Curated gate address-book keys, in selector/index order (po..iodcp).
+const CM_GATE_KEYS = [
+  'CuratedGatePO',
+  'CuratedGatePTO',
+  'CuratedGatePGO',
+  'CuratedGateDO',
+  'CuratedGateEEO',
+  'CuratedGateIODC',
+  'CuratedGateIODCP',
+] as const satisfies readonly (keyof CmAddressBook)[];
+
 function defaultSnapshot(chainId: number, module: ModuleName): AddressBook {
   for (const chainKey of Object.keys(DEFAULTS) as ChainName[]) {
     const byModule = DEFAULTS[chainKey] as Partial<Record<ModuleName, AddressBook>>;
@@ -148,9 +159,9 @@ export function contract(ctx: Ctx, name: StaticName | 'module') {
 
 /**
  * Resolve a gate selector to an address (the `_resolve-gate-addr` port). Accepted forms:
- * a raw `0x…` 40-hex address (any module); for csm — `ics` → VettedGate, `idvtc` →
- * IdentifiedDVTClusterGate (v3-only; throws on snapshots lacking it, e.g. mainnet/v2);
- * for cm — `po|pto|pgo|do|eeo|iodc|iodcp` or a numeric index → `CuratedGates[0..6]`.
+ * a raw `0x…` 40-hex address (any module); for csm — `ics` → IcsGate, `idvtc` →
+ * IdvtcGate (v3-only; throws on pre-v3 snapshots lacking it);
+ * for cm — `po|pto|pgo|do|eeo|iodc|iodcp` or a numeric index → the named curated gates.
  */
 export function resolveGate(ctx: Ctx, selector: string): Hex {
   if (/^0x[0-9a-fA-F]{40}$/.test(selector)) return selector as Hex;
@@ -158,17 +169,15 @@ export function resolveGate(ctx: Ctx, selector: string): Hex {
     const idx = CM_SELECTORS[selector] ?? (/^\d+$/.test(selector) ? Number(selector) : undefined);
     if (idx === undefined)
       throw new Error(`@sm-lab/recipes: unknown cm gate selector "${selector}"`);
-    const gate = (ctx.addresses as CmAddressBook).CuratedGates[idx];
-    if (!gate) throw new Error(`@sm-lab/recipes: cm gate index ${idx} out of range`);
-    return gate;
+    const key = CM_GATE_KEYS[idx];
+    if (!key) throw new Error(`@sm-lab/recipes: cm gate index ${idx} out of range`);
+    return (ctx.addresses as CmAddressBook)[key];
   }
-  if (selector === 'ics') return (ctx.addresses as CsmAddressBook).VettedGate;
+  if (selector === 'ics') return (ctx.addresses as CsmAddressBook).IcsGate;
   if (selector === 'idvtc') {
-    const g = (ctx.addresses as CsmAddressBook).IdentifiedDVTClusterGate;
+    const g = (ctx.addresses as CsmAddressBook).IdvtcGate;
     if (!g)
-      throw new Error(
-        '@sm-lab/recipes: idvtc gate not in this snapshot (v3-only; absent on mainnet/v2)',
-      );
+      throw new Error('@sm-lab/recipes: idvtc gate not in this snapshot (v3-only; absent pre-v3)');
     return g;
   }
   throw new Error(`@sm-lab/recipes: unknown csm gate selector "${selector}"`);

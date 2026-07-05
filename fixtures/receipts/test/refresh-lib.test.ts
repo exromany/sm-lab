@@ -139,34 +139,39 @@ describe('curate', () => {
     Verifier: '0x0000000000000000000000000000000000000008',
     Ejector: '0x0000000000000000000000000000000000000009',
     ExitPenalties: '0x000000000000000000000000000000000000000a',
-    GateSeal: '0x000000000000000000000000000000000000000b',
     LidoLocator: '0x000000000000000000000000000000000000000c',
     VettedGate: '0x000000000000000000000000000000000000000d',
     PermissionlessGate: '0x000000000000000000000000000000000000000e',
+    IdentifiedDVTClusterGate: '0x000000000000000000000000000000000000000f',
     ChainId: 560048,
     'git-ref': 'abc123',
     DeployParams: '0xdeadbeef',
     CSModuleImpl: '0x00000000000000000000000000000000000000ff',
   };
 
-  it('keeps allowlisted fields and reports dropped keys', () => {
+  it('keeps allowlisted fields, renames sources, and reports dropped keys', () => {
     const { book, dropped } = curate(fullCsm, CSM_SCHEMA);
     expect(book.CSModule).toBe(fullCsm.CSModule);
+    expect(book.IcsGate).toBe(fullCsm.VettedGate); // renamed from VettedGate
+    expect(book.IdvtcGate).toBe(fullCsm.IdentifiedDVTClusterGate); // renamed from IdentifiedDVTClusterGate
+    expect(book.VettedGate).toBeUndefined(); // source key not re-emitted
     expect(book.ChainId).toBe(560048);
     expect(book['git-ref']).toBe('abc123');
     expect(book.DeployParams).toBeUndefined();
     expect(book.CSModuleImpl).toBeUndefined();
+    // Renamed sources (VettedGate, IdentifiedDVTClusterGate) are consumed, not dropped noise.
     expect(dropped.toSorted()).toEqual(['CSModuleImpl', 'DeployParams']);
   });
 
   it('emits keys in schema order (deterministic output)', () => {
     const { book } = curate(fullCsm, CSM_SCHEMA);
-    expect(Object.keys(book)).toEqual(Object.keys(CSM_SCHEMA).filter((k) => k in fullCsm));
+    expect(Object.keys(book)).toEqual(Object.keys(CSM_SCHEMA));
   });
 
   it('omits an absent optional field without throwing', () => {
-    const { book } = curate(fullCsm, CSM_SCHEMA); // no IdentifiedDVTClusterGate
-    expect('IdentifiedDVTClusterGate' in book).toBe(false);
+    const { IdentifiedDVTClusterGate: _omit, ...noIdvtc } = fullCsm;
+    const { book } = curate(noIdvtc, CSM_SCHEMA);
+    expect('IdvtcGate' in book).toBe(false);
   });
 
   it('throws when a required address is missing', () => {
@@ -178,29 +183,49 @@ describe('curate', () => {
     expect(() => curate({ ...fullCsm, Verifier: '0xnothex' }, CSM_SCHEMA)).toThrow(/Verifier/);
   });
 
-  it('curates the cm array field (CuratedGates) and number/string fields', () => {
+  const cmBase = {
+    CuratedModule: '0x0000000000000000000000000000000000000021',
+    Accounting: '0x0000000000000000000000000000000000000022',
+    FeeDistributor: '0x0000000000000000000000000000000000000023',
+    FeeOracle: '0x0000000000000000000000000000000000000024',
+    HashConsensus: '0x0000000000000000000000000000000000000025',
+    ParametersRegistry: '0x0000000000000000000000000000000000000026',
+    ValidatorStrikes: '0x0000000000000000000000000000000000000027',
+    Verifier: '0x0000000000000000000000000000000000000028',
+    Ejector: '0x0000000000000000000000000000000000000029',
+    ExitPenalties: '0x000000000000000000000000000000000000002a',
+    MetaRegistry: '0x000000000000000000000000000000000000002b',
+    CuratedGateFactory: '0x000000000000000000000000000000000000002c',
+    LidoLocator: '0x000000000000000000000000000000000000002d',
+    ChainId: 560048,
+    'git-ref': 'abc123',
+  };
+
+  it('flattens the cm CuratedGates array into named gate fields', () => {
     const cm = {
-      CuratedModule: '0x0000000000000000000000000000000000000021',
-      Accounting: '0x0000000000000000000000000000000000000022',
-      FeeDistributor: '0x0000000000000000000000000000000000000023',
-      FeeOracle: '0x0000000000000000000000000000000000000024',
-      HashConsensus: '0x0000000000000000000000000000000000000025',
-      ParametersRegistry: '0x0000000000000000000000000000000000000026',
-      ValidatorStrikes: '0x0000000000000000000000000000000000000027',
-      Verifier: '0x0000000000000000000000000000000000000028',
-      Ejector: '0x0000000000000000000000000000000000000029',
-      ExitPenalties: '0x000000000000000000000000000000000000002a',
-      MetaRegistry: '0x000000000000000000000000000000000000002b',
-      CuratedGateFactory: '0x000000000000000000000000000000000000002c',
-      LidoLocator: '0x000000000000000000000000000000000000002d',
-      CuratedGates: ['0x0000000000000000000000000000000000000030'],
-      ChainId: 560048,
-      'git-ref': 'abc123',
+      ...cmBase,
+      CuratedGates: [
+        '0x0000000000000000000000000000000000000030',
+        '0x0000000000000000000000000000000000000031',
+        '0x0000000000000000000000000000000000000032',
+        '0x0000000000000000000000000000000000000033',
+        '0x0000000000000000000000000000000000000034',
+        '0x0000000000000000000000000000000000000035',
+        '0x0000000000000000000000000000000000000036',
+      ],
       'NOAddresses.sol': '0x00000000000000000000000000000000000000fe',
     };
     const { book, dropped } = curate(cm, CM_SCHEMA);
-    expect(book.CuratedGates).toEqual(['0x0000000000000000000000000000000000000030']);
+    expect(book.CuratedGatePO).toBe('0x0000000000000000000000000000000000000030');
+    expect(book.CuratedGateIODCP).toBe('0x0000000000000000000000000000000000000036');
+    expect(book.CuratedGates).toBeUndefined(); // array source consumed, not re-emitted
+    // CuratedGates is a flatten source, so it is NOT reported as dropped.
     expect(dropped).toEqual(['NOAddresses.sol']);
+  });
+
+  it('throws when a flattened source array is missing an index', () => {
+    const cm = { ...cmBase, CuratedGates: ['0x0000000000000000000000000000000000000030'] };
+    expect(() => curate(cm, CM_SCHEMA)).toThrow(/CuratedGatePTO/);
   });
 });
 

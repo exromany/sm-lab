@@ -302,7 +302,7 @@ function deriveExtra(operator: Hex): Hex {
 }
 
 export interface SeedCmOptions {
-  /** cm gate selector for the 3 created operators (default 'po' = CuratedGates[0]). */
+  /** cm gate selector for the 3 created operators (default 'po' = CuratedGatePO). */
   selector?: CmGateSelector | string;
   /** Deterministic seed for the operator addresses + key material. Omit → fresh random. */
   seed?: Hex;

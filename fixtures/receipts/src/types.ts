@@ -24,12 +24,12 @@ export interface CsmAddressBook {
   Verifier: Hex;
   Ejector: Hex;
   ExitPenalties: Hex;
-  GateSeal: Hex;
   LidoLocator: Hex;
-  VettedGate: Hex;
+  /** ICS gate (a VettedGate contract instance). */
+  IcsGate: Hex;
   PermissionlessGate: Hex;
-  /** v3-only; absent on mainnet/v2. */
-  IdentifiedDVTClusterGate?: Hex;
+  /** IDVTC gate (a VettedGate contract instance); v3-only, absent on pre-v3 snapshots. */
+  IdvtcGate?: Hex;
   ChainId: number;
   'git-ref': string;
   protocol?: ProtocolAddresses;
@@ -50,7 +50,14 @@ export interface CmAddressBook {
   MetaRegistry: Hex;
   CuratedGateFactory: Hex;
   LidoLocator: Hex;
-  CuratedGates: Hex[];
+  /** Curated gates, flattened from the deploy config's `CuratedGates` array by role. */
+  CuratedGatePO: Hex;
+  CuratedGatePTO: Hex;
+  CuratedGatePGO: Hex;
+  CuratedGateDO: Hex;
+  CuratedGateEEO: Hex;
+  CuratedGateIODC: Hex;
+  CuratedGateIODCP: Hex;
   ChainId: number;
   'git-ref': string;
   protocol?: ProtocolAddresses;

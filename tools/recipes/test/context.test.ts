@@ -63,28 +63,28 @@ describe('connect', () => {
 });
 
 describe('resolveGate', () => {
-  it('maps the csm ics selector to VettedGate and rejects unknown selectors', () => {
-    const ctx = fakeCtx('csm', makeFakeClient().client, { VettedGate: A(0xd1) });
+  it('maps the csm ics selector to IcsGate and rejects unknown selectors', () => {
+    const ctx = fakeCtx('csm', makeFakeClient().client, { IcsGate: A(0xd1) });
     expect(resolveGate(ctx, 'ics')).toBe(A(0xd1));
     expect(() => resolveGate(ctx, 'bogus')).toThrow(/unknown/);
   });
 
-  it('resolves the csm idvtc selector to IdentifiedDVTClusterGate when present (T8)', () => {
-    const ctx = fakeCtx('csm', makeFakeClient().client, { IdentifiedDVTClusterGate: A(0x0f) });
+  it('resolves the csm idvtc selector to IdvtcGate when present (T8)', () => {
+    const ctx = fakeCtx('csm', makeFakeClient().client, { IdvtcGate: A(0x0f) });
     expect(resolveGate(ctx, 'idvtc')).toBe(A(0x0f));
   });
 
-  it('throws for csm idvtc on a snapshot lacking the field (mainnet/v2-like) (T9)', () => {
+  it('throws for csm idvtc on a snapshot lacking the field (pre-v3-like) (T9)', () => {
     const ctx = fakeCtx('csm', makeFakeClient().client);
     expect(() => resolveGate(ctx, 'idvtc')).toThrow(/v3-only|not in this snapshot/);
   });
 
-  it('maps cm selectors and numeric indices to CuratedGates', () => {
-    const ctx = fakeCtx('cm', makeFakeClient().client, { CuratedGates: [A(0x30), A(0x31)] });
+  it('maps cm selectors and numeric indices to named curated gates', () => {
+    const ctx = fakeCtx('cm', makeFakeClient().client); // cmBook seeds all 7 gates (0x30..0x36)
     expect(resolveGate(ctx, 'po')).toBe(A(0x30));
     expect(resolveGate(ctx, 'pto')).toBe(A(0x31));
     expect(resolveGate(ctx, '1')).toBe(A(0x31));
-    expect(() => resolveGate(ctx, '5')).toThrow(/out of range/);
+    expect(() => resolveGate(ctx, '7')).toThrow(/out of range/);
   });
 
   it('returns a raw 0x address verbatim for either module', () => {

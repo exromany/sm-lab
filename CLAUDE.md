@@ -6,7 +6,7 @@ Guidance for Claude Code working in this repo. See `docs/architecture.md` for th
 ## What this is
 
 `sm-lab` — monorepo of **testing & emulation utilities** for Lido SM (Staking Modules) — CSM is one module. Not the modules themselves: the
-contracts (`community-staking-module`), SDK (`lido-csm-sdk`), and widget (`csm-widget`) are
+contracts (`staking-modules`), SDK (`lido-csm-sdk`), and widget (`csm-widget`) are
 _consumers_, not members.
 
 Top level splits by **lifecycle**, not topic:
@@ -116,8 +116,9 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   one tuple param (golden-vector verified against viem); empty report → `{ submitted: false }` skip.
 
 - **6f cm/csm specifics** ✅ (core) — csm `idvtc` selector: `resolveGate(ctx,'idvtc')` →
-  `IdentifiedDVTClusterGate` (new optional `CsmAddressBook` field; v3-only — throws on mainnet/v2
-  snapshots that lack it). cm group/curve recipes (`@sm-lab/recipes/cm`, port of
+  `IdvtcGate` (optional `CsmAddressBook` field; v3-only — throws on pre-v3
+  snapshots that lack it). cm gates are flattened named fields (`CuratedGatePO`…`CuratedGateIODCP`),
+  csm `VettedGate`→`IcsGate`. cm group/curve recipes (`@sm-lab/recipes/cm`, port of
   `MetaRegistryHelpers.s.sol`): `createOperatorGroup` (bps pairs sum to 10000, dedup-resets prior
   memberships), `resetOperatorGroup`, `setBondCurveWeight` — role read from the MetaRegistry contract.
   `resetOperatorGroup`/`setBondCurveWeight` role read from the MetaRegistry contract.

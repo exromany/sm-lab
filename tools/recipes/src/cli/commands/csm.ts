@@ -3,7 +3,7 @@ import { identity, toAddresses, type RecipeCommand } from '../define';
 import { resolveGate } from '../../context';
 import { setGateAddrs } from '../../recipes/set-gate';
 
-const csmSelectorHelp = 'gate selector: ics (VettedGate) | idvtc (v3-only) | 0x… gate address';
+const csmSelectorHelp = 'gate selector: ics (IcsGate) | idvtc (v3-only) | 0x… gate address';
 
 export const csmCommands: RecipeCommand[] = [
   {

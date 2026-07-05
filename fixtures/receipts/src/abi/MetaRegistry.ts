@@ -251,7 +251,7 @@ export const metaRegistryAbi = [
     "name": "getNodeOperatorWeight",
     "inputs": [
       {
-        "name": "noId",
+        "name": "nodeOperatorId",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -270,7 +270,7 @@ export const metaRegistryAbi = [
     "name": "getNodeOperatorWeightAndExternalStake",
     "inputs": [
       {
-        "name": "noId",
+        "name": "nodeOperatorId",
         "type": "uint256",
         "internalType": "uint256"
       }

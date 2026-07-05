@@ -761,7 +761,7 @@ export const vettedGateAbi = [
     "name": "setName",
     "inputs": [
       {
-        "name": "name_",
+        "name": "name",
         "type": "string",
         "internalType": "string"
       }

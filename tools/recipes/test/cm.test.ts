@@ -23,7 +23,7 @@ describe('createCuratedOperator', () => {
     const OPERATOR = A(0xc1);
     const EXTRA = A(0xc2);
     const ADMIN = A(0xd0);
-    const GATE = A(0x30); // CuratedGates[0] = selector 'po'
+    const GATE = A(0x30); // CuratedGatePO = selector 'po'
     const ORIG_ROOT = `0x${'ab'.repeat(32)}`;
     const ORIG_CID = 'orig-cid';
     const REQUEST = { address: GATE, functionName: 'createNodeOperator', isCreateReq: true };
@@ -32,7 +32,7 @@ describe('createCuratedOperator', () => {
       reads: { treeRoot: ORIG_ROOT, treeCid: ORIG_CID, getRoleMember: ADMIN, isPaused: false },
       simulate: { result: 7n, request: REQUEST },
     });
-    const ctx = fakeCtx('cm', client, { CuratedGates: [GATE] });
+    const ctx = fakeCtx('cm', client, { CuratedGatePO: GATE });
 
     const res = await createCuratedOperator(ctx, {
       selector: 'po',
@@ -317,7 +317,7 @@ describe('setBondCurveWeight', () => {
 describe('seedCm', () => {
   const GATE_ADMIN = A(0xd0);
   const NO_MANAGER = A(0xe0);
-  const GATE0 = A(0x30); // CuratedGates[0] = selector 'po'
+  const GATE0 = A(0x30); // CuratedGatePO = selector 'po'
   const TWO_PUBKEYS = `0x${'ab'.repeat(48 * 2)}` as const; // deposit hands back 2 keys
   const TOPUP_PK = `0x${'cd'.repeat(48)}` as const;
 
@@ -374,7 +374,7 @@ describe('seedCm', () => {
 
   it('orchestrates create×3 / group / 3 rounds / final keys with returned noIds (T11)', async () => {
     const fc = makeFakeClient(seedScript());
-    const ctx = fakeCtx('cm', fc.client, { CuratedGates: [GATE0] });
+    const ctx = fakeCtx('cm', fc.client, { CuratedGatePO: GATE0 });
 
     const res = await seedCm(ctx, { seed: `0x${'01'.repeat(32)}` });
     expect(res.noIds).toEqual([5n, 6n, 7n]);
@@ -413,9 +413,9 @@ describe('seedCm', () => {
     const c = makeFakeClient(seedScript());
     const seed = `0x${'02'.repeat(32)}` as const;
 
-    const r1 = await seedCm(fakeCtx('cm', a.client, { CuratedGates: [GATE0] }), { seed });
-    const r2 = await seedCm(fakeCtx('cm', b.client, { CuratedGates: [GATE0] }), { seed });
-    const r3 = await seedCm(fakeCtx('cm', c.client, { CuratedGates: [GATE0] }), {
+    const r1 = await seedCm(fakeCtx('cm', a.client, { CuratedGatePO: GATE0 }), { seed });
+    const r2 = await seedCm(fakeCtx('cm', b.client, { CuratedGatePO: GATE0 }), { seed });
+    const r3 = await seedCm(fakeCtx('cm', c.client, { CuratedGatePO: GATE0 }), {
       seed: `0x${'03'.repeat(32)}`,
     });
 
@@ -425,9 +425,9 @@ describe('seedCm', () => {
     expect(new Set(r1.operators).size).toBe(3);
   });
 
-  it('defaults the gate selector to po → CuratedGates[0] (T13)', async () => {
+  it('defaults the gate selector to po → CuratedGatePO (T13)', async () => {
     const fc = makeFakeClient(seedScript());
-    const ctx = fakeCtx('cm', fc.client, { CuratedGates: [GATE0] });
+    const ctx = fakeCtx('cm', fc.client, { CuratedGatePO: GATE0 });
 
     await seedCm(ctx, { seed: `0x${'04'.repeat(32)}` });
 

@@ -1504,7 +1504,7 @@ export const curatedModuleAbi = [
         "internalType": "uint256"
       },
       {
-        "name": "",
+        "name": "proofSlotTimestamp",
         "type": "uint256",
         "internalType": "uint256"
       },
@@ -1609,7 +1609,7 @@ export const curatedModuleAbi = [
         "internalType": "uint256"
       },
       {
-        "name": "",
+        "name": "depositCalldata",
         "type": "bytes",
         "internalType": "bytes"
       }
@@ -1975,7 +1975,7 @@ export const curatedModuleAbi = [
         "internalType": "uint256"
       },
       {
-        "name": "",
+        "name": "proofSlotTimestamp",
         "type": "uint256",
         "internalType": "uint256"
       },

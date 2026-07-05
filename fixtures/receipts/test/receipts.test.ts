@@ -5,8 +5,11 @@ describe('@sm-lab/receipts public surface', () => {
   it('exposes typed address books with real addresses', () => {
     expect(addresses.hoodi.csm.CSModule).toMatch(/^0x[0-9a-fA-F]{40}$/);
     expect(addresses.mainnet.csm.CSModule).toMatch(/^0x[0-9a-fA-F]{40}$/);
+    expect(addresses.mainnet.csm.IcsGate).toMatch(/^0x[0-9a-fA-F]{40}$/);
     expect(addresses.hoodi.cm.CuratedModule).toMatch(/^0x[0-9a-fA-F]{40}$/);
-    expect(Array.isArray(addresses.hoodi.cm.CuratedGates)).toBe(true);
+    expect(addresses.mainnet.cm.CuratedModule).toMatch(/^0x[0-9a-fA-F]{40}$/);
+    expect(addresses.hoodi.cm.CuratedGatePO).toMatch(/^0x[0-9a-fA-F]{40}$/);
+    expect(addresses.mainnet.cm.CuratedGateIODCP).toMatch(/^0x[0-9a-fA-F]{40}$/);
   });
 
   it('exposes non-empty as-const ABIs', () => {

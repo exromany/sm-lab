@@ -27,7 +27,7 @@ export interface SetGateAddrsResult {
   treeCid: string;
 }
 
-/** Default gate selector per module: cm → 'po' (CuratedGates[0]); csm → 'ics' (VettedGate). */
+/** Default gate selector per module: cm → 'po' (CuratedGatePO); csm → 'ics' (IcsGate). */
 function defaultSelector(ctx: Ctx): string {
   return ctx.module === 'cm' ? 'po' : 'ics';
 }

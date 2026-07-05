@@ -146,10 +146,7 @@ function parseArgs(argv: string[]): {
   if (moduleArg !== 'csm' && moduleArg !== 'cm')
     throw new Error('Missing/invalid --module (csm|cm)');
   const pkgDir = path.dirname(fileURLToPath(new URL('.', import.meta.url)));
-  const contractsPath = path.resolve(
-    pkgDir,
-    get('--contracts') ?? '../../../community-staking-module',
-  );
+  const contractsPath = path.resolve(pkgDir, get('--contracts') ?? '../../../staking-modules');
   const configPath = get('--config');
   const rpcUrl =
     get('--rpc') ?? process.env[`${chain.toUpperCase()}_RPC_URL`] ?? process.env.ETH_RPC_URL;

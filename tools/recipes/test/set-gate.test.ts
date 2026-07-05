@@ -20,13 +20,13 @@ describe('setGateAddrs', () => {
     delete process.env.PINATA_API_SECRET;
   });
 
-  it('builds the addresses tree and sets it on the csm VettedGate, impersonating the admin', async () => {
+  it('builds the addresses tree and sets it on the csm IcsGate, impersonating the admin', async () => {
     const ADMIN = A(0xd0);
-    const GATE = A(0x0d); // VettedGate (ics)
+    const GATE = A(0x0d); // IcsGate (ics)
     const addrs = [A(0x11), A(0x12), A(0x13)];
 
     const { client, byMethod } = makeFakeClient({ reads: { getRoleMember: ADMIN } });
-    const ctx = fakeCtx('csm', client, { VettedGate: GATE });
+    const ctx = fakeCtx('csm', client, { IcsGate: GATE });
 
     const res = await setGateAddrs(ctx, { addresses: addrs, cid: 'test-cid' });
 
@@ -47,12 +47,12 @@ describe('setGateAddrs', () => {
     expect(byMethod('impersonateAccount')[0]).toEqual({ address: ADMIN });
   });
 
-  it('defaults to the cm gate (po → CuratedGates[0]) and sets the tree there', async () => {
+  it('defaults to the cm gate (po → CuratedGatePO) and sets the tree there', async () => {
     const ADMIN = A(0xd0);
     const addrs = [A(0x11), A(0x12)];
 
     const { client, byMethod } = makeFakeClient({ reads: { getRoleMember: ADMIN } });
-    // cmBook seeds CuratedGates = [A(0x30), A(0x31), …]; 'po' (the default) → CuratedGates[0].
+    // cmBook seeds CuratedGatePO = A(0x30), CuratedGatePTO = A(0x31), …; 'po' (the default) → CuratedGatePO.
     const ctx = fakeCtx('cm', client);
 
     const res = await setGateAddrs(ctx, { addresses: addrs, cid: 'test-cid' });
@@ -62,12 +62,12 @@ describe('setGateAddrs', () => {
 
     const writes = byMethod('writeContract') as any[];
     const set = writes.find((w) => w.functionName === 'setTreeParams');
-    expect(set.address).toBe(A(0x30)); // po → CuratedGates[0]
+    expect(set.address).toBe(A(0x30)); // po → CuratedGatePO
     expect(set.args).toEqual([tree.root, 'test-cid']);
     expect(set.account).toBe(ADMIN);
   });
 
-  it('honours an explicit cm gate selector (pto → CuratedGates[1])', async () => {
+  it('honours an explicit cm gate selector (pto → CuratedGatePTO)', async () => {
     const { client, byMethod } = makeFakeClient({ reads: { getRoleMember: A(0xd0) } });
     const ctx = fakeCtx('cm', client);
 
@@ -76,7 +76,7 @@ describe('setGateAddrs', () => {
     const set = (byMethod('writeContract') as any[]).find(
       (w) => w.functionName === 'setTreeParams',
     );
-    expect(set.address).toBe(A(0x31)); // pto → CuratedGates[1]
+    expect(set.address).toBe(A(0x31)); // pto → CuratedGatePTO
   });
 
   it('throws when no cid is provided and IPFS is not configured', async () => {
@@ -84,7 +84,7 @@ describe('setGateAddrs', () => {
     // at real Pinata with no credentials. Set that edge case to trigger the guard throw.
     process.env.IPFS_API_URL = 'https://api.pinata.cloud';
     const ctx = fakeCtx('csm', makeFakeClient({ reads: { getRoleMember: A(0xd0) } }).client, {
-      VettedGate: A(0x0d),
+      IcsGate: A(0x0d),
     });
     await expect(setGateAddrs(ctx, { addresses: [A(0x11)] })).rejects.toThrow(/IPFS|cid/i);
   });
