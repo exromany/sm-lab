@@ -1,6 +1,6 @@
 {
   "name": "@sm-lab/receipts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Versioned Lido SM anvil/deploy receipts — typed, importable contract addresses & ABIs",
   "license": "MIT",
