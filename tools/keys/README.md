@@ -10,7 +10,7 @@ domain, so they pass the CSM SDK's on-upload BLS validation.
 ## CLI
 
 ```bash
-sm-keys 5                               # count is positional: `5` == `--count 5`
+npx @sm-lab/keys 5                      # binary is sm-keys; count is positional: `5` == `--count 5`
 sm-keys --count 5                       # hoodi, 0x01 (all defaults) → JSON to stdout
 sm-keys --chain mainnet --count 1
 sm-keys --count 1 --type 0x02           # compounding (CM)

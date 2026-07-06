@@ -6,7 +6,7 @@ drop-in stand-in for Pinata in Lido SM testing. Same Hono + commander shape as `
 ## Quick start
 
 ```sh
-sm-ipfs serve              # listens on 127.0.0.1:5001
+npx @sm-lab/ipfs serve     # binary is sm-ipfs; listens on 127.0.0.1:5001
 sm-ipfs status             # health + pin count + configured gateway
 sm-ipfs stop               # graceful shutdown
 sm-ipfs help               # full agent-facing guide

@@ -3,6 +3,10 @@
 Versioned, typed snapshots of Lido SM contract ABIs and deploy addresses. Replaces ad-hoc `deploy.json`
 files copied between repos and the `DEPLOY_JSON_PATH` env-var dance.
 
+```bash
+pnpm add @sm-lab/receipts
+```
+
 ```ts
 import { addresses, csModuleAbi, manifest } from '@sm-lab/receipts';
 
