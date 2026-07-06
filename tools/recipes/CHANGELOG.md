@@ -1,5 +1,43 @@
 # @sm-lab/recipes
 
+## 0.3.0
+
+### Minor Changes
+
+- 8141636: `exit-request` now optionally reflects the exit on a running cl-mock: when `ctx.clMockUrl` (or the
+  CLI `--cl-mock-url` / `CL_MOCK_URL`) is set, the validator is marked `active_exiting` with its
+  effective balance (32 ETH + allocated), mirroring `clActivate`. Skipped silently when no cl-mock is
+  configured — the on-chain VEBO submit is unaffected.
+- d90381d: Add the `exit-request` recipe + CLI command: submit a single validator-exit request to the
+  Validators Exit Bus Oracle (VEBO) by impersonating its consensus contract and a `SUBMIT_DATA_ROLE`
+  holder. Module-agnostic (csm + cm); auto-mirrored under the `csm`/`cm` CLI groups.
+  `sm-recipes exit-request <operator-id> <key-index> [--validator-index n]`.
+- 0441bf9: Add recipes: `set-target-limit`, `remove-key`, `get-curve-info`, and a unified `pause`/`resume`
+  that targets the module, accounting, or any gate (ics/idvtc for csm; po…iodcp for cm), across both
+  csm and cm. Exposed as CLI commands (shared, mirrored under the `csm`/`cm` groups).
+
+  Also add on-chain `activate-keys` and `report-balance` (Verifier-gated), `topup` (anvil
+  `setBalance`), and six read-only recipes: `bond-info`, `operator-keys`, `key-balances`,
+  `operators-count`, `get-last-operator`, and `get-gate-tree`. Exposed as CLI commands (shared,
+  mirrored under the `csm`/`cm` groups).
+
+- 449aa14: Refresh mainnet address books and restructure gate fields.
+
+  - `@sm-lab/receipts`: add `mainnet.cm` (CMv2 curated deployment) and move `mainnet.csm` to v3
+    (adds `IdvtcGate`; updates `Ejector` + `PermissionlessGate`).
+  - **Breaking:** csm gate fields renamed `VettedGate` → `IcsGate` and
+    `IdentifiedDVTClusterGate` → `IdvtcGate`; the unused `GateSeal` field is removed.
+  - **Breaking:** cm `CuratedGates: Hex[]` is replaced by flat named fields
+    `CuratedGatePO`/`PTO`/`PGO`/`DO`/`EEO`/`IODC`/`IODCP` (matching the lido-csm-sdk gate roles).
+  - `@sm-lab/recipes`: `resolveGate` follows the renamed/flattened fields. Gate selectors
+    (`ics` / `idvtc` / `po`…`iodcp` / numeric index) and the CLI surface are unchanged.
+
+### Patch Changes
+
+- Updated dependencies [449aa14]
+  - @sm-lab/receipts@0.2.0
+  - @sm-lab/keys@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
