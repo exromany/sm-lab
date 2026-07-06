@@ -9,3 +9,8 @@ pnpm-lock.yaml
 
 # Env files — no prettier parser; .env is gitignored, .env.sample is a plain KEY=value template
 .env*
+
+# Agent-generated planning docs — churned per skill session, not hand-maintained;
+# formatting them just defers the next CI break. Hand-written docs/ (architecture,
+# decisions) stay checked.
+docs/superpowers/
