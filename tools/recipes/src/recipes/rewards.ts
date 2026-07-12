@@ -1,4 +1,4 @@
-import { makeRewards as makeRewardsTree, shouldAttemptPin, type TreeDump } from '@sm-lab/merkle';
+import { assertPinnable, makeRewards as makeRewardsTree, type TreeDump } from '@sm-lab/merkle';
 import { encodeAbiParameters, keccak256, parseAbiParameters, parseEther, toBytes } from 'viem';
 import {
   feeDistributorAbi,
@@ -123,17 +123,13 @@ export async function makeRewards(ctx: Ctx, opts: MakeRewardsOptions = {}): Prom
     return { treeRoot: ZERO_ROOT, treeCid: '', logCid: '', distributed, rebate, cumulatives };
   }
 
-  // Guard before the IPFS pin so hermetic tests with no IPFS env and no escape cids fail loudly
-  // instead of hitting the wire. Mirrors `setGateAddrs.pinTree`. Sits AFTER the empty-report return
-  // so an empty fork never needs IPFS configured.
-  // shouldAttemptPin() is true by default (local-first); it returns false ONLY when
-  // IPFS_API_URL points at real Pinata with no credentials. That is the canonical "not configured"
-  // state tests can set to trigger this guard.
+  // Guard before the IPFS pin so a missing/misconfigured backend fails loudly (with actionable
+  // guidance) instead of a cryptic mid-pin fetch error — and hermetic tests never hit the wire.
+  // Mirrors `setGateAddrs.pinTree`. Sits AFTER the empty-report return so an empty fork never needs
+  // IPFS configured. Only when a cid escape hatch is missing (otherwise pinning is skipped).
   const needsPin = opts.treeCid === undefined || opts.logCid === undefined;
-  if (needsPin && !shouldAttemptPin()) {
-    throw new Error(
-      '@sm-lab/recipes: could not pin the rewards tree/log — set IPFS_API_URL (a local @sm-lab/ipfs) or PINATA_* credentials, or pass opts.treeCid + opts.logCid',
-    );
+  if (needsPin) {
+    await assertPinnable('pass opts.treeCid + opts.logCid (or --tree-cid / --log-cid)');
   }
 
   // The report log (faithful-but-minimal mock shape) — bigints nested in operators[*] are

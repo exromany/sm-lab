@@ -100,9 +100,23 @@ describe('clActivate', () => {
     });
     const ctx = fakeCtx('csm', fc.client); // no `extra` → no clMockUrl
 
-    await expect(clActivate(ctx, { noId: 0n, keyIndex: 0n })).rejects.toThrow(/clMockUrl/);
+    await expect(clActivate(ctx, { noId: 0n, keyIndex: 0n })).rejects.toThrow(
+      /running cl-mock[\s\S]*npx @sm-lab\/cl serve/,
+    );
     expect(fetchMock).not.toHaveBeenCalled();
     expect(fc.byMethod('readContract')).toHaveLength(0);
+  });
+
+  it('surfaces an actionable message when the cl-mock is unreachable (connection refused)', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('fetch failed')));
+    const fc = makeFakeClient({
+      reads: { getSigningKeys: PUBKEY, getKeyAllocatedBalances: [0n] },
+    });
+    const ctx = fakeCtx('csm', fc.client, {}, { clMockUrl: CL_MOCK_URL });
+
+    await expect(clActivate(ctx, { noId: 0n, keyIndex: 0n })).rejects.toThrow(
+      /cannot reach the cl-mock[\s\S]*npx @sm-lab\/cl serve/,
+    );
   });
 
   it('throws on a cl-mock 400 (all rejected), surfacing errors[]', async () => {
@@ -199,5 +213,15 @@ describe('setClValidator', () => {
     await expect(
       setClValidator(CL_MOCK_URL, { pubkey: PUBKEY, status: 'active_ongoing' }),
     ).rejects.toThrow(/invalid status/);
+  });
+
+  it('rethrows a connection failure as actionable "start the cl-mock" guidance', async () => {
+    // fetch() *throws* (not resolves) on connection-refused — distinct from an HTTP error.
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('fetch failed')));
+    await expect(
+      setClValidator(CL_MOCK_URL, { pubkey: PUBKEY, status: 'active_ongoing' }),
+    ).rejects.toThrow(
+      /cannot reach the cl-mock at http:\/\/127\.0\.0\.1:9596[\s\S]*npx @sm-lab\/cl serve/,
+    );
   });
 });

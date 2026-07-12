@@ -45,11 +45,21 @@ export async function setClValidator(clMockUrl: string, input: SetValidatorInput
       : {}),
   });
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body,
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    });
+  } catch {
+    // fetch() *throws* (not resolves) on a connection failure — the cl-mock isn't running/reachable.
+    // Distinct from an HTTP rejection (400 etc.), which resolves and is handled by `!res.ok` below.
+    throw new Error(
+      `@sm-lab/recipes: cannot reach the cl-mock at ${clMockUrl}. ` +
+        `Start it (npx @sm-lab/cl serve) and pass --cl-mock-url <url> (or set CL_MOCK_URL).`,
+    );
+  }
 
   const json = (await res.json().catch(() => undefined)) as ClMockResponse | undefined;
   if (!res.ok || !json || (json.accepted ?? 0) < 1) {

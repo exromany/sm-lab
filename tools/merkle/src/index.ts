@@ -29,6 +29,7 @@ export {
   hasPinataCredentials,
   hasCustomIpfsEndpoint,
   shouldAttemptPin,
+  assertPinnable,
   resolveIpfsApiUrl,
   ipfsOptionsFromEnv,
   DEFAULT_IPFS_API_URL,

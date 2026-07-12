@@ -86,6 +86,58 @@ export function shouldAttemptPin(opts: IpfsClientOptions = ipfsOptionsFromEnv())
   return true;
 }
 
+/**
+ * Assert a pin can succeed, throwing actionable guidance otherwise. Three outcomes:
+ *  - `IPFS_API_URL` points at real Pinata with no credentials → throw (can't authenticate).
+ *  - Pinata with credentials → return (assume reachable; a token can't be cheaply verified).
+ *  - local / custom endpoint → probe reachability; a thrown fetch (connection refused / DNS /
+ *    timeout) means down → throw. Any HTTP response (even a 404) counts as reachable.
+ *
+ * `skipHint` is the caller's escape hatch (e.g. `'pass --cid <cid>'`), woven into both messages so
+ * the recipe can tell the user how to bypass pinning entirely. Call this before `pinJsonToIpfs`.
+ */
+export async function assertPinnable(
+  skipHint = 'supply a precomputed CID',
+  opts: IpfsClientOptions = ipfsOptionsFromEnv(),
+): Promise<void> {
+  const target = resolveIpfsApiUrl(opts.apiUrl);
+  if (!shouldAttemptPin(opts)) {
+    // shouldAttemptPin rejects exactly one case: IPFS_API_URL == real Pinata, no credentials.
+    throw new Error(
+      `@sm-lab/merkle: IPFS_API_URL points at Pinata (${target}) but no credentials are set.\n` +
+        `Do one of:\n` +
+        `  • set PINATA_JWT   (or PINATA_API_KEY + PINATA_API_SECRET)\n` +
+        `  • unset IPFS_API_URL to use the local mock:  npx @sm-lab/ipfs serve\n` +
+        `  • ${skipHint}`,
+    );
+  }
+  if (hasPinataCredentials(opts)) return; // Pinata with creds — assume reachable.
+  if (await isReachable(target)) return;
+  throw new Error(
+    `@sm-lab/merkle: cannot reach the IPFS pinning service at ${target}.\n` +
+      `Do one of:\n` +
+      `  • start the local mock:  npx @sm-lab/ipfs serve      (or: pnpm stack:up)\n` +
+      `  • use Pinata:            set PINATA_JWT  (or PINATA_API_KEY + PINATA_API_SECRET)\n` +
+      `  • point elsewhere:       set IPFS_API_URL=<url>\n` +
+      `  • ${skipHint}`,
+  );
+}
+
+/**
+ * True when `url` answers any HTTP response within `timeoutMs`. A 404/405 still counts —
+ * reachability ≠ correctness; we only need proof something is listening. A thrown fetch
+ * (connection refused / DNS failure / timeout) is the "down" signal. Inlined here (single
+ * consumer) rather than promoted to @sm-lab/core — YAGNI until a second caller needs it.
+ */
+async function isReachable(url: string, timeoutMs = 2000): Promise<boolean> {
+  try {
+    await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function buildAuthHeaders(opts: IpfsClientOptions): Record<string, string> {
   if (opts.jwt) {
     return { Authorization: `Bearer ${opts.jwt}` };

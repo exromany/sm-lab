@@ -158,11 +158,23 @@ describe('makeRewards', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it('T-R6b: no cids + a reachable-but-down local endpoint → actionable "start the mock" message', async () => {
+    // Local-first default (IPFS_API_URL unset) → probe http://127.0.0.1:5001; thrown fetch = down.
+    const fetchSpy = vi.fn().mockRejectedValue(new TypeError('fetch failed'));
+    vi.stubGlobal('fetch', fetchSpy);
+    const { client } = makeFakeClient(TWO_OPS);
+
+    await expect(makeRewards(fakeCtx('csm', client), { seed: '0x01' })).rejects.toThrow(
+      /cannot reach[\s\S]*npx @sm-lab\/ipfs serve/,
+    );
+  });
+
   it('T-R7: pins tree + log when configured; the LOG body has bigints serialized as strings', async () => {
     process.env.IPFS_API_URL = 'http://ipfs.test';
     const bodies: string[] = [];
-    const fetchSpy = vi.fn(async (_url: string, init: { body: string }) => {
-      bodies.push(init.body);
+    // The reachability probe is a bodyless GET; only the two pin POSTs carry a body.
+    const fetchSpy = vi.fn(async (_url: string, init?: { method?: string; body?: string }) => {
+      if (init?.method === 'POST') bodies.push(init.body!);
       return {
         ok: true,
         json: async () => ({ IpfsHash: 'QmFake' }),
@@ -177,7 +189,7 @@ describe('makeRewards', () => {
       now: 1_700_000_000,
     });
 
-    expect(fetchSpy).toHaveBeenCalledTimes(2); // tree + log
+    expect(bodies).toHaveLength(2); // tree + log POSTs (plus one reachability probe GET)
     expect(report.treeCid).toBe('QmFake');
     expect(report.logCid).toBe('QmFake');
 

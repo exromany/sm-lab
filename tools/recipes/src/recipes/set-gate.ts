@@ -1,8 +1,8 @@
 import {
+  assertPinnable,
   buildAddressesTree,
   ipfsOptionsFromEnv,
   pinJsonToIpfs,
-  shouldAttemptPin,
 } from '@sm-lab/merkle';
 import { curatedGateAbi, vettedGateAbi } from '@sm-lab/receipts';
 import type { Hex } from '@sm-lab/receipts';
@@ -78,11 +78,8 @@ export async function setGateAddrs(
 }
 
 async function pinTree(dump: unknown, selector: string): Promise<string> {
-  // Guard BEFORE any network call so hermetic tests (no IPFS env) never hit the wire.
-  if (!shouldAttemptPin()) {
-    throw new Error(
-      '@sm-lab/recipes: could not pin the gate tree — set IPFS_API_URL (a local @sm-lab/ipfs) or PINATA_* credentials, or pass opts.cid',
-    );
-  }
+  // Fail loudly (with actionable guidance) BEFORE any pin so hermetic tests never hit the wire and
+  // a missing IPFS backend can never leave the gate with a half-installed tree.
+  await assertPinnable('pass --cid <cid>');
   return pinJsonToIpfs(dump, `gate-${selector}`, ipfsOptionsFromEnv());
 }

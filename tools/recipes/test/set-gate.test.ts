@@ -1,5 +1,5 @@
 import { buildAddressesTree } from '@sm-lab/merkle';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setGateAddrs } from '../src/recipes/set-gate';
 import { SET_TREE_ROLE } from '../src/roles';
 import { makeFakeClient } from './helpers/fake-client';
@@ -14,6 +14,7 @@ describe('setGateAddrs', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     delete process.env.IPFS_API_URL;
     delete process.env.PINATA_JWT;
     delete process.env.PINATA_API_KEY;
@@ -87,5 +88,16 @@ describe('setGateAddrs', () => {
       IcsGate: A(0x0d),
     });
     await expect(setGateAddrs(ctx, { addresses: [A(0x11)] })).rejects.toThrow(/IPFS|cid/i);
+  });
+
+  it('throws an actionable message when no cid is given and the local IPFS is unreachable', async () => {
+    // Local-first default (IPFS_API_URL unset) → probe http://127.0.0.1:5001; a thrown fetch = down.
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('fetch failed')));
+    const ctx = fakeCtx('csm', makeFakeClient({ reads: { getRoleMember: A(0xd0) } }).client, {
+      IcsGate: A(0x0d),
+    });
+    await expect(setGateAddrs(ctx, { addresses: [A(0x11)] })).rejects.toThrow(
+      /cannot reach[\s\S]*npx @sm-lab\/ipfs serve/,
+    );
   });
 });

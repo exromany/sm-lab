@@ -4,6 +4,7 @@ import {
   hasPinataCredentials,
   hasCustomIpfsEndpoint,
   shouldAttemptPin,
+  assertPinnable,
   pinJsonToIpfs,
   DEFAULT_IPFS_API_URL,
   LOCAL_IPFS_API_URL,
@@ -96,6 +97,39 @@ describe('shouldAttemptPin', () => {
 
   it('pins to LOCAL_IPFS_API_URL via env when IPFS_API_URL is the local address', () => {
     expect(shouldAttemptPin({ apiUrl: LOCAL_IPFS_API_URL })).toBe(true);
+  });
+});
+
+describe('assertPinnable', () => {
+  it('resolves for a reachable endpoint — any HTTP response counts, even a 404', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('nope', { status: 404 })));
+    await expect(
+      assertPinnable('pass --cid <cid>', { apiUrl: LOCAL_IPFS_API_URL }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('throws an actionable message (target + how to start the mock + skip hint) when unreachable', async () => {
+    // A thrown fetch is how Node surfaces connection-refused / DNS failure.
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('fetch failed')));
+    await expect(
+      assertPinnable('pass --cid <cid>', { apiUrl: LOCAL_IPFS_API_URL }),
+    ).rejects.toThrow(/cannot reach.*127\.0\.0\.1:5001[\s\S]*npx @sm-lab\/ipfs serve[\s\S]*--cid/);
+  });
+
+  it('throws creds guidance for a Pinata endpoint with no credentials — without probing', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    await expect(
+      assertPinnable('pass --cid <cid>', { apiUrl: DEFAULT_IPFS_API_URL }),
+    ).rejects.toThrow(/Pinata[\s\S]*PINATA_JWT/);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('returns without probing the network when Pinata credentials are present', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    await expect(assertPinnable('pass --cid <cid>', { jwt: 'tok' })).resolves.toBeUndefined();
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });
 
