@@ -7,7 +7,7 @@ drop-in stand-in for Pinata in Lido SM testing. Same Hono + commander shape as `
 
 ```sh
 npx @sm-lab/ipfs serve     # binary is sm-ipfs; listens on 127.0.0.1:5001
-sm-ipfs status             # health + pin count + configured gateway
+sm-ipfs status             # health + pin count + per-gateway upstream health
 sm-ipfs stop               # graceful shutdown
 sm-ipfs help               # full agent-facing guide
 ```
@@ -38,22 +38,33 @@ CID → `400`, upstream unreachable → `502`, upstream timeout → `504`.
 
 ### Admin (parity with cl-mock)
 
-| Method | Route             |                                                                                   |
-| ------ | ----------------- | --------------------------------------------------------------------------------- |
-| GET    | `/admin/status`   | `{ ok, version, startedAt, uptimeSeconds, gateway, pins: { total, totalBytes } }` |
-| POST   | `/admin/shutdown` | graceful shutdown                                                                 |
+| Method | Route             |                                                                                              |
+| ------ | ----------------- | -------------------------------------------------------------------------------------------- |
+| GET    | `/admin/status`   | `{ ok, version, startedAt, uptimeSeconds, gateway, gateways?, pins: { total, totalBytes } }` |
+| POST   | `/admin/shutdown` | graceful shutdown                                                                            |
+
+`gateways` is a per-gateway health array (chain order) — each entry is
+`{ gateway, attempts, hits, misses, timeouts, unreachable, healthy, note? }`, tallying
+proxied traffic since boot. A gateway is `healthy: false` only when it was tried yet never
+once reached (all timeouts/unreachable); a 404 counts as reached. Counts are in-memory and
+reset on restart. `sm-ipfs status` renders this as a ✓/✗/— table.
 
 ## Upstream gateway (for store-miss CIDs)
 
-- **Bundled default:** `https://dweb.link` — the Protocol Labs subdomain gateway (same
-  content as `ipfs.io`); it is the default many IPFS clients resolve against.
-- **Override**, highest priority last: bundled default → `IPFS_UPSTREAM_GATEWAY` env →
-  `serve --gateway <url>`.
+- **Bundled default chain:** `https://dweb.link` → `https://ipfs.io`, tried in order — the
+  first `2xx` wins; a miss/timeout/unreachable falls through to the next. `dweb.link` is the
+  Protocol Labs subdomain gateway many IPFS clients resolve against; `ipfs.io` backs it up.
+- **Override**, highest priority last: bundled defaults → `IPFS_UPSTREAM_GATEWAY` env →
+  `serve --gateway <url>`. A comma-separated value sets a multi-gateway chain; a single
+  value replaces the chain entirely.
 
 ```sh
-IPFS_UPSTREAM_GATEWAY=https://ipfs.io sm-ipfs serve
+IPFS_UPSTREAM_GATEWAY=https://ipfs.io,https://dweb.link sm-ipfs serve
 sm-ipfs serve --gateway https://ipfs.io
 ```
+
+Use `sm-ipfs status` to see which gateways in the chain are actually serving — a persistently
+failing one shows `✗` (see [Admin](#admin-parity-with-cl-mock)).
 
 ## Deterministic CIDs — and the UnixFS-parity caveat
 

@@ -42,3 +42,32 @@ export interface PinResponse {
 
 /** CIDv1 + raw codec (0x55). A real, valid CID, fully deterministic for given bytes. */
 export const RAW_CODEC = 0x55;
+
+/** How a single upstream-gateway attempt turned out. */
+export type GatewayOutcome = 'hit' | 'miss' | 'timeout' | 'unreachable';
+
+/**
+ * Cumulative-since-boot health of one gateway in the fallback chain, as reported by
+ * `/admin/status`. Part of the wire contract (produced by the fetcher, consumed by the CLI).
+ */
+export interface GatewayHealthEntry {
+  gateway: string;
+  /** Total attempts made against this gateway (only tried when earlier ones failed). */
+  attempts: number;
+  /** 2xx responses. */
+  hits: number;
+  /** Reachable but non-2xx (e.g. 404 — the gateway simply lacked that CID). */
+  misses: number;
+  /** Requests aborted at {@link UPSTREAM_TIMEOUT_MS}. */
+  timeouts: number;
+  /** Connection/transport failures. */
+  unreachable: number;
+  /**
+   * `false` ONLY when attempts were made yet the gateway was never once reached
+   * (`attempts > 0 && hits === 0 && misses === 0` — every attempt timed out or was unreachable).
+   * A 404 counts as reached, so a miss keeps a gateway healthy.
+   */
+  healthy: boolean;
+  /** Short human hint for the CLI render; omitted for a plainly-serving gateway. */
+  note?: string;
+}

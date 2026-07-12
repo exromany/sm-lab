@@ -127,6 +127,50 @@ describe('status (human output)', () => {
     expect(out).toContain('Gateway:');
     expect(out).toContain('Pins:');
   });
+
+  it('renders a per-gateway health table with verdicts when the payload has gateways', async () => {
+    stubFetchOk({
+      ...STATUS_PAYLOAD,
+      gateways: [
+        {
+          gateway: 'https://dweb.link',
+          attempts: 5,
+          hits: 5,
+          misses: 0,
+          timeouts: 0,
+          unreachable: 0,
+          healthy: true,
+        },
+        {
+          gateway: 'https://ipfs.io',
+          attempts: 3,
+          hits: 0,
+          misses: 0,
+          timeouts: 3,
+          unreachable: 0,
+          healthy: false,
+          note: 'all timed out',
+        },
+      ],
+    });
+    const logs: string[] = [];
+    vi.spyOn(console, 'log').mockImplementation((s: unknown) => logs.push(String(s)));
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await buildProgram().parseAsync(['status'], { from: 'user' });
+
+    const out = logs.join('\n');
+    expect(out).toContain('Gateways:');
+    // Healthy gateway: ✓ verdict, hit count.
+    expect(out).toContain('https://dweb.link');
+    expect(out).toContain('✓');
+    expect(out).toContain('hits=5');
+    // Broken gateway: ✗ verdict, its note, and the timeout count.
+    expect(out).toContain('https://ipfs.io');
+    expect(out).toContain('✗');
+    expect(out).toContain('all timed out');
+    expect(out).toContain('timeout=3');
+  });
 });
 
 describe('status error handling', () => {

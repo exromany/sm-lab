@@ -195,8 +195,14 @@ describe('gateway proxy (hermetic, injected upstream)', () => {
   });
 });
 
-/** Stubs global fetch by matching each request URL against a gateway-base route table. */
-function fakeFetch(routes: Record<string, { status: number; body?: string } | 'throw'>) {
+/**
+ * Stubs global fetch by matching each request URL against a gateway-base route table.
+ * A route of `'throw'` simulates an unreachable gateway (TypeError); `'timeout'` simulates
+ * an aborted request (AbortError), which the fetcher classifies as a 504 timeout.
+ */
+function fakeFetch(
+  routes: Record<string, { status: number; body?: string } | 'throw' | 'timeout'>,
+) {
   const calls: string[] = [];
   const fn = async (input: string | URL): Promise<Response> => {
     const url = String(input);
@@ -204,6 +210,11 @@ function fakeFetch(routes: Record<string, { status: number; body?: string } | 't
     const base = Object.keys(routes).find((b) => url.startsWith(b));
     const route = base ? routes[base] : undefined;
     if (!route || route === 'throw') throw new TypeError('fetch failed');
+    if (route === 'timeout') {
+      const err = new Error('The operation was aborted');
+      err.name = 'AbortError';
+      throw err;
+    }
     return new Response(route.body ?? '', {
       status: route.status,
       headers: { 'content-type': 'text/plain' },
@@ -253,6 +264,129 @@ describe('createUpstreamFetcher (multi-gateway fallback)', () => {
     const res = await createUpstreamFetcher('https://solo.test')('bafyCID');
     expect(new TextDecoder().decode(res.data)).toBe('solo');
     expect(calls).toEqual(['https://solo.test/ipfs/bafyCID']);
+  });
+});
+
+describe('createUpstreamFetcher health snapshot', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('tallies a hit and leaves the untried fallback untested', async () => {
+    const { fn } = fakeFetch({
+      'https://a.test': { status: 200, body: 'ok' },
+      'https://b.test': { status: 200 },
+    });
+    vi.stubGlobal('fetch', fn);
+    const fetcher = createUpstreamFetcher(['https://a.test', 'https://b.test']);
+    await fetcher('cid1');
+
+    const snap = fetcher.snapshot?.();
+    expect(snap).toBeDefined();
+    expect(snap).toEqual([
+      {
+        gateway: 'https://a.test',
+        attempts: 1,
+        hits: 1,
+        misses: 0,
+        timeouts: 0,
+        unreachable: 0,
+        healthy: true,
+      },
+      // b was never tried (a answered first) → untested, still healthy.
+      {
+        gateway: 'https://b.test',
+        attempts: 0,
+        hits: 0,
+        misses: 0,
+        timeouts: 0,
+        unreachable: 0,
+        healthy: true,
+        note: 'untested',
+      },
+    ]);
+  });
+
+  it('marks an always-timing-out gateway as broken (transport failures only)', async () => {
+    const { fn } = fakeFetch({ 'https://a.test': 'timeout' });
+    vi.stubGlobal('fetch', fn);
+    const fetcher = createUpstreamFetcher('https://a.test');
+    await fetcher('cid1');
+    await fetcher('cid2');
+
+    expect(fetcher.snapshot?.()).toEqual([
+      {
+        gateway: 'https://a.test',
+        attempts: 2,
+        hits: 0,
+        misses: 0,
+        timeouts: 2,
+        unreachable: 0,
+        healthy: false,
+        note: 'all timed out',
+      },
+    ]);
+  });
+
+  it('marks an always-unreachable gateway as broken', async () => {
+    const { fn } = fakeFetch({ 'https://a.test': 'throw' });
+    vi.stubGlobal('fetch', fn);
+    const fetcher = createUpstreamFetcher('https://a.test');
+    await fetcher('cid1');
+
+    const entry = fetcher.snapshot?.()[0];
+    expect(entry).toMatchObject({ unreachable: 1, healthy: false, note: 'unreachable' });
+  });
+
+  it('keeps a 404-only gateway healthy (reachable, just no content)', async () => {
+    const { fn } = fakeFetch({ 'https://a.test': { status: 404 } });
+    vi.stubGlobal('fetch', fn);
+    const fetcher = createUpstreamFetcher('https://a.test');
+    await fetcher('cid1');
+
+    expect(fetcher.snapshot?.()[0]).toMatchObject({
+      misses: 1,
+      hits: 0,
+      healthy: true,
+      note: 'reachable, no hits',
+    });
+  });
+
+  it('tallies both the failed first gateway and the winning fallback', async () => {
+    const { fn } = fakeFetch({
+      'https://a.test': { status: 404 },
+      'https://b.test': { status: 200, body: 'from-b' },
+    });
+    vi.stubGlobal('fetch', fn);
+    const fetcher = createUpstreamFetcher(['https://a.test', 'https://b.test']);
+    await fetcher('cid1');
+
+    const snap = fetcher.snapshot?.();
+    expect(snap?.[0]).toMatchObject({ misses: 1, healthy: true }); // reachable 404
+    expect(snap?.[1]).toMatchObject({ hits: 1, healthy: true }); // served the fallback
+  });
+
+  it('notes "no contact" when failures mix timeout and unreachable', async () => {
+    // Alternate per call: first a timeout (AbortError), then unreachable (TypeError).
+    let call = 0;
+    vi.stubGlobal('fetch', async () => {
+      if (call++ === 0) {
+        const err = new Error('aborted');
+        err.name = 'AbortError';
+        throw err;
+      }
+      throw new TypeError('fetch failed');
+    });
+    const fetcher = createUpstreamFetcher('https://a.test');
+    await fetcher('cid1');
+    await fetcher('cid2');
+
+    expect(fetcher.snapshot?.()[0]).toMatchObject({
+      timeouts: 1,
+      unreachable: 1,
+      hits: 0,
+      misses: 0,
+      healthy: false,
+      note: 'no contact',
+    });
   });
 });
 
@@ -314,6 +448,40 @@ describe('admin status', () => {
     });
     const status = (await (await app.request('/admin/status')).json()) as { gateway: string };
     expect(status.gateway).toBe('https://a.test, https://b.test');
+  });
+
+  it('surfaces the per-gateway health chain (untested on a fresh boot)', async () => {
+    const { app } = createApp({
+      store: new PinStore(),
+      gateway: ['https://a.test', 'https://b.test'],
+    });
+    const status = (await (await app.request('/admin/status')).json()) as {
+      gateways: Array<{ gateway: string; attempts: number; healthy: boolean; note?: string }>;
+    };
+    expect(status.gateways).toEqual([
+      expect.objectContaining({
+        gateway: 'https://a.test',
+        attempts: 0,
+        healthy: true,
+        note: 'untested',
+      }),
+      expect.objectContaining({
+        gateway: 'https://b.test',
+        attempts: 0,
+        healthy: true,
+        note: 'untested',
+      }),
+    ]);
+  });
+
+  it('omits per-gateway health when an upstream fetcher is injected (no snapshot)', async () => {
+    const { app } = createApp({ store: new PinStore(), fetchUpstream: failingUpstream });
+    const status = (await (await app.request('/admin/status')).json()) as {
+      gateway: string;
+      gateways?: unknown;
+    };
+    expect(status.gateways).toBeUndefined();
+    expect(typeof status.gateway).toBe('string');
   });
 });
 

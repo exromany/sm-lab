@@ -27,7 +27,8 @@ COMMANDS
                                   --persist is a per-pin directory mirror (written as pins
                                   change); --state is a single JSON snapshot of the whole
                                   store. In-memory only if both are omitted.
-  status [--json]               server uptime, version, pin count, configured gateway
+  status [--json]               uptime, version, pin count + per-gateway upstream health
+                                  (✓ serving · — untested · ✗ attempted, never reached);
                                   exits 1 with "<url> offline (...)" if down
   stop                          graceful shutdown
   completion <shell>            print a static bash/zsh/fish completion script
@@ -83,6 +84,10 @@ FLAGS
 AGENT TIPS
   • Always 'sm-ipfs status' before assuming a server is up — it prints a
     machine-parseable line on failure and exits 1.
+  • Suspect a dead upstream gateway? 'sm-ipfs status' tallies each gateway's
+    hits/misses/timeouts/unreachable since boot. A gateway marked ✗ (attempts>0,
+    never once reached) is broken; a 404-only gateway stays ✓ (reachable, just
+    lacked that CID). Counts are cumulative and reset on restart.
   • State is in-memory by default → restart = clean slate. Use --persist DIR or
     --state FILE to keep it.
   • A GET /ipfs/:cid that hits an unpinned CID WILL touch the network (the upstream
