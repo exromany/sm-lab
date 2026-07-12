@@ -82,8 +82,15 @@ export function createApp(options: AppOptions = {}): AppHandle {
     version: VERSION,
     getStatus: () => {
       const totalBytes = store.list().reduce((sum, p) => sum + p.size, 0);
-      // Reported as a display string; the chain is comma-joined in try order.
-      return { gateway: gateways.join(', '), pins: { total: store.size, totalBytes } };
+      // `gateway`: display string, chain comma-joined in try order (kept for back-compat).
+      // `gateways`: per-gateway health, present only when the fetcher exposes a snapshot
+      // (the production fetcher does; injected test stubs omit it).
+      const health = fetchUpstream.snapshot?.();
+      return {
+        gateway: gateways.join(', '),
+        ...(health ? { gateways: health } : {}),
+        pins: { total: store.size, totalBytes },
+      };
     },
   });
   registerStateRoutes(app, { snapshot, restore, defaultPath: options.statePath });
