@@ -27,16 +27,19 @@ export type { TreeConfig } from './io';
 // IPFS pinning client (env-switchable endpoint: real Pinata or @sm-lab/ipfs)
 export {
   pinJsonToIpfs,
+  fetchIpfsJson,
   hasPinataCredentials,
   hasCustomIpfsEndpoint,
   shouldAttemptPin,
   assertPinnable,
   resolveIpfsApiUrl,
+  resolveIpfsGatewayUrl,
   ipfsOptionsFromEnv,
   DEFAULT_IPFS_API_URL,
+  DEFAULT_IPFS_GATEWAY_URL,
   LOCAL_IPFS_API_URL,
 } from './ipfs';
-export type { IpfsClientOptions, PinResponse } from './ipfs';
+export type { IpfsClientOptions, PinResponse, FetchIpfsOptions } from './ipfs';
 
 // Build + pin pipeline (root + CID; on-chain work belongs to @sm-lab/receipts)
 export { makeAddresses, makeStrikes, makeRewards } from './pipelines';

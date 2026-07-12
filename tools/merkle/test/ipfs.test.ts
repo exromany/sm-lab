@@ -6,7 +6,10 @@ import {
   shouldAttemptPin,
   assertPinnable,
   pinJsonToIpfs,
+  fetchIpfsJson,
+  resolveIpfsGatewayUrl,
   DEFAULT_IPFS_API_URL,
+  DEFAULT_IPFS_GATEWAY_URL,
   LOCAL_IPFS_API_URL,
 } from '../src/ipfs';
 
@@ -189,5 +192,60 @@ describe('pinJsonToIpfs', () => {
       vi.fn().mockResolvedValue(new Response(JSON.stringify({}), { status: 200 })),
     );
     await expect(pinJsonToIpfs({}, 'x', { apiUrl: 'http://h' })).rejects.toThrow(/IpfsHash/);
+  });
+});
+
+describe('resolveIpfsGatewayUrl', () => {
+  it('prefers an explicit argument (trailing slash stripped)', () => {
+    expect(resolveIpfsGatewayUrl('http://localhost:9999/')).toBe('http://localhost:9999');
+  });
+
+  it('falls back to IPFS_GATEWAY_URL env', () => {
+    vi.stubEnv('IPFS_GATEWAY_URL', 'http://gw:8080/');
+    expect(resolveIpfsGatewayUrl()).toBe('http://gw:8080');
+  });
+
+  it('uses the pin origin when it is the local mock (serves pinning + /ipfs on one port)', () => {
+    vi.stubEnv('IPFS_API_URL', '');
+    vi.stubEnv('IPFS_GATEWAY_URL', '');
+    vi.stubEnv('PINATA_JWT', '');
+    vi.stubEnv('PINATA_API_KEY', '');
+    vi.stubEnv('PINATA_API_SECRET', '');
+    expect(resolveIpfsGatewayUrl()).toBe(LOCAL_IPFS_API_URL);
+  });
+
+  it('uses the public Pinata gateway when the pin origin is the Pinata API host', () => {
+    vi.stubEnv('IPFS_API_URL', '');
+    vi.stubEnv('IPFS_GATEWAY_URL', '');
+    vi.stubEnv('PINATA_JWT', 'tok');
+    expect(resolveIpfsGatewayUrl()).toBe(DEFAULT_IPFS_GATEWAY_URL);
+  });
+});
+
+describe('fetchIpfsJson', () => {
+  it('GETs {gateway}/ipfs/{cid} and returns the parsed JSON', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ hello: 'world' }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const json = await fetchIpfsJson('bafyCID', { gatewayUrl: 'http://gw' });
+    expect(json).toEqual({ hello: 'world' });
+    expect(fetchMock.mock.calls[0]![0]).toBe('http://gw/ipfs/bafyCID');
+  });
+
+  it('throws an actionable error (gateway + skipHint) when the gateway is unreachable', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('fetch failed')));
+    await expect(
+      fetchIpfsJson('bafyCID', { gatewayUrl: 'http://gw', skipHint: 'pass --from-cid <cid>' }),
+    ).rejects.toThrow(/cannot reach the IPFS gateway at http:\/\/gw[\s\S]*--from-cid/);
+  });
+
+  it('throws on a non-OK response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('nope', { status: 404, statusText: 'Not Found' })),
+    );
+    await expect(fetchIpfsJson('bafyCID', { gatewayUrl: 'http://gw' })).rejects.toThrow(/404/);
   });
 });

@@ -18,6 +18,9 @@ export const DEFAULT_IPFS_API_URL = 'https://api.pinata.cloud';
 /** Local @sm-lab/ipfs default — the fallback when no IPFS_API_URL or Pinata creds are set. */
 export const LOCAL_IPFS_API_URL = 'http://127.0.0.1:5001';
 
+/** Real Pinata public gateway — the read fallback when the pin origin is the Pinata API host. */
+export const DEFAULT_IPFS_GATEWAY_URL = 'https://gateway.pinata.cloud';
+
 export interface IpfsClientOptions {
   /** Base URL of the pinning service. Defaults to `IPFS_API_URL` env, then real Pinata. */
   apiUrl?: string;
@@ -46,6 +49,54 @@ export function resolveIpfsApiUrl(apiUrl?: string): string {
   if (explicit) return explicit.replace(/\/+$/, '');
   if (hasPinataCredentials()) return DEFAULT_IPFS_API_URL;
   return LOCAL_IPFS_API_URL;
+}
+
+/**
+ * Resolve the base URL for IPFS *reads* (`GET /ipfs/:cid`): explicit `gatewayUrl` →
+ * `IPFS_GATEWAY_URL` env → the pin origin (`resolveIpfsApiUrl` — exactly right for the local
+ * `@sm-lab/ipfs` mock, which serves pinning AND `/ipfs/:cid` on one port) → the public Pinata
+ * gateway when the pin origin is the Pinata API host (`api.pinata.cloud` does NOT serve `/ipfs`).
+ */
+export function resolveIpfsGatewayUrl(gatewayUrl?: string): string {
+  const explicit = gatewayUrl || process.env.IPFS_GATEWAY_URL;
+  if (explicit) return explicit.replace(/\/+$/, '');
+  const pin = resolveIpfsApiUrl();
+  return pin === DEFAULT_IPFS_API_URL ? DEFAULT_IPFS_GATEWAY_URL : pin;
+}
+
+export interface FetchIpfsOptions {
+  /** Gateway base URL. Defaults per {@link resolveIpfsGatewayUrl}. */
+  gatewayUrl?: string;
+  /** Caller's bypass hint woven into the unreachable error (e.g. `'pass --from-cid <cid>'`). */
+  skipHint?: string;
+}
+
+/**
+ * Fetch + JSON-parse a pinned object by CID via `GET {gateway}/ipfs/{cid}`. The read counterpart
+ * of {@link pinJsonToIpfs}, mirroring its discipline: trailing-slash-stripped join, explicit
+ * `Response` typing (no DOM lib), and an actionable throw. A thrown fetch (connection refused /
+ * DNS / timeout) or a non-2xx surfaces an error naming the gateway + the caller's `skipHint`.
+ */
+export async function fetchIpfsJson(cid: string, opts: FetchIpfsOptions = {}): Promise<unknown> {
+  const base = resolveIpfsGatewayUrl(opts.gatewayUrl);
+  const url = `${base}/ipfs/${cid}`;
+  const hint = opts.skipHint ?? 'supply the addresses another way';
+  let res: Response;
+  try {
+    res = await fetch(url);
+  } catch {
+    throw new Error(
+      `@sm-lab/merkle: cannot reach the IPFS gateway at ${base} to read ${cid}.\n` +
+        `Do one of:\n` +
+        `  • start the local mock:  npx @sm-lab/ipfs serve      (or: pnpm stack:up)\n` +
+        `  • point elsewhere:       set IPFS_GATEWAY_URL=<url>\n` +
+        `  • ${hint}`,
+    );
+  }
+  if (!res.ok) {
+    throw new Error(`@sm-lab/merkle: GET ${url} failed: ${res.status} ${res.statusText}`);
+  }
+  return (await res.json()) as unknown;
 }
 
 /** Read pinning config from the environment (credentials + endpoint switch). */
