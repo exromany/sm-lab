@@ -2,12 +2,19 @@ export const DEFAULT_PORT = 5001;
 export const DEFAULT_HOST = '127.0.0.1';
 
 /**
- * Public IPFS gateway used to resolve CIDs that were never pinned here. Chosen because
- * dweb.link is the Protocol Labs subdomain gateway — same content as ipfs.io, but it
- * serves from `<cid>.ipfs.dweb.link` paths AND honors plain `/ipfs/:cid`, and it is the
- * gateway js-ipfs/helia default to. Override via `IPFS_UPSTREAM_GATEWAY` or `serve --gateway`.
+ * Primary public IPFS gateway for store-miss CIDs. Chosen because dweb.link is the Protocol
+ * Labs subdomain gateway — same content as ipfs.io, but it serves from `<cid>.ipfs.dweb.link`
+ * paths AND honors plain `/ipfs/:cid`, and it is the gateway js-ipfs/helia default to.
  */
 export const DEFAULT_GATEWAY = 'https://dweb.link';
+
+/**
+ * Upstream gateway fallback chain, tried in order: the first 2xx wins; a miss or failure
+ * (404, unreachable, timeout) falls through to the next. dweb.link leads; ipfs.io backs it up
+ * so a single flaky gateway doesn't sink a store-miss read. Override the whole chain via
+ * `IPFS_UPSTREAM_GATEWAY` or `serve --gateway` (comma-separated for multiple).
+ */
+export const DEFAULT_GATEWAYS = [DEFAULT_GATEWAY, 'https://ipfs.io'] as const;
 
 /** How long we wait on the upstream gateway before giving up with a 504. */
 export const UPSTREAM_TIMEOUT_MS = 15_000;

@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { DEFAULT_GATEWAY, DEFAULT_PORT } from '../types';
+import { DEFAULT_GATEWAYS, DEFAULT_PORT } from '../types';
 
 const GUIDE = `sm-ipfs — Pinata-compatible IPFS pinning + gateway mock for Lido SM testing
 
@@ -20,7 +20,8 @@ TYPICAL WORKFLOW
 COMMANDS
   serve [--port N] [--host H] [--gateway URL] [--persist DIR] [--state FILE]
                                 start server (defaults: ${DEFAULT_PORT}, 127.0.0.1)
-                                  --gateway  upstream IPFS gateway for store-miss CIDs
+                                  --gateway  upstream gateway(s) for store-miss CIDs
+                                             (comma-separated → fallback chain)
                                   --persist  mirror pins to DIR so they survive restarts
                                   --state    load FILE on boot, save it on graceful shutdown
                                   --persist is a per-pin directory mirror (written as pins
@@ -44,14 +45,16 @@ PINATA-COMPATIBLE HTTP API
 IPFS GATEWAY (consumer-facing read path)
   GET /ipfs/:cid
     • store HIT  → serves the stored bytes (no network call)
-    • store MISS → proxies to the upstream gateway and relays its body/status;
+    • store MISS → proxies to the upstream gateway(s) and relays the body/status;
                    successful proxied content is cached back into the store.
-    • invalid CID → 400; upstream unreachable → 502; upstream timeout → 504.
+    • invalid CID → 400; all upstreams unreachable → 502; timeout → 504.
 
-UPSTREAM GATEWAY (for store-miss CIDs)
-  Default:  ${DEFAULT_GATEWAY}
-  Override (highest priority last): bundled default < env IPFS_UPSTREAM_GATEWAY < serve --gateway
-    IPFS_UPSTREAM_GATEWAY=https://ipfs.io sm-ipfs serve
+UPSTREAM GATEWAYS (for store-miss CIDs)
+  Default fallback chain (tried in order, first 2xx wins; a miss/failure falls through):
+    ${DEFAULT_GATEWAYS.join('  →  ')}
+  Override (highest priority last): bundled defaults < env IPFS_UPSTREAM_GATEWAY < serve --gateway
+  A comma-separated value sets a multi-gateway chain; a single value replaces it entirely.
+    IPFS_UPSTREAM_GATEWAY=https://ipfs.io,https://dweb.link sm-ipfs serve
     sm-ipfs serve --gateway https://ipfs.io
 
 CID FORMAT — IMPORTANT

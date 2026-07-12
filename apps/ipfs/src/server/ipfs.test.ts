@@ -6,7 +6,7 @@ import { createApp } from './app';
 import { computeCid, jsonToBytes } from './cid';
 import { PinStore, snapshotStore, restoreStore } from './store';
 import { loadStateFromFile, saveStateToFile } from '@sm-lab/core';
-import type { UpstreamFetcher } from './upstream';
+import { createUpstreamFetcher, type UpstreamFetcher } from './upstream';
 
 // Precomputed once (see cid.ts: CIDv1 / raw / sha2-256). Hard-coded so a CID-format
 // regression is caught loudly rather than silently re-deriving a wrong "expected".
@@ -195,6 +195,67 @@ describe('gateway proxy (hermetic, injected upstream)', () => {
   });
 });
 
+/** Stubs global fetch by matching each request URL against a gateway-base route table. */
+function fakeFetch(routes: Record<string, { status: number; body?: string } | 'throw'>) {
+  const calls: string[] = [];
+  const fn = async (input: string | URL): Promise<Response> => {
+    const url = String(input);
+    calls.push(url);
+    const base = Object.keys(routes).find((b) => url.startsWith(b));
+    const route = base ? routes[base] : undefined;
+    if (!route || route === 'throw') throw new TypeError('fetch failed');
+    return new Response(route.body ?? '', {
+      status: route.status,
+      headers: { 'content-type': 'text/plain' },
+    });
+  };
+  return { fn, calls };
+}
+
+describe('createUpstreamFetcher (multi-gateway fallback)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('returns the first gateway that answers 2xx and never calls later ones', async () => {
+    const { fn, calls } = fakeFetch({
+      'https://a.test': { status: 200, body: 'from-a' },
+      'https://b.test': { status: 200, body: 'from-b' },
+    });
+    vi.stubGlobal('fetch', fn);
+    const res = await createUpstreamFetcher(['https://a.test', 'https://b.test'])('bafyCID');
+    expect(res.ok).toBe(true);
+    expect(new TextDecoder().decode(res.data)).toBe('from-a');
+    expect(calls).toEqual(['https://a.test/ipfs/bafyCID']);
+  });
+
+  it('falls back to the next gateway on a non-2xx (e.g. 404 not found there)', async () => {
+    const { fn, calls } = fakeFetch({
+      'https://a.test': { status: 404 },
+      'https://b.test': { status: 200, body: 'from-b' },
+    });
+    vi.stubGlobal('fetch', fn);
+    const res = await createUpstreamFetcher(['https://a.test', 'https://b.test'])('bafyCID');
+    expect(res.ok).toBe(true);
+    expect(new TextDecoder().decode(res.data)).toBe('from-b');
+    expect(calls).toEqual(['https://a.test/ipfs/bafyCID', 'https://b.test/ipfs/bafyCID']);
+  });
+
+  it('falls back on a transport error, returning the last gateway failure when all fail', async () => {
+    const { fn } = fakeFetch({ 'https://a.test': 'throw', 'https://b.test': { status: 500 } });
+    vi.stubGlobal('fetch', fn);
+    const res = await createUpstreamFetcher(['https://a.test', 'https://b.test'])('bafyCID');
+    expect(res.ok).toBe(false);
+    expect(res.status).toBe(500); // relays the last gateway's status
+  });
+
+  it('accepts a single string gateway (back-compat)', async () => {
+    const { fn, calls } = fakeFetch({ 'https://solo.test': { status: 200, body: 'solo' } });
+    vi.stubGlobal('fetch', fn);
+    const res = await createUpstreamFetcher('https://solo.test')('bafyCID');
+    expect(new TextDecoder().decode(res.data)).toBe('solo');
+    expect(calls).toEqual(['https://solo.test/ipfs/bafyCID']);
+  });
+});
+
 describe('CORS', () => {
   it('echoes Access-Control-Allow-Origin on the gateway response', async () => {
     const { app } = createApp({ store: new PinStore(), fetchUpstream: stubUpstream('').fetcher });
@@ -244,6 +305,15 @@ describe('admin status', () => {
     expect(status.gateway).toBe('https://example.test');
     expect(status.pins.total).toBe(1);
     expect(status.pins.totalBytes).toBeGreaterThan(0);
+  });
+
+  it('reports a multi-gateway chain as a comma-joined string', async () => {
+    const { app } = createApp({
+      store: new PinStore(),
+      gateway: ['https://a.test', 'https://b.test'],
+    });
+    const status = (await (await app.request('/admin/status')).json()) as { gateway: string };
+    expect(status.gateway).toBe('https://a.test, https://b.test');
   });
 });
 

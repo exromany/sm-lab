@@ -5,7 +5,10 @@ export const serveCommand = new Command('serve')
   .description('Start the IPFS mock server (pinning API + gateway)')
   .option('-p, --port <port>', 'server port', String(DEFAULT_PORT))
   .option('-h, --host <host>', 'server host', DEFAULT_HOST)
-  .option('-g, --gateway <url>', 'upstream IPFS gateway for store-miss CIDs (overrides env)')
+  .option(
+    '-g, --gateway <urls>',
+    'upstream IPFS gateway(s) for store-miss CIDs; comma-separated for a fallback chain (overrides env + defaults)',
+  )
   .option('--persist <dir>', 'persist pins to a directory (survives restarts)')
   .option(
     '--state <file>',
