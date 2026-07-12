@@ -46,6 +46,10 @@ export async function addGateAddrs(
   ctx: Ctx,
   opts: AddGateAddrsOptions,
 ): Promise<AddGateAddrsResult> {
+  if (opts.addresses.length === 0) {
+    throw new Error('@sm-lab/recipes: addGateAddrs needs at least one address to add');
+  }
+
   const selector = opts.selector ?? defaultSelector(ctx);
   const curCid = opts.fromCid ?? (await getGateTree(ctx, { selector })).treeCid;
   const current = curCid

@@ -102,4 +102,17 @@ describe('addGateAddrs', () => {
     expect(readNames).not.toContain('treeCid');
     expect(fetchMock.mock.calls[0]![0]).toBe('http://127.0.0.1:5001/ipfs/explicit-cid');
   });
+
+  it('rejects an empty addresses list with an actionable error (no reads, no fetch)', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, byMethod } = makeFakeClient({
+      reads: { getRoleMember: A(0xd0), treeCid: 'cur-cid' },
+    });
+    const ctx = fakeCtx('csm', client, { IcsGate: A(0x0d) });
+
+    await expect(addGateAddrs(ctx, { addresses: [] })).rejects.toThrow(/at least one address/);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(byMethod('readContract')).toHaveLength(0);
+  });
 });
