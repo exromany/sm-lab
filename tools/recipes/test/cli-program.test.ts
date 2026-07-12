@@ -96,5 +96,7 @@ describe('buildProgram', () => {
     // gate commands now exist under both groups (each with its module's gate list)
     expect(cmNames).toContain('set-gate');
     expect(cmNames).toContain('resolve-gate');
+    expect(csmNames).toContain('add-gate');
+    expect(cmNames).toContain('add-gate');
   });
 });

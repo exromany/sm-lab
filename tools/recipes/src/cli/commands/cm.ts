@@ -17,6 +17,7 @@ import {
 } from '../../cm';
 import { resolveGate } from '../../context';
 import { setGateAddrs } from '../../recipes/set-gate';
+import { addGateAddrs } from '../../recipes/add-gate';
 
 const operatorId = {
   flag: '--operator-id <id>',
@@ -148,6 +149,50 @@ export const cmCommands: RecipeCommand[] = [
     report: (r: { treeRoot: Hex; treeCid: string }) => [
       `tree root: ${r.treeRoot}`,
       `tree CID:  ${r.treeCid}`,
+    ],
+  },
+  {
+    name: 'add-gate',
+    summary: "append addresses to the gate's current tree (reads current set from IPFS, re-pins)",
+    module: 'cm',
+    //   `cm add-gate pto 0xabc…` == `cm add-gate --selector pto --address 0xabc…`
+    options: [
+      {
+        flag: '--selector <name>',
+        key: 'selector',
+        coerce: identity,
+        positional: true,
+        description: `${cmSelectorHelp} (default: po)`,
+      },
+      {
+        flag: '--address <addr>',
+        key: 'addresses',
+        coerce: toAddresses,
+        repeatable: true,
+        required: true,
+        positional: true,
+      },
+      {
+        flag: '--from-cid <cid>',
+        key: 'fromCid',
+        coerce: identity,
+        description: "read the current tree from this CID instead of the gate's treeCid()",
+      },
+      {
+        flag: '--cid <cid>',
+        key: 'cid',
+        coerce: identity,
+        description: 'skip IPFS pinning of the merged tree by supplying its CID',
+      },
+    ],
+    run: (ctx, o: { addresses: Hex[]; selector?: string; fromCid?: string; cid?: string }) =>
+      addGateAddrs(ctx, o),
+    report: (r: { treeRoot: Hex; treeCid: string; added: Hex[]; changed: boolean }) => [
+      `tree root: ${r.treeRoot}`,
+      `tree CID:  ${r.treeCid}`,
+      r.changed
+        ? `added ${r.added.length} address(es): ${r.added.join(', ')}`
+        : 'no change — all already whitelisted',
     ],
   },
   {

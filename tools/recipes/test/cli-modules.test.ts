@@ -7,6 +7,7 @@ describe('cm/csm commands', () => {
   it('cm commands all force module cm', () => {
     expect(cmCommands.map((c) => c.name).toSorted()).toEqual(
       [
+        'add-gate',
         'create-curated-operator',
         'create-operator-group',
         'reset-operator-group',
@@ -20,7 +21,7 @@ describe('cm/csm commands', () => {
   });
   it('csm commands all force module csm', () => {
     expect(csmCommands.map((c) => c.name).toSorted()).toEqual(
-      ['resolve-gate', 'set-gate'].toSorted(),
+      ['add-gate', 'resolve-gate', 'set-gate'].toSorted(),
     );
     expect(csmCommands.every((c) => c.module === 'csm')).toBe(true);
   });
@@ -40,6 +41,12 @@ describe('cm/csm commands', () => {
   it('set-gate accepts <selector> then a variadic <address...> positionally', () => {
     const sg = csmCommands.find((c) => c.name === 'set-gate')!;
     const args = defineCommand(sg).registeredArguments;
+    expect(args.map((a) => a.name())).toEqual(['selector', 'address']);
+    expect(args.map((a) => a.variadic)).toEqual([false, true]);
+  });
+  it('add-gate accepts <selector> then a variadic <address...> positionally', () => {
+    const ag = csmCommands.find((c) => c.name === 'add-gate')!;
+    const args = defineCommand(ag).registeredArguments;
     expect(args.map((a) => a.name())).toEqual(['selector', 'address']);
     expect(args.map((a) => a.variadic)).toEqual([false, true]);
   });
