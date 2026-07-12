@@ -58,3 +58,23 @@ export function buildStrikesTree(
 export function buildRewardsTree(leaves: [bigint, bigint][]): StandardMerkleTree<[bigint, bigint]> {
   return StandardMerkleTree.of(leaves, [...REWARDS_LEAF_ENCODING]);
 }
+
+/**
+ * Recover the address list from an addresses-tree dump — the inverse of
+ * `buildAddressesTree(...).dump()`. Loads the OZ tree (which validates the dump shape) and reads
+ * each single-value `['address']` leaf. Pure, no I/O. Used by recipes' `add-gate` to merge new
+ * addresses into a gate's existing whitelist.
+ *
+ * Short-circuits on an empty dump: OZ's `StandardMerkleTree` rejects zero-leaf trees in both
+ * `.of()` and `.load()` (`isValidMerkleTree` requires a non-empty tree), so a gate whose whitelist
+ * is currently empty can't be round-tripped through `StandardMerkleTree.load` at all.
+ */
+export function addressesFromDump(dump: TreeDump): string[] {
+  if (dump.values.length === 0) return [];
+  const tree = StandardMerkleTree.load(dump);
+  const out: string[] = [];
+  for (const [, leaf] of tree.entries()) {
+    out.push((leaf as [string])[0]);
+  }
+  return out;
+}

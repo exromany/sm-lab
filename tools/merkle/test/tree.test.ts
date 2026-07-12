@@ -4,10 +4,12 @@ import {
   buildAddressesTree,
   buildStrikesTree,
   buildRewardsTree,
+  addressesFromDump,
   ADDRESSES_LEAF_ENCODING,
   STRIKES_LEAF_ENCODING,
   REWARDS_LEAF_ENCODING,
   type StrikesEntry,
+  type TreeDump,
 } from '../src/tree';
 import { makeRewards } from '../src/pipelines';
 
@@ -115,6 +117,30 @@ describe('buildRewardsTree', () => {
       [PAD_NO_ID, 0n],
     ]);
     expect(tree.dump().values).toHaveLength(2);
+  });
+});
+
+describe('addressesFromDump', () => {
+  const A = '0x1111111111111111111111111111111111111111';
+  const B = '0x2222222222222222222222222222222222222222';
+  const C = '0x3333333333333333333333333333333333333333';
+
+  it('round-trips the addresses of a buildAddressesTree dump', () => {
+    const dump = buildAddressesTree([A, B, C]).dump();
+    expect(addressesFromDump(dump).toSorted()).toEqual([A, B, C].toSorted());
+  });
+
+  it('returns an empty list for an empty dump', () => {
+    // Built by hand, not via `buildAddressesTree([]).dump()`: OZ's StandardMerkleTree rejects
+    // zero-leaf trees in both `.of()` and `.load()` (`isValidMerkleTree` requires `tree.length > 0`),
+    // so an addresses tree can never actually reach zero leaves through the normal build path.
+    const dump: TreeDump = {
+      format: 'standard-v1',
+      leafEncoding: ['address'],
+      tree: [],
+      values: [],
+    };
+    expect(addressesFromDump(dump)).toEqual([]);
   });
 });
 

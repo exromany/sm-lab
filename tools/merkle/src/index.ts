@@ -7,6 +7,7 @@ export {
   buildAddressesTree,
   buildStrikesTree,
   buildRewardsTree,
+  addressesFromDump,
   ADDRESSES_LEAF_ENCODING,
   STRIKES_LEAF_ENCODING,
   REWARDS_LEAF_ENCODING,
