@@ -28,7 +28,7 @@ export interface SetGateAddrsResult {
 }
 
 /** Default gate selector per module: cm → 'po' (CuratedGatePO); csm → 'ics' (IcsGate). */
-function defaultSelector(ctx: Ctx): string {
+export function defaultSelector(ctx: Ctx): string {
   return ctx.module === 'cm' ? 'po' : 'ics';
 }
 
