@@ -1,0 +1,47 @@
+{
+  "name": "@sm-lab/anvil",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Run anvil forking mainnet with the Lido SM upgrade baked in — one npx command",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exromany/sm-lab.git",
+    "directory": "apps/anvil"
+  },
+  "keywords": [
+    "ethereum",
+    "anvil",
+    "foundry",
+    "fork",
+    "mainnet",
+    "csm",
+    "lido",
+    "staking-module",
+    "testing"
+  ],
+  "bin": {
+    "sm-anvil": "dist/cli.mjs"
+  },
+  "files": [
+    "dist",
+    "state",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@sm-lab/config": "workspace:*",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "@types/node": "catalog:"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
