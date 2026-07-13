@@ -1,6 +1,6 @@
 {
   "name": "@sm-lab/anvil",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "Run anvil forking mainnet with the Lido SM upgrade baked in — one npx command",
   "license": "MIT",
