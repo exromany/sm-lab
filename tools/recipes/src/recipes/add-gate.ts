@@ -2,6 +2,7 @@ import {
   addressesFromDump,
   buildAddressesTree,
   fetchIpfsJson,
+  isLikelyCid,
   type TreeDump,
 } from '@sm-lab/merkle';
 import type { Hex } from '@sm-lab/receipts';
@@ -52,11 +53,15 @@ export async function addGateAddrs(
 
   const selector = opts.selector ?? defaultSelector(ctx);
   const curCid = opts.fromCid ?? (await getGateTree(ctx, { selector })).treeCid;
-  const current = curCid
-    ? addressesFromDump(
-        (await fetchIpfsJson(curCid, { skipHint: 'pass --from-cid <cid>' })) as TreeDump,
-      )
-    : [];
+  // An empty gate carries a placeholder treeCid (e.g. "someCid"), not a real pinned CID — there's
+  // nothing to preserve, so treat it as an empty set. Only a valid CID is fetched (and a valid CID
+  // that can't be served still throws, so we never silently drop a real allowlist).
+  const current =
+    curCid && isLikelyCid(curCid)
+      ? addressesFromDump(
+          (await fetchIpfsJson(curCid, { skipHint: 'pass --from-cid <cid>' })) as TreeDump,
+        )
+      : [];
 
   // Case-insensitive dedup keyed by lowercase, values kept checksummed.
   const union = new Map<string, Hex>();

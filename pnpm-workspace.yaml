@@ -17,6 +17,8 @@ catalog:
   dotenv: ^17.4.2
   # csm-specific
   '@openzeppelin/merkle-tree': ^1.0.8
+  # ipfs / cid (used by the ipfs mock's gateway + merkle's CID-validity check)
+  multiformats: ^14.0.3
   # bls / deposit-key generation
   '@chainsafe/bls': ^8.2.0
   '@chainsafe/bls-keygen': ^0.4.0

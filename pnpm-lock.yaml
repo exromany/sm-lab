@@ -36,6 +36,9 @@ catalogs:
     hono:
       specifier: ^4.7.0
       version: 4.12.27
+    multiformats:
+      specifier: ^14.0.3
+      version: 14.0.3
     tsdown:
       specifier: ^0.22.3
       version: 0.22.3
@@ -126,7 +129,7 @@ importers:
         specifier: 'catalog:'
         version: 4.12.27
       multiformats:
-        specifier: ^14.0.3
+        specifier: 'catalog:'
         version: 14.0.3
     devDependencies:
       '@sm-lab/config':
@@ -253,6 +256,9 @@ importers:
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
+      multiformats:
+        specifier: 'catalog:'
+        version: 14.0.3
     devDependencies:
       '@sm-lab/config':
         specifier: workspace:*

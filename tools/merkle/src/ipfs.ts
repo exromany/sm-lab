@@ -12,6 +12,8 @@
  *   explicit apiUrl → IPFS_API_URL env → Pinata (if PINATA_* set) → local @sm-lab/ipfs
  */
 
+import { CID } from 'multiformats/cid';
+
 /** Real Pinata host. Used when PINATA_* credentials are set but IPFS_API_URL is unset. */
 export const DEFAULT_IPFS_API_URL = 'https://api.pinata.cloud';
 
@@ -94,9 +96,32 @@ export async function fetchIpfsJson(cid: string, opts: FetchIpfsOptions = {}): P
     );
   }
   if (!res.ok) {
-    throw new Error(`@sm-lab/merkle: GET ${url} failed: ${res.status} ${res.statusText}`);
+    // Reached only for a syntactically valid CID the gateway couldn't serve (not pinned / gone).
+    // A placeholder / non-CID never gets here — callers gate on isLikelyCid first.
+    throw new Error(
+      `@sm-lab/merkle: GET ${url} failed: ${res.status} ${res.statusText}.\n` +
+        `The CID's content isn't served by this gateway (not pinned, or wrong gateway).\n` +
+        `  • point elsewhere: set IPFS_GATEWAY_URL=<url>\n` +
+        `  • ${hint}`,
+    );
   }
   return (await res.json()) as unknown;
+}
+
+/**
+ * True if `value` is a syntactically valid IPFS CID (v0 `Qm…` or v1 `bafy…`). Uses the same
+ * `CID.parse` check the `@sm-lab/ipfs` gateway applies before proxying, so a placeholder such as a
+ * gate's empty-tree sentinel (`"someCid"`) reads as `false`. Callers use this to distinguish a real
+ * pinned tree (fetch it) from an unset/placeholder one (treat as empty) before calling
+ * {@link fetchIpfsJson} — a real allowlist is always pinned under a valid CID.
+ */
+export function isLikelyCid(value: string): boolean {
+  try {
+    CID.parse(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Read pinning config from the environment (credentials + endpoint switch). */

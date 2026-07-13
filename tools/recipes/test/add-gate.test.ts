@@ -8,6 +8,10 @@ import { A, fakeCtx } from './helpers/book';
 const dumpResponse = (addrs: string[]): Response =>
   new Response(JSON.stringify(buildAddressesTree(addrs).dump()), { status: 200 });
 
+// Valid IPFS CIDs — a gate with a REAL allowlist carries one of these (isLikelyCid → true, fetched).
+const CUR_CID = 'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi';
+const FROM_CID = 'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG';
+
 const clearIpfsEnv = (): void => {
   delete process.env.IPFS_API_URL;
   delete process.env.IPFS_GATEWAY_URL;
@@ -31,14 +35,14 @@ describe('addGateAddrs', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const { client, byMethod } = makeFakeClient({
-      reads: { getRoleMember: ADMIN, treeCid: 'cur-cid' },
+      reads: { getRoleMember: ADMIN, treeCid: CUR_CID },
     });
     const ctx = fakeCtx('csm', client, { IcsGate: GATE });
 
     const res = await addGateAddrs(ctx, { addresses: [A(0x13)], cid: 'new-cid' });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0]![0]).toBe('http://127.0.0.1:5001/ipfs/cur-cid');
+    expect(fetchMock.mock.calls[0]![0]).toBe(`http://127.0.0.1:5001/ipfs/${CUR_CID}`);
 
     const union = [A(0x11), A(0x12), A(0x13)];
     expect(res.treeRoot).toBe(buildAddressesTree(union).root);
@@ -58,7 +62,7 @@ describe('addGateAddrs', () => {
     const current = [A(0x11), A(0x12)];
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(dumpResponse(current)));
     const { client, byMethod } = makeFakeClient({
-      reads: { getRoleMember: A(0xd0), treeCid: 'cur-cid' },
+      reads: { getRoleMember: A(0xd0), treeCid: CUR_CID },
     });
     const ctx = fakeCtx('csm', client, { IcsGate: A(0x0d) });
 
@@ -66,7 +70,7 @@ describe('addGateAddrs', () => {
 
     expect(res.changed).toBe(false);
     expect(res.added).toEqual([]);
-    expect(res.treeCid).toBe('cur-cid');
+    expect(res.treeCid).toBe(CUR_CID);
     expect(res.treeRoot).toBe(buildAddressesTree(current).root);
     expect(byMethod('writeContract')).toHaveLength(0); // no grantRole, no setTreeParams
   });
@@ -96,11 +100,11 @@ describe('addGateAddrs', () => {
     const { client, byMethod } = makeFakeClient({ reads: { getRoleMember: A(0xd0) } });
     const ctx = fakeCtx('csm', client, { IcsGate: A(0x0d) });
 
-    await addGateAddrs(ctx, { addresses: [A(0x12)], fromCid: 'explicit-cid', cid: 'new-cid' });
+    await addGateAddrs(ctx, { addresses: [A(0x12)], fromCid: FROM_CID, cid: 'new-cid' });
 
     const readNames = (byMethod('readContract') as any[]).map((r) => r.functionName);
     expect(readNames).not.toContain('treeCid');
-    expect(fetchMock.mock.calls[0]![0]).toBe('http://127.0.0.1:5001/ipfs/explicit-cid');
+    expect(fetchMock.mock.calls[0]![0]).toBe(`http://127.0.0.1:5001/ipfs/${FROM_CID}`);
   });
 
   it('rejects an empty addresses list with an actionable error (no reads, no fetch)', async () => {
@@ -114,5 +118,25 @@ describe('addGateAddrs', () => {
     await expect(addGateAddrs(ctx, { addresses: [] })).rejects.toThrow(/at least one address/);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(byMethod('readContract')).toHaveLength(0);
+  });
+
+  it('treats an empty-gate placeholder treeCid (non-CID) as empty — no fetch; installs the new set', async () => {
+    // A gate with no allowlist carries a placeholder treeCid ("someCid"), not a real pinned CID.
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, byMethod } = makeFakeClient({
+      reads: { getRoleMember: A(0xd0), treeCid: 'someCid' },
+    });
+    const ctx = fakeCtx('csm', client, { IcsGate: A(0x0d) });
+
+    const res = await addGateAddrs(ctx, { addresses: [A(0x11)], cid: 'new-cid' });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(res.changed).toBe(true);
+    expect(res.added).toEqual([getAddress(A(0x11))]);
+    const set = (byMethod('writeContract') as any[]).find(
+      (w) => w.functionName === 'setTreeParams',
+    );
+    expect(set.args).toEqual([buildAddressesTree([A(0x11)]).root, 'new-cid']);
   });
 });

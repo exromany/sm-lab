@@ -44,7 +44,7 @@
     "@hono/node-server": "catalog:",
     "commander": "catalog:",
     "hono": "catalog:",
-    "multiformats": "^14.0.3"
+    "multiformats": "catalog:"
   },
   "devDependencies": {
     "@sm-lab/core": "workspace:*",

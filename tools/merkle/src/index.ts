@@ -28,6 +28,7 @@ export type { TreeConfig } from './io';
 export {
   pinJsonToIpfs,
   fetchIpfsJson,
+  isLikelyCid,
   hasPinataCredentials,
   hasCustomIpfsEndpoint,
   shouldAttemptPin,

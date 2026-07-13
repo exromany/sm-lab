@@ -40,7 +40,8 @@
   "dependencies": {
     "@openzeppelin/merkle-tree": "catalog:",
     "commander": "catalog:",
-    "dotenv": "catalog:"
+    "dotenv": "catalog:",
+    "multiformats": "catalog:"
   },
   "devDependencies": {
     "@sm-lab/core": "workspace:*",

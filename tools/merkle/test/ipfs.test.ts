@@ -7,6 +7,7 @@ import {
   assertPinnable,
   pinJsonToIpfs,
   fetchIpfsJson,
+  isLikelyCid,
   resolveIpfsGatewayUrl,
   DEFAULT_IPFS_API_URL,
   DEFAULT_IPFS_GATEWAY_URL,
@@ -247,5 +248,28 @@ describe('fetchIpfsJson', () => {
       vi.fn().mockResolvedValue(new Response('nope', { status: 404, statusText: 'Not Found' })),
     );
     await expect(fetchIpfsJson('bafyCID', { gatewayUrl: 'http://gw' })).rejects.toThrow(/404/);
+  });
+
+  it('weaves the caller skipHint into the non-OK error (actionable, like the unreachable path)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('nope', { status: 404, statusText: 'Not Found' })),
+    );
+    await expect(
+      fetchIpfsJson('bafyCID', { gatewayUrl: 'http://gw', skipHint: 'pass --from-cid <cid>' }),
+    ).rejects.toThrow(/404[\s\S]*--from-cid/);
+  });
+});
+
+describe('isLikelyCid', () => {
+  it('accepts real CIDs (v0 Qm… and v1 base32)', () => {
+    expect(isLikelyCid('QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG')).toBe(true);
+    expect(isLikelyCid('bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi')).toBe(true);
+  });
+
+  it('rejects the empty-gate placeholder and other non-CID strings', () => {
+    expect(isLikelyCid('someCid')).toBe(false);
+    expect(isLikelyCid('')).toBe(false);
+    expect(isLikelyCid('not a cid')).toBe(false);
   });
 });
