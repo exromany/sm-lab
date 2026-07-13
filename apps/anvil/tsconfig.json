@@ -1,0 +1,5 @@
+{
+  "comment": "Relative extends, not the @sm-lab/config subpath — tsdown's Rust tsconfig loader doesn't follow package-exports extends (tsc does, but we keep one form that works for both). tsdown does the emit; tsc here is typecheck-only (--noEmit), so no outDir/rootDir needed.",
+  "extends": "../../packages/config/tsconfig.lib.json",
+  "include": ["src/**/*"]
+}
