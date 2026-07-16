@@ -19,6 +19,13 @@
     "testing"
   ],
   "types": "./dist/index.d.mts",
+  "typesVersions": {
+    "*": {
+      "cm": [
+        "./dist/cm.d.mts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
