@@ -1,6 +1,6 @@
 {
   "name": "@sm-lab/keys",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "Real BLS12-381 validator deposit-data generator for Lido SM (mainnet/hoodi)",
   "license": "MIT",
