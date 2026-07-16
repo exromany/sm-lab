@@ -43,12 +43,12 @@
     "@chainsafe/bls-keygen": "catalog:",
     "@chainsafe/ssz": "catalog:",
     "@sm-lab/receipts": "workspace:*",
-    "@scure/bip39": "catalog:",
     "commander": "catalog:"
   },
   "devDependencies": {
     "@sm-lab/core": "workspace:*",
     "@sm-lab/config": "workspace:*",
+    "@scure/bip39": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",

@@ -216,9 +216,6 @@ importers:
       '@chainsafe/ssz':
         specifier: 'catalog:'
         version: 1.6.0
-      '@scure/bip39':
-        specifier: 'catalog:'
-        version: 2.2.0
       '@sm-lab/receipts':
         specifier: workspace:*
         version: link:../../fixtures/receipts
@@ -226,6 +223,9 @@ importers:
         specifier: 'catalog:'
         version: 15.0.0
     devDependencies:
+      '@scure/bip39':
+        specifier: 'catalog:'
+        version: 2.2.0
       '@sm-lab/config':
         specifier: workspace:*
         version: link:../../packages/config
