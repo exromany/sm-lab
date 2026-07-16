@@ -86,24 +86,6 @@ importers:
         specifier: ^4.1.9
         version: 4.1.9(@types/node@26.1.0)(vite@7.3.5(@types/node@26.1.0)(jiti@2.7.0)(tsx@4.22.4))
 
-  apps/anvil:
-    devDependencies:
-      '@sm-lab/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.1.0
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.22.3(tsx@4.22.4)(typescript@6.0.3)
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.9(@types/node@26.1.0)(vite@7.3.5(@types/node@26.1.0)(jiti@2.7.0)(tsx@4.22.4))
-
   apps/cl:
     dependencies:
       '@hono/node-server':
