@@ -8,8 +8,9 @@ FROM base AS build
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @sm-lab/ipfs build
-# `pnpm deploy` produces a self-contained dir (package.json + dist + pruned prod node_modules)
-RUN pnpm --filter @sm-lab/ipfs deploy --prod /app
+# `pnpm deploy` produces a self-contained dir (package.json + dist + pruned prod node_modules).
+# --legacy: no workspace packages in prod deps (core/config are bundled), so injected deploy is unneeded.
+RUN pnpm --filter @sm-lab/ipfs deploy --legacy --prod /app
 
 FROM node:24-alpine
 WORKDIR /app
