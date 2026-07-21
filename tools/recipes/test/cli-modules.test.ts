@@ -29,7 +29,7 @@ describe('cm/csm commands', () => {
     const g = cmCommands.find((c) => c.name === 'create-operator-group')!;
     const pair = g.options.find((o) => o.key === 'pairs')!;
     expect(pair.repeatable).toBe(true);
-    expect(pair.coerce(['0:5000', '1:5000'])).toEqual([
+    expect(pair.coerce!(['0:5000', '1:5000'])).toEqual([
       [0n, 5000n],
       [1n, 5000n],
     ]);
