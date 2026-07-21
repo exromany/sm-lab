@@ -70,6 +70,17 @@ must come last) into the positional form, so the selector leads and the addresse
 sm-recipes csm set-gate idvtc 0xabc... 0xdef...   # == --selector idvtc --address 0xabc... --address 0xdef...
 ```
 
+`create-operator` opts its `<selector>` and `<keys>` (both optional) into the positional form,
+order-free (a digit token fills `--keys`, `ics`/`idvtc`/`0x…` fills `--selector`, either order):
+
+```bash
+sm-recipes csm create-operator                    # PermissionlessGate, 1 key
+sm-recipes csm create-operator 10                 # PermissionlessGate, 10 keys
+sm-recipes csm create-operator idvtc              # IdvtcGate (whitelists + proves), 1 key
+sm-recipes csm create-operator idvtc 10           # order-free: `10 idvtc` works too
+sm-recipes csm create-operator --address 0xabc... --manager 0xdef... --extended-manager-permissions
+```
+
 ## The `actAs` model
 
 Every privileged write runs through `actAs(ctx, who, fn)` — it funds `who`
