@@ -49,6 +49,7 @@ describe('addGateAddrs', () => {
     expect(res.treeCid).toBe('new-cid');
     expect(res.changed).toBe(true);
     expect(res.added).toEqual([getAddress(A(0x13))]);
+    expect(res.addresses).toEqual(union.map((a) => getAddress(a)).toSorted());
 
     const set = (byMethod('writeContract') as any[]).find(
       (w) => w.functionName === 'setTreeParams',
@@ -72,6 +73,7 @@ describe('addGateAddrs', () => {
     expect(res.added).toEqual([]);
     expect(res.treeCid).toBe(CUR_CID);
     expect(res.treeRoot).toBe(buildAddressesTree(current).root);
+    expect(res.addresses).toEqual(current.map((a) => getAddress(a)).toSorted());
     expect(byMethod('writeContract')).toHaveLength(0); // no grantRole, no setTreeParams
   });
 
@@ -88,6 +90,7 @@ describe('addGateAddrs', () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(res.changed).toBe(true);
     expect(res.added).toEqual([getAddress(A(0x11))]);
+    expect(res.addresses).toEqual([getAddress(A(0x11))]);
     const set = (byMethod('writeContract') as any[]).find(
       (w) => w.functionName === 'setTreeParams',
     );
