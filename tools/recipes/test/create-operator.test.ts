@@ -119,6 +119,11 @@ describe('createCsmOperator — permissionless (no selector)', () => {
     const csmCtx = fakeCtx('csm', makeFakeClient().client);
     await expect(createCsmOperator(csmCtx, { keysCount: 0 })).rejects.toThrow(/keysCount/);
   });
+
+  it('guards: a fractional keysCount is rejected', async () => {
+    const csmCtx = fakeCtx('csm', makeFakeClient().client);
+    await expect(createCsmOperator(csmCtx, { keysCount: 1.5 })).rejects.toThrow(/keysCount/);
+  });
 });
 
 describe('createCsmOperator — gated (selector)', () => {

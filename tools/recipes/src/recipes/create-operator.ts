@@ -2,7 +2,7 @@ import { buildAddressesTree } from '@sm-lab/merkle';
 import { permissionlessGateAbi, vettedGateAbi } from '@sm-lab/receipts';
 import type { CsmAddressBook, Hex } from '@sm-lab/receipts';
 import { getAddress, parseEther, zeroAddress } from 'viem';
-import { actAs, roleMember } from '../act-as';
+import { ACT_AS_FUNDING, actAs, roleMember } from '../act-as';
 import { contract, resolveGate, type Ctx } from '../context';
 import { deriveAddress } from '../derive';
 import { randomKeys } from '../keys';
@@ -42,7 +42,7 @@ export interface CreateCsmOperatorResult {
   publicKeys: Hex[];
   /** Wei sent as the creation bond. */
   bond: bigint;
-  /** Gated path only — the re-pinned allowlist CID. */
+  /** Gated path only — the gate's allowlist CID (re-pinned when the address was newly added). */
   treeCid?: string;
 }
 
@@ -61,9 +61,9 @@ export async function createCsmOperator(
     throw new Error('@sm-lab/recipes: createCsmOperator requires ctx.module === "csm"');
   }
   const keysCount = opts.keysCount ?? 1;
-  if (keysCount < 1) {
+  if (keysCount < 1 || !Number.isInteger(keysCount)) {
     throw new Error(
-      '@sm-lab/recipes: createCsmOperator needs keysCount ≥ 1 (CSM requires a key at creation)',
+      '@sm-lab/recipes: createCsmOperator needs keysCount to be a positive integer ≥ 1 (CSM requires a key at creation)',
     );
   }
   const seed = opts.seed ?? randomSeed();
@@ -130,7 +130,7 @@ export async function createCsmOperator(
 
   const noId = await actAs(ctx, address, async (from) => {
     // actAs funds 100 ETH on entry — enough for most bonds; top up when the bond outgrows it.
-    if (bond + parseEther('1') > parseEther('100')) {
+    if (bond + parseEther('1') > ACT_AS_FUNDING) {
       await ctx.client.setBalance({ address: from, value: bond + parseEther('10') });
     }
     // Two full branches (not a shared ternary `request`) — the vetted/permissionless

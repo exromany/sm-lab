@@ -153,10 +153,12 @@ export function defineCommand(desc: RecipeCommand, connectImpl: typeof connect =
   // so surface the accepted order explicitly in every command's help.
   if (positionals.length > 0) {
     const order = positionals.map((o) => flagName(o.flag) + (o.repeatable ? '...' : '')).join(', ');
-    cmd.addHelpText(
-      'after',
-      `\nRequired options may be passed positionally in this order: ${order}`,
-    );
+    // `match`-based positionals are order-free (and, per the redistribution rule, effectively
+    // optional) — the "Required … in this order" wording would misstate both properties.
+    const helpLine = positionals.some((o) => o.match)
+      ? `\nOptions may be passed positionally (any order): ${order}`
+      : `\nRequired options may be passed positionally in this order: ${order}`;
+    cmd.addHelpText('after', helpLine);
   }
 
   // commander calls the action with (...positionalValues, localOpts, command); we ignore the
