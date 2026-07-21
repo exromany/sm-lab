@@ -24,6 +24,13 @@ catalog:
   '@chainsafe/bls-keygen': ^0.4.0
   '@chainsafe/ssz': ^1.3.0
   '@scure/bip39': ^2.0.0
+  # survey-api DB tooling (@sm-lab/survey)
+  prisma: ~7.8.0
+  '@prisma/client': ~7.8.0
+  '@prisma/adapter-pg': ~7.8.0
+  pg: ^8.13.0
+  '@types/pg': ^8.11.0
+  vitest-mock-extended: ^3.1.0
   # chain — held on 2.53.x: viem 2.54 added `token` actions whose internal types
   # (viem/_types/actions/token) break recipes' declaration emit (TS2883 — the
   # inferred client type of makeClient becomes non-portable). Revisit when viem
@@ -55,7 +62,9 @@ overrides:
 # Dependency build-script allowlist (pnpm 11 replaced onlyBuiltDependencies with
 # allowBuilds; unreviewed postinstall scripts fail the install by default).
 allowBuilds:
+  '@prisma/engines': true # postinstall fetches the query-engine binary — required by prisma generate
   esbuild: true # platform-binary postinstall — required by vitest/vite
+  prisma: true # postinstall fetches the query-engine binary — required by prisma generate
 
 minimumReleaseAgeExclude:
   - '@types/node@26.1.0'

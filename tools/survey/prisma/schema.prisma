@@ -1,0 +1,400 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "./../src/generated/prisma"
+  runtime             = "nodejs"
+  moduleFormat        = "esm"
+  importFileExtension = ""
+}
+
+datasource db {
+  provider     = "postgresql"
+  relationMode = "prisma"
+}
+
+model Contacts {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  nodeOperatorId String   @unique @map("node_operator_id") @db.VarChar(64)
+
+  name       String  @db.VarChar(255)
+  discord    String? @db.VarChar(255)
+  telegram   String? @db.VarChar(255)
+  twitter    String? @db.VarChar(255)
+  allowShare Boolean @default(false) @map("allow_share")
+
+  @@map("contacts")
+}
+
+model Experience {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  nodeOperatorId String   @unique @map("node_operator_id") @db.VarChar(64)
+
+  professional         Boolean
+  validatedBefore      Boolean @map("validated_before")
+  fromCurated          Boolean @map("from_curated")
+  fromSDVT             Boolean @map("from_sdvt")
+  nameInModules        String? @map("name_in_modules") @db.VarChar(255)
+  otherValidatorsCount Int     @map("other_validators_count")
+
+  @@map("experience")
+}
+
+model HowDidYouLearnCsm {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  nodeOperatorId String   @unique @map("node_operator_id") @db.VarChar(64)
+
+  sourceOne String  @map("source_one") @db.VarChar(255)
+  sourceTwo String? @map("source_two") @db.VarChar(255)
+  other     String? @db.VarChar(255)
+
+  @@map("how_did_you_learn_csm")
+}
+
+model Setup {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  nodeOperatorId String   @map("node_operator_id") @db.VarChar(64)
+
+  index               Int
+  keysCount           Int      @default(0) @map("keys_count")
+  dvt                 String   @db.VarChar(255)
+  installationTool    String   @map("installation_tool") @db.VarChar(255)
+  elClient            String   @map("el_client") @db.VarChar(255)
+  clClient            String   @map("cl_client") @db.VarChar(255)
+  clinetsServerType   String   @map("clinets_server_type") @db.VarChar(255)
+  clientsCountry      String   @map("clients_country") @db.VarChar(255)
+  validatorClient     String?  @map("validator_client") @db.VarChar(255)
+  validatorServerType String?  @map("validator_server_type") @db.VarChar(255)
+  validatorCountry    String?  @map("validator_country") @db.VarChar(255)
+  validatorSameAsCl   Boolean? @default(true) @map("validator_same_as_cl")
+  remoteSigner        String   @map("remote_signer") @db.VarChar(255)
+  mevMinBid           String?  @map("mev_min_bid") @db.VarChar(255)
+
+  @@unique([nodeOperatorId, index])
+  @@map("setup")
+}
+
+model SetupSnapshot {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  nodeOperatorId String   @map("node_operator_id") @db.VarChar(64)
+
+  setups Json
+
+  @@index([nodeOperatorId, createdAt])
+  @@map("setup_snapshot")
+}
+
+model Delegate {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  nodeOperatorId String   @map("node_operator_id") @db.VarChar(64)
+  address        String   @db.VarChar(42)
+
+  @@unique([nodeOperatorId, address])
+  @@index([nodeOperatorId])
+  @@index([address])
+  @@map("delegate")
+}
+
+enum IcsFormStatus {
+  REVIEW   @map("review")
+  APPROVED @map("approved")
+  REJECTED @map("rejected")
+}
+
+model IcsForm {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  mainAddress String  @map("main_address") @db.VarChar(42)
+  twitterLink String? @map("twitter_link") @db.VarChar(255)
+  discordLink String? @map("discord_link") @db.VarChar(255)
+
+  additionalAddress1   String? @map("additional_address_1") @db.VarChar(42)
+  additionalSignature1 String? @map("additional_signature_1") @db.Text
+
+  additionalAddress2   String? @map("additional_address_2") @db.VarChar(42)
+  additionalSignature2 String? @map("additional_signature_2") @db.Text
+
+  additionalAddress3   String? @map("additional_address_3") @db.VarChar(42)
+  additionalSignature3 String? @map("additional_signature_3") @db.Text
+
+  additionalAddress4   String? @map("additional_address_4") @db.VarChar(42)
+  additionalSignature4 String? @map("additional_signature_4") @db.Text
+
+  additionalAddress5   String? @map("additional_address_5") @db.VarChar(42)
+  additionalSignature5 String? @map("additional_signature_5") @db.Text
+
+  outdated Boolean @default(false) @map("outdated")
+  issued   Boolean @default(false)
+
+  review IcsFormReview?
+
+  @@index([mainAddress])
+  @@map("ics_forms")
+}
+
+model IcsFormReview {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  submissionId Int     @unique @map("submission_id")
+  submission   IcsForm @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  lastReviewerId Int?       @map("last_reviewer_id")
+  lastReviewer   AdminUser? @relation("AdminUserReviews", fields: [lastReviewerId], references: [id])
+
+  status  IcsFormStatus @default(REVIEW)
+  comment String?       @db.Text
+
+  mainAddressComment String? @map("main_address_comment") @db.Text
+  twitterLinkComment String? @map("twitter_link_comment") @db.Text
+  discordLinkComment String? @map("discord_link_comment") @db.Text
+
+  additionalComment1 String? @map("additional_comment_1") @db.Text
+  additionalComment2 String? @map("additional_comment_2") @db.Text
+  additionalComment3 String? @map("additional_comment_3") @db.Text
+  additionalComment4 String? @map("additional_comment_4") @db.Text
+  additionalComment5 String? @map("additional_comment_5") @db.Text
+
+  // Proof-of-Experience scores
+  ethStakerPoints   Int? @map("eth_staker_points")
+  stakeCatPoints    Int? @map("stake_cat_points")
+  obolTechnePoints  Int? @map("obol_techne_points")
+  ssvVerifiedPoints Int? @map("ssv_verified_points")
+  csmTestnetPoints  Int? @map("csm_testnet_points")
+  csmMainnetPoints  Int? @map("csm_mainnet_points")
+  sdvtTestnetPoints Int? @map("sdvt_testnet_points")
+  sdvtMainnetPoints Int? @map("sdvt_mainnet_points")
+
+  // Proof-of-Humanity scores
+  humanPassportPoints Int? @map("human_passport_points")
+  circlesPoints       Int? @map("circles_points")
+  discordPoints       Int? @map("discord_points")
+  twitterPoints       Int? @map("twitter_points")
+  ssvHumanityPoints   Int? @map("ssv_humanity_points")
+
+  // Proof-of-Engagement scores
+  aragonVotesPoints   Int? @map("aragon_votes_points")
+  snapshotVotesPoints Int? @map("snapshot_votes_points")
+  lidoGalxePoints     Int? @map("lido_galxe_points")
+  highSignalPoints    Int? @map("high_signal_points")
+  gitPoapsPoints      Int? @map("git_poaps_points")
+
+  @@index([status])
+  @@index([lastReviewerId])
+  @@map("ics_form_reviews")
+}
+
+enum IdvtcFormStatus {
+  REVIEW   @map("review")
+  APPROVED @map("approved")
+  REJECTED @map("rejected")
+}
+
+model IdvtcForm {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  mainAddress      String  @map("main_address") @db.VarChar(42)
+  discordLink      String  @map("discord_link") @db.VarChar(255)
+  telegramUsername String? @map("telegram_username") @db.VarChar(255)
+
+  clusterAddress1          String  @map("cluster_address_1") @db.VarChar(42)
+  clusterSignature1        String  @map("cluster_signature_1") @db.Text
+  clusterDiscordHandle1    String? @map("cluster_discord_handle_1") @db.VarChar(255)
+  clusterTelegramUsername1 String? @map("cluster_telegram_username_1") @db.VarChar(255)
+
+  clusterAddress2          String  @map("cluster_address_2") @db.VarChar(42)
+  clusterSignature2        String  @map("cluster_signature_2") @db.Text
+  clusterDiscordHandle2    String? @map("cluster_discord_handle_2") @db.VarChar(255)
+  clusterTelegramUsername2 String? @map("cluster_telegram_username_2") @db.VarChar(255)
+
+  clusterAddress3          String  @map("cluster_address_3") @db.VarChar(42)
+  clusterSignature3        String  @map("cluster_signature_3") @db.Text
+  clusterDiscordHandle3    String? @map("cluster_discord_handle_3") @db.VarChar(255)
+  clusterTelegramUsername3 String? @map("cluster_telegram_username_3") @db.VarChar(255)
+
+  clusterAddress4          String  @map("cluster_address_4") @db.VarChar(42)
+  clusterSignature4        String  @map("cluster_signature_4") @db.Text
+  clusterDiscordHandle4    String? @map("cluster_discord_handle_4") @db.VarChar(255)
+  clusterTelegramUsername4 String? @map("cluster_telegram_username_4") @db.VarChar(255)
+
+  outdated Boolean @default(false) @map("outdated")
+  issued   Boolean @default(false)
+
+  boundToNodeOperatorId String? @map("bound_to_node_operator_id") @db.VarChar(64)
+
+  review IdvtcFormReview?
+
+  @@index([mainAddress])
+  @@map("idvtc_forms")
+}
+
+model IdvtcFormReview {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  submissionId Int       @unique @map("submission_id")
+  submission   IdvtcForm @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  lastReviewerId Int?       @map("last_reviewer_id")
+  lastReviewer   AdminUser? @relation("AdminUserIdvtcReviews", fields: [lastReviewerId], references: [id])
+
+  status  IdvtcFormStatus @default(REVIEW)
+  comment String?         @db.Text
+
+  mainAddressComment      String? @map("main_address_comment") @db.Text
+  discordLinkComment      String? @map("discord_link_comment") @db.Text
+  telegramUsernameComment String? @map("telegram_username_comment") @db.Text
+
+  clusterMemberComment1 String? @map("cluster_member_comment_1") @db.Text
+  clusterMemberComment2 String? @map("cluster_member_comment_2") @db.Text
+  clusterMemberComment3 String? @map("cluster_member_comment_3") @db.Text
+  clusterMemberComment4 String? @map("cluster_member_comment_4") @db.Text
+
+  @@index([status])
+  @@index([lastReviewerId])
+  @@map("idvtc_form_reviews")
+}
+
+enum AdminRole {
+  VIEWER     @map("viewer")
+  REVIEWER   @map("reviewer")
+  SUPERVISOR @map("supervisor")
+}
+
+model AdminUser {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  address String    @unique @db.VarChar(42)
+  name    String?   @db.VarChar(255)
+  role    AdminRole @default(REVIEWER)
+  active  Boolean   @default(true)
+
+  reviewedForms            IcsFormReview[]   @relation("AdminUserReviews")
+  reviewedIdvtcForms       IdvtcFormReview[] @relation("AdminUserIdvtcReviews")
+  reviewedRotationRequests RotationRequest[] @relation("AdminUserRotationReviews")
+
+  @@map("admin_users")
+}
+
+model OperatorFile {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  nodeOperatorId String   @map("node_operator_id") @db.VarChar(64)
+
+  name    String  @db.VarChar(255)
+  content Json
+  active  Boolean @default(true)
+
+  @@index([nodeOperatorId])
+  @@map("operator_files")
+}
+
+model ActiveMembers {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  nodeOperatorId String   @unique @map("node_operator_id") @db.VarChar(64)
+
+  member1Address          String  @map("member_1_address") @db.VarChar(42)
+  member1DiscordHandle    String? @map("member_1_discord_handle") @db.VarChar(255)
+  member1TelegramUsername String? @map("member_1_telegram_username") @db.VarChar(255)
+
+  member2Address          String  @map("member_2_address") @db.VarChar(42)
+  member2DiscordHandle    String? @map("member_2_discord_handle") @db.VarChar(255)
+  member2TelegramUsername String? @map("member_2_telegram_username") @db.VarChar(255)
+
+  member3Address          String  @map("member_3_address") @db.VarChar(42)
+  member3DiscordHandle    String? @map("member_3_discord_handle") @db.VarChar(255)
+  member3TelegramUsername String? @map("member_3_telegram_username") @db.VarChar(255)
+
+  member4Address          String  @map("member_4_address") @db.VarChar(42)
+  member4DiscordHandle    String? @map("member_4_discord_handle") @db.VarChar(255)
+  member4TelegramUsername String? @map("member_4_telegram_username") @db.VarChar(255)
+
+  @@index([member1Address])
+  @@index([member2Address])
+  @@index([member3Address])
+  @@index([member4Address])
+  @@map("active_members")
+}
+
+enum RotationRequestStatus {
+  REVIEW   @map("review")
+  APPROVED @map("approved")
+  REJECTED @map("rejected")
+}
+
+/// Submission + review fields merged into one table (deviates from IcsForm/IdvtcForm split).
+/// See docs/superpowers/specs/2026-06-05-members-rework-design.md (Schema decisions).
+/// Enforced in migration SQL (not expressible in PSL):
+///   - partial unique (node_operator_id) WHERE superseded = false AND status = 'review'
+///   - CHECK ((slot_N_new_address IS NULL) = (slot_N_signature IS NULL)) for N=1..4
+/// Do not use `prisma db push`; migrations replay the raw SQL.
+model RotationRequest {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  nodeOperatorId   String @map("node_operator_id") @db.VarChar(64)
+  submitterAddress String @map("submitter_address") @db.VarChar(42)
+
+  slot1NewAddress       String? @map("slot_1_new_address") @db.VarChar(42)
+  slot1Signature        String? @map("slot_1_signature") @db.Text
+  slot1DiscordHandle    String? @map("slot_1_discord_handle") @db.VarChar(255)
+  slot1TelegramUsername String? @map("slot_1_telegram_username") @db.VarChar(255)
+
+  slot2NewAddress       String? @map("slot_2_new_address") @db.VarChar(42)
+  slot2Signature        String? @map("slot_2_signature") @db.Text
+  slot2DiscordHandle    String? @map("slot_2_discord_handle") @db.VarChar(255)
+  slot2TelegramUsername String? @map("slot_2_telegram_username") @db.VarChar(255)
+
+  slot3NewAddress       String? @map("slot_3_new_address") @db.VarChar(42)
+  slot3Signature        String? @map("slot_3_signature") @db.Text
+  slot3DiscordHandle    String? @map("slot_3_discord_handle") @db.VarChar(255)
+  slot3TelegramUsername String? @map("slot_3_telegram_username") @db.VarChar(255)
+
+  slot4NewAddress       String? @map("slot_4_new_address") @db.VarChar(42)
+  slot4Signature        String? @map("slot_4_signature") @db.Text
+  slot4DiscordHandle    String? @map("slot_4_discord_handle") @db.VarChar(255)
+  slot4TelegramUsername String? @map("slot_4_telegram_username") @db.VarChar(255)
+
+  status     RotationRequestStatus @default(REVIEW)
+  superseded Boolean               @default(false)
+
+  reviewedAt     DateTime?  @map("reviewed_at") @db.Timestamptz(6)
+  lastReviewerId Int?       @map("last_reviewer_id")
+  lastReviewer   AdminUser? @relation("AdminUserRotationReviews", fields: [lastReviewerId], references: [id])
+
+  comment      String? @db.Text
+  slot1Comment String? @map("slot_1_comment") @db.Text
+  slot2Comment String? @map("slot_2_comment") @db.Text
+  slot3Comment String? @map("slot_3_comment") @db.Text
+  slot4Comment String? @map("slot_4_comment") @db.Text
+
+  @@index([nodeOperatorId])
+  @@index([status])
+  @@index([lastReviewerId])
+  @@index([slot1NewAddress])
+  @@index([slot2NewAddress])
+  @@index([slot3NewAddress])
+  @@index([slot4NewAddress])
+  @@map("rotation_requests")
+}
