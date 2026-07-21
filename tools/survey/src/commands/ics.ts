@@ -1,5 +1,5 @@
 import type { SeedCommand } from '../define';
-import { toAddress, toStatus } from '../define';
+import { toAddress, toStatus, toInt } from '../define';
 import { placeholderSignature, resolveAddress } from '../gen';
 import type { PrismaClient } from '../db';
 import { IcsFormStatus } from '../db';
@@ -94,7 +94,7 @@ export const icsCommands: SeedCommand[] = [
       const reviewData: Record<string, unknown> = {
         status,
         ...mapFields(args.comment as Record<string, string>, ICS_COMMENTS, (s) => s || null),
-        ...mapFields(args.points as Record<string, string>, ICS_POINTS, (s) => Number(s)),
+        ...mapFields(args.points as Record<string, string>, ICS_POINTS, (s) => toInt(s)),
       };
       const formData: Record<string, unknown> = {
         mainAddress,
@@ -158,7 +158,7 @@ export const icsCommands: SeedCommand[] = [
         ...(args.status ? { status: args.status } : {}),
         ...(lastReviewerId !== undefined ? { lastReviewerId } : {}),
         ...mapFields(args.comment as Record<string, string>, ICS_COMMENTS, (s) => s || null),
-        ...mapFields(args.points as Record<string, string>, ICS_POINTS, (s) => Number(s)),
+        ...mapFields(args.points as Record<string, string>, ICS_POINTS, (s) => toInt(s)),
       };
       const updated = await prisma.icsFormReview.update({
         where: { id: form.review.id },

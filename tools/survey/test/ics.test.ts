@@ -68,6 +68,26 @@ describe('ics review', () => {
     });
   });
 
+  it('rejects a non-integer --points value', async () => {
+    const prisma = mockDeep<PrismaClient>();
+    prisma.icsForm.findFirst.mockResolvedValue({ id: 5, review: { id: 9 } } as any);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await run(prisma, [
+      'ics',
+      'review',
+      '--main-address',
+      A2,
+      '--status',
+      'rejected',
+      '--points',
+      'ethStaker=abc',
+    ]);
+    expect(process.exitCode).toBe(1);
+    expect(prisma.icsFormReview.update).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
+    process.exitCode = 0;
+  });
+
   it('errors when no active form exists', async () => {
     const prisma = mockDeep<PrismaClient>();
     prisma.icsForm.findFirst.mockResolvedValue(null as any);
