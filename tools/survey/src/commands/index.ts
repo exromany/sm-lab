@@ -2,7 +2,7 @@ import type { SeedCommand } from '../define';
 import { filesCommands } from './files';
 import { icsCommands } from './ics';
 import { idvtcCommands } from './idvtc';
-import { resetCommand } from './maintenance';
+import { resetCommand, scenarioCommand } from './maintenance';
 import { membersCommands } from './members';
 import { rotationCommands } from './rotation';
 
@@ -14,4 +14,5 @@ export const ALL_COMMANDS: SeedCommand[] = [
   ...rotationCommands,
   ...filesCommands,
   resetCommand,
+  scenarioCommand,
 ];

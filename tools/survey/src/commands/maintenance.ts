@@ -1,7 +1,11 @@
 import type { PrismaClient } from '../db';
 import type { SeedCommand } from '../define';
 import { toAddress } from '../define';
-import { assertAddress } from '../gen';
+import { assertAddress, resolveAddress } from '../gen';
+import { icsCommands } from './ics';
+import { idvtcCommands } from './idvtc';
+import { membersCommands } from './members';
+import { rotationCommands } from './rotation';
 
 /** Delete every operator-keyed row for an operator, plus IDVTC forms bound to it. */
 export async function wipeOperator(
@@ -63,5 +67,58 @@ export const resetCommand: SeedCommand = {
         ? {}
         : { note: 'ICS/IDVTC forms are address-keyed — pass --main-address to clear them' }),
     };
+  },
+};
+
+function runner(commands: SeedCommand[], name: string) {
+  const c = commands.find((x) => x.name === name);
+  if (!c) throw new Error(`missing command ${name}`);
+  return c.run;
+}
+
+const icsSeed = runner(icsCommands, 'seed');
+const idvtcSeed = runner(idvtcCommands, 'seed');
+const membersSet = runner(membersCommands, 'set');
+const rotationCreate = runner(rotationCommands, 'create');
+
+export const SCENARIOS: Record<
+  string,
+  (prisma: PrismaClient, operator: string) => Promise<unknown>
+> = {
+  'approved-ics': async (prisma, operator) => ({
+    ics: await icsSeed(prisma, { operator, status: 'APPROVED' }),
+  }),
+
+  'idvtc-with-members': async (prisma, operator) => {
+    // Mirror initFromIdvtc: ActiveMembers must hold the SAME addresses as the bound form's cluster.
+    const member = Array.from({ length: 4 }, () => resolveAddress());
+    const idvtc = await idvtcSeed(prisma, { operator, status: 'APPROVED', bind: true, member });
+    const members = await membersSet(prisma, { operator, member });
+    return { idvtc, members };
+  },
+
+  'pending-rotation': async (prisma, operator) => {
+    const members = await membersSet(prisma, { operator });
+    const rotation = await rotationCreate(prisma, { operator });
+    return { members, rotation };
+  },
+};
+
+export const scenarioCommand: SeedCommand = {
+  group: 'root',
+  name: 'scenario',
+  summary: `Compose a full operator scenario (${Object.keys(SCENARIOS).join(', ')})`,
+  argument: { name: 'name', desc: 'scenario name', prop: 'name' },
+  options: [{ flag: '--operator <id>', desc: 'node operator id' }],
+  run: async (prisma, args) => {
+    const name = args.name as string | undefined;
+    const operator = args.operator as string | undefined;
+    if (!operator) throw new Error('--operator is required');
+    if (!name || !SCENARIOS[name]) {
+      throw new Error(
+        `Unknown scenario '${name ?? ''}' (expected: ${Object.keys(SCENARIOS).join(', ')})`,
+      );
+    }
+    return { entity: 'scenario', name, operator, result: await SCENARIOS[name](prisma, operator) };
   },
 };
