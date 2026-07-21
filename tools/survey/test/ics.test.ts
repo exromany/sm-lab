@@ -30,6 +30,9 @@ describe('ics seed', () => {
       where: { mainAddress: A1 },
       data: { outdated: true },
     });
+    expect(tx.icsForm.updateMany.mock.invocationCallOrder[0]!).toBeLessThan(
+      tx.icsForm.create.mock.invocationCallOrder[0]!,
+    );
     const arg = tx.icsForm.create.mock.calls[0]![0];
     expect(arg.data.mainAddress).toBe(A1);
     expect(arg.data.review!.create!.status).toBe('APPROVED');
