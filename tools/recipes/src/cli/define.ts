@@ -10,8 +10,10 @@ export interface OptionSpec {
   key: string;
   // Method form (params are checked bivariantly under strictFunctionTypes) so that a
   // narrow coercer like toBigInt(s: string) stays assignable. Single-value coercers
-  // receive string; repeatable coercers receive string[].
-  coerce(raw: string | string[]): unknown;
+  // receive string; repeatable coercers receive string[]. OPTIONAL: a flag spec without
+  // a `<value>` placeholder is a boolean switch — commander stores `true` and coercion
+  // is bypassed, so switches omit `coerce` entirely.
+  coerce?(raw: string | string[]): unknown;
   required?: boolean;
   repeatable?: boolean;
   description?: string;
@@ -21,6 +23,14 @@ export interface OptionSpec {
    * repeatable option as the trailing **variadic** positional — which then MUST be declared last.
    */
   positional?: boolean;
+  /**
+   * Positional-token predicate. When ANY positional of a command declares `match`, supplied
+   * positional tokens are redistributed: each token (in CLI order) fills the FIRST unfilled
+   * positional whose predicate accepts it (no predicate = accepts anything); a token nobody
+   * accepts is an error. Makes two optional positionals order-free (`cmd idvtc 10` == `cmd 10
+   * idvtc`). Incompatible with a variadic (repeatable) positional.
+   */
+  match?(token: string): boolean;
 }
 
 export interface RecipeCommand<O = Record<string, unknown>, R = unknown> {
@@ -133,6 +143,10 @@ export function defineCommand(desc: RecipeCommand, connectImpl: typeof connect =
   const variadicAt = positionals.findIndex((o) => o.repeatable);
   if (variadicAt >= 0 && variadicAt !== positionals.length - 1)
     throw new Error(`${desc.name}: a repeatable positional must be declared last (it is variadic)`);
+  if (positionals.some((o) => o.match) && variadicAt >= 0)
+    throw new Error(
+      `${desc.name}: match-based positionals cannot combine with a variadic positional`,
+    );
   for (const o of positionals)
     cmd.argument(`[${flagName(o.flag)}${o.repeatable ? '...' : ''}]`, optionHelp(o));
   // The positional-alias feature is invisible in commander's generated usage ("[options]"),
@@ -153,11 +167,23 @@ export function defineCommand(desc: RecipeCommand, connectImpl: typeof connect =
     run(async () => {
       const g = command.optsWithGlobals() as Record<string, unknown>;
       const opts: Record<string, unknown> = {};
+      // Positional-value assignment: strict declaration order by default; when any positional
+      // declares `match`, redistribute tokens by predicate (first unfilled acceptor wins).
+      const assigned = new Map<OptionSpec, string | string[] | undefined>();
+      if (positionals.some((p) => p.match)) {
+        const tokens = positionalValues.filter((v): v is string => typeof v === 'string');
+        for (const token of tokens) {
+          const slot = positionals.find((p) => !assigned.has(p) && (p.match?.(token) ?? true));
+          if (!slot) throw new Error(`unrecognized positional "${token}"`);
+          assigned.set(slot, token);
+        }
+      } else {
+        positionals.forEach((p, i) => assigned.set(p, positionalValues[i]));
+      }
       for (const o of desc.options) {
         // a positional (when supplied) takes precedence over the flag for the same value. For a
         // variadic positional, an empty array means "none given" — fall back to the repeatable flag.
-        const posIndex = positionals.indexOf(o);
-        const posVal = posIndex >= 0 ? positionalValues[posIndex] : undefined;
+        const posVal = assigned.get(o);
         const posSupplied = o.repeatable
           ? Array.isArray(posVal) && posVal.length > 0
           : posVal != null;
@@ -167,7 +193,9 @@ export function defineCommand(desc: RecipeCommand, connectImpl: typeof connect =
           if (o.required) throw new Error(`missing required option ${o.flag.split(' ')[0]}`);
           continue;
         }
-        opts[o.key] = o.coerce(raw as string | string[]);
+        // A boolean switch's raw is commander's stored `true` — no coercion applies.
+        opts[o.key] =
+          typeof raw === 'boolean' ? raw : o.coerce ? o.coerce(raw as string | string[]) : raw;
       }
       const moduleName = desc.module ?? (g.module as 'csm' | 'cm' | undefined);
       if (!moduleName) throw new Error('set --module <csm|cm>');

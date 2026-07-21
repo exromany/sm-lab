@@ -271,6 +271,123 @@ describe('defineCommand', () => {
     });
   });
 
+  describe('order-free positionals (match)', () => {
+    const omni: RecipeCommand<
+      { selector?: string; keysCount?: number },
+      { selector?: string; keysCount?: number }
+    > = {
+      name: 'omni',
+      summary: 'omni',
+      options: [
+        {
+          flag: '--selector <name>',
+          key: 'selector',
+          coerce: identity,
+          positional: true,
+          match: (t) => !/^\d+$/.test(t),
+        },
+        {
+          flag: '--keys <n>',
+          key: 'keysCount',
+          coerce: toNumber,
+          positional: true,
+          match: (t) => /^\d+$/.test(t),
+        },
+      ],
+      run: async (_ctx, o) => o,
+      report: (r) => [`${r.selector ?? '-'}/${r.keysCount ?? '-'}`],
+    };
+    const omniProgram = () => {
+      const p = new Command().option('--module <m>').exitOverride();
+      p.addCommand(defineCommand(omni, fakeConnect));
+      return p;
+    };
+    const runOmni = async (...args: string[]): Promise<string> => {
+      const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      await omniProgram().parseAsync(['--module', 'csm', 'omni', ...args], { from: 'user' });
+      const out = log.mock.calls[0]![0] as string;
+      log.mockRestore();
+      return out;
+    };
+
+    it('assigns tokens by predicate in either order', async () => {
+      expect(await runOmni('idvtc', '10')).toBe('idvtc/10');
+      expect(await runOmni('10', 'idvtc')).toBe('idvtc/10');
+      expect(await runOmni('10')).toBe('-/10');
+      expect(await runOmni('idvtc')).toBe('idvtc/-');
+      expect(await runOmni()).toBe('-/-');
+    });
+
+    it('rejects a token no unfilled positional accepts', async () => {
+      const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+      await omniProgram().parseAsync(['--module', 'csm', 'omni', '10', '12'], { from: 'user' });
+      expect(err).toHaveBeenCalledWith(
+        'Error:',
+        expect.stringContaining('unrecognized positional "12"'),
+      );
+      err.mockRestore();
+      exit.mockRestore();
+    });
+
+    it('a match positional cannot combine with a variadic positional', () => {
+      expect(() =>
+        defineCommand(
+          {
+            name: 'bad',
+            summary: 'bad',
+            options: [
+              {
+                flag: '--selector <s>',
+                key: 's',
+                coerce: identity,
+                positional: true,
+                match: () => true,
+              },
+              {
+                flag: '--address <a>',
+                key: 'a',
+                coerce: toAddresses,
+                repeatable: true,
+                positional: true,
+              },
+            ],
+            run: async () => ({}),
+            report: () => [],
+          },
+          fakeConnect,
+        ),
+      ).toThrow(/variadic/);
+    });
+  });
+
+  describe('boolean switch flags (no <value> placeholder)', () => {
+    const sw: RecipeCommand<{ ext?: boolean }, { ext?: boolean }> = {
+      name: 'sw',
+      summary: 'sw',
+      options: [{ flag: '--extended-manager-permissions', key: 'ext' }],
+      run: async (_ctx, o) => o,
+      report: (r) => [`ext=${r.ext ?? 'unset'}`],
+    };
+    const swProgram = () => {
+      const p = new Command().option('--module <m>').exitOverride();
+      p.addCommand(defineCommand(sw, fakeConnect));
+      return p;
+    };
+
+    it('present → true; absent → key omitted', async () => {
+      const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      await swProgram().parseAsync(['--module', 'csm', 'sw', '--extended-manager-permissions'], {
+        from: 'user',
+      });
+      expect(log).toHaveBeenCalledWith('ext=true');
+      log.mockClear();
+      await swProgram().parseAsync(['--module', 'csm', 'sw'], { from: 'user' });
+      expect(log).toHaveBeenCalledWith('ext=unset');
+      log.mockRestore();
+    });
+  });
+
   it('a descriptor module forces ctx.module, overriding the global --module', async () => {
     fakeConnect.mockClear();
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
