@@ -10,7 +10,7 @@ function run(prisma: PrismaClient, argv: string[]) {
 
 describe('scenario', () => {
   it('exposes the three starter scenarios', () => {
-    expect(Object.keys(SCENARIOS).sort()).toEqual([
+    expect(Object.keys(SCENARIOS).toSorted()).toEqual([
       'approved-ics',
       'idvtc-with-members',
       'pending-rotation',

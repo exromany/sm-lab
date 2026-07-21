@@ -143,6 +143,15 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   `--help` on root + groups. `bin: sm-recipes → dist/cli.mjs`, v0.1.0, changeset added. Hermetic tests via the `connectImpl`
   seam. **All packages are now published on npm** — `@sm-lab/{merkle,recipes,keys,cl,ipfs,receipts}`
   (`recipes` shipped at v0.1.0, now 0.2.0); runnable via npx.
+- **`@sm-lab/survey`** ✅ — private, dev-only seed CLI for the survey-api Postgres (widget/SDK
+  testing). Direct Prisma writes via a **vendored, generate-only** copy of survey-api's `schema.prisma`
+  (never migrates); `src/refresh.ts` re-vendors + regenerates + records provenance in
+  `prisma/manifest.json`. Commands mirror `recipes`' declarative registry (`defineCommand`/`buildProgram`,
+  `--json`): `ics`/`idvtc` seed+review (`--bind` = `issued`+`boundToNodeOperatorId`, APPROVED-only;
+  `ics review --issued`), `members` set/clear, `rotation` create/review (approve merges slots into
+  `ActiveMembers` via a `mergeSlots` port; create pads to 4 slots on first init), `files clear`,
+  `reset`, `scenario`. Runs via `tsx` (Prisma runtime doesn't bundle). Hermetic vitest tests inject
+  `mockDeep<PrismaClient>()`. See `docs/superpowers/specs/2026-07-21-survey-seed-cli-design.md`.
 
 Steps 1–6 (cl, ipfs, merkle, keys, core, receipts, recipes + CLI) are complete.
 

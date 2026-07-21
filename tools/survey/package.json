@@ -23,6 +23,7 @@
     "viem": "catalog:"
   },
   "devDependencies": {
+    "@sm-lab/config": "workspace:*",
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
     "prisma": "catalog:",
