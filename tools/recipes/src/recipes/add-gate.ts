@@ -25,6 +25,8 @@ export interface AddGateAddrsOptions {
 export interface AddGateAddrsResult {
   treeRoot: Hex;
   treeCid: string;
+  /** The full post-union allowlist (checksummed, sorted) — exactly the installed tree's leaves. */
+  addresses: Hex[];
   /** Addresses actually newly added (checksummed) — empty when all were already present. */
   added: Hex[];
   /** false when every new address was already whitelisted (no on-chain write performed). */
@@ -81,11 +83,12 @@ export async function addGateAddrs(
     return {
       treeRoot: buildAddressesTree(addresses).root as Hex,
       treeCid: curCid,
+      addresses,
       added: [],
       changed: false,
     };
   }
 
   const { treeRoot, treeCid } = await setGateAddrs(ctx, { addresses, selector, cid: opts.cid });
-  return { treeRoot, treeCid, added, changed: true };
+  return { treeRoot, treeCid, addresses, added, changed: true };
 }

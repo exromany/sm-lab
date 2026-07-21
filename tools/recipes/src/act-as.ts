@@ -3,6 +3,9 @@ import type { Abi } from 'viem';
 import type { Hex } from '@sm-lab/receipts';
 import type { Ctx } from './context';
 
+/** ETH balance actAs grants an impersonated account on entry (wei). */
+export const ACT_AS_FUNDING = parseEther('100');
+
 /**
  * Run `fn` as a privileged account `who` on the fork. Funds it (anvil_setBalance),
  * unlocks it (anvil_impersonateAccount), runs the body, and always stops impersonating.
@@ -10,7 +13,7 @@ import type { Ctx } from './context';
  * address (e.g. the module, verifier, stakingRouter) or a role member resolved via roleMember.
  */
 export async function actAs<T>(ctx: Ctx, who: Hex, fn: (from: Hex) => Promise<T>): Promise<T> {
-  await ctx.client.setBalance({ address: who, value: parseEther('100') });
+  await ctx.client.setBalance({ address: who, value: ACT_AS_FUNDING });
   await ctx.client.impersonateAccount({ address: who });
   try {
     return await fn(who);

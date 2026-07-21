@@ -86,6 +86,12 @@ function defaultSnapshot(chainId: number, module: ModuleName): AddressBook {
  */
 export async function connect(opts: ConnectOptions): Promise<Ctx> {
   const client = opts.client ?? makeClient(requireRpcUrl(opts));
+  // Recipes assume anvil's default instant mining: they write then read/simulate the
+  // result in the same call (e.g. install a gate tree, then prove against it). A fork
+  // launched with automine off leaves those writes pending → stale reads. Force it on.
+  if (typeof client.setAutomine === 'function') {
+    await client.setAutomine(true);
+  }
   const chainId = await client.getChainId();
   const book = opts.addresses ?? defaultSnapshot(chainId, opts.module);
 

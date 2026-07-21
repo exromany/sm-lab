@@ -1,6 +1,6 @@
 import { addresses } from '@sm-lab/receipts';
 import type { CsmAddressBook } from '@sm-lab/receipts';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { connect, contract, resolveGate } from '../src/context';
 import { makeFakeClient } from './helpers/fake-client';
 import { A, csmBook, fakeCtx } from './helpers/book';
@@ -59,6 +59,15 @@ describe('connect', () => {
     expect(ctx.addresses.vebo).toBe(A(0xb2)); // validatorsExitBusOracle → vebo
     expect(ctx.addresses.withdrawalQueue).toBe(A(0xb4));
     expect(byMethod('readContract')).toHaveLength(0);
+  });
+
+  it('enables automine on the client (fork-safe writes) when the method is available', async () => {
+    const { client } = makeFakeClient({ chainId: 560048, reads: LOCATOR_READS });
+    const setAutomine = vi.fn(async () => {});
+    (client as unknown as { setAutomine: typeof setAutomine }).setAutomine = setAutomine;
+    await connect({ module: 'csm', client, addresses: csmBook() });
+    expect(setAutomine).toHaveBeenCalledOnce();
+    expect(setAutomine).toHaveBeenCalledWith(true);
   });
 });
 

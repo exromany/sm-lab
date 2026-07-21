@@ -53,6 +53,8 @@ export { setGateAddrs } from './recipes/set-gate';
 export type { SetGateAddrsOptions, SetGateAddrsResult } from './recipes/set-gate';
 export { addGateAddrs } from './recipes/add-gate';
 export type { AddGateAddrsOptions, AddGateAddrsResult } from './recipes/add-gate';
+export { createCsmOperator } from './recipes/create-operator';
+export type { CreateCsmOperatorOptions, CreateCsmOperatorResult } from './recipes/create-operator';
 
 export { makeRewards, submitRewards } from './recipes/rewards';
 export type { RewardsReport, MakeRewardsOptions, SubmitRewardsResult } from './recipes/rewards';
