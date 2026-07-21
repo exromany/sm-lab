@@ -44,6 +44,23 @@ describe('buildProgram', () => {
     vi.restoreAllMocks();
   });
 
+  it('prints { ok: true } sentinel when run() resolves to undefined', async () => {
+    const prisma = mockDeep<PrismaClient>();
+    const noop: SeedCommand = {
+      group: 'demo',
+      name: 'noop',
+      summary: 'noop',
+      options: [],
+      run: async () => undefined,
+    };
+    const out: string[] = [];
+    vi.spyOn(console, 'log').mockImplementation((s?: unknown) => void out.push(String(s)));
+    await buildProgram(prisma, [noop]).parseAsync(['demo', 'noop', '--json'], { from: 'user' });
+    expect(out).toHaveLength(1);
+    expect(JSON.parse(out[0]!)).toEqual({ ok: true });
+    vi.restoreAllMocks();
+  });
+
   it('exit 1 + Error: on throw', async () => {
     const prisma = mockDeep<PrismaClient>();
     const boom: SeedCommand = {

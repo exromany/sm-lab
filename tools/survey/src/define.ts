@@ -53,9 +53,8 @@ export function jsonReplacer(_key: string, value: unknown): unknown {
 }
 
 function printResult(result: unknown, json: boolean): void {
-  console.log(
-    typeof result === 'string' && !json ? result : JSON.stringify(result, jsonReplacer, 2),
-  );
+  const value = result === undefined ? { ok: true } : result;
+  console.log(typeof value === 'string' && !json ? value : JSON.stringify(value, jsonReplacer, 2));
 }
 
 export function defineCommand(desc: SeedCommand, prisma: PrismaClient): Command {
