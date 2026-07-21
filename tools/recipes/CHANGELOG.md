@@ -1,5 +1,20 @@
 # @sm-lab/recipes
 
+## 0.5.0
+
+### Minor Changes
+
+- a3b1ca6: `createCsmOperator` recipe + `sm-recipes csm create-operator`: create a CSM node operator with
+  fresh keys and exact ETH bond through the PermissionlessGate (default) or a vetted gate
+  (`ics`/`idvtc` — persistently whitelists the address and proves it). CLI gains order-free
+  positionals (`create-operator idvtc 10` == `create-operator 10 idvtc`) and boolean switch flags;
+  `addGateAddrs` now returns the post-union allowlist `addresses`.
+
+### Patch Changes
+
+- 59a53b2: `connect()` now forces anvil automine on so write→simulate recipes (e.g. install a gate tree, then
+  prove against it) see fresh state regardless of how the fork was launched.
+
 ## 0.4.3
 
 ### Patch Changes
