@@ -4,6 +4,7 @@ import type { CmAddressBook, Hex } from '@sm-lab/receipts';
 import { concat, keccak256, toHex, zeroAddress } from 'viem';
 import { actAs, roleMember } from '../act-as';
 import { resolveGate, type Ctx, type CmGateSelector } from '../context';
+import { deriveAddress } from '../derive';
 import { randomSeed } from '../random';
 import { addKeys } from '../recipes/add-keys';
 import { deposit } from '../recipes/deposit';
@@ -315,12 +316,6 @@ export interface SeedCmResult {
   operators: [Hex, Hex, Hex];
 }
 
-/** A deterministic address from a seed + label (low 20 bytes of keccak — mirrors deriveExtra). */
-function deriveOperatorAddress(seed: Hex, i: number): Hex {
-  const h = keccak256(concat([seed, toHex(`cm-operator-${i}`)]));
-  return `0x${h.slice(-40)}` as Hex;
-}
-
 /** A deterministic key seed from a seed + label (so the 7 addKeys calls never collide on pubkeys). */
 function keySeed(seed: Hex, label: string): Hex {
   return keccak256(concat([seed, toHex(label)]));
@@ -340,9 +335,9 @@ export async function seedCm(ctx: Ctx, opts: SeedCmOptions = {}): Promise<SeedCm
   const selector = opts.selector ?? 'po';
   const seed = opts.seed ?? randomSeed();
   const operators: [Hex, Hex, Hex] = [
-    deriveOperatorAddress(seed, 0),
-    deriveOperatorAddress(seed, 1),
-    deriveOperatorAddress(seed, 2),
+    deriveAddress(seed, 'cm-operator-0'),
+    deriveAddress(seed, 'cm-operator-1'),
+    deriveAddress(seed, 'cm-operator-2'),
   ];
 
   // Sequential by necessity: each createCuratedOperator installs/restores the gate temp tree and
