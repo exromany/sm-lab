@@ -56,7 +56,7 @@ sm-lab/
 | Format          | **prettier**                | mature; swap to `oxfmt` once stable                                                                            |
 | Tests           | **Vitest**                  | neither seed repo had tests — added here                                                                       |
 | Versioning      | **Changesets**              | curated public releases of `@sm-lab/*`                                                                         |
-| Runtime         | **Node ≥ 20**               | keeps `@hono/node-server` and existing Docker/helm; no re-platform                                             |
+| Runtime         | **Node ≥ 24**               | current LTS; `engines`, CI, and the Docker base (`node:24-alpine`) all pinned to it                            |
 
 All tooling config lives in **`@sm-lab/config`** — change the build/type/lint strategy in
 one package and every other inherits it. See its README for the `extends` / import pattern.
