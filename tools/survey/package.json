@@ -26,7 +26,6 @@
   },
   "scripts": {
     "generate": "prisma generate",
-    "prebuild": "prisma generate",
     "build": "tsdown",
     "start": "node dist/cli.mjs",
     "survey": "tsx src/cli.ts",
