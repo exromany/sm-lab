@@ -1,6 +1,6 @@
 {
   "name": "@sm-lab/survey",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Direct-DB seed CLI for the Lido CSM survey-api (local dev / widget testing)",
   "license": "MIT",
