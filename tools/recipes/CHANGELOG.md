@@ -1,5 +1,12 @@
 # @sm-lab/recipes
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [7e5668a]
+  - @sm-lab/keys@0.3.0
+
 ## 0.5.0
 
 ### Minor Changes
