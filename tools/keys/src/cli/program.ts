@@ -31,7 +31,7 @@ export function buildProgram(deps: CliDeps = { makeDepositKeys: realMakeDepositK
       .name('sm-keys')
       .description(
         'Generate real BLS validator deposit data for Lido SM (mainnet/hoodi); ' +
-          'human mode: deposit_data.json to stdout (or --out), mnemonic to stderr',
+          'human mode: deposit_data.json to stdout (or --out); mnemonic only in --json',
       )
       .version(readPackageVersion(import.meta.url))
       .addOption(
@@ -84,17 +84,16 @@ Examples:
               withdrawalAddress: opts.wc as `0x${string}` | undefined,
               startIndex: Number(opts.startIndex),
             });
-            const { mnemonic, keys } = result;
+            const { keys } = result;
 
             if (opts.json) {
-              // Unlike human mode (mnemonic → stderr), --json deliberately includes the
-              // mnemonic in the stdout JSON.
+              // The mnemonic is a secret: it's emitted ONLY here, in the --json payload.
+              // Human mode never prints it (nothing to stderr) — opt in with --json to get it.
               console.log(JSON.stringify(result, bigintReplacer, 2));
               return;
             }
 
-            // Human mode: mnemonic to stderr so stdout / -o stays clean JSON.
-            console.error(`mnemonic: ${mnemonic}`);
+            // Human mode: only the deposit data — no mnemonic anywhere.
             if (opts.out) {
               writeDepositDataFile(opts.out, keys);
               console.error(`wrote ${keys.length} key(s) to ${opts.out}`);

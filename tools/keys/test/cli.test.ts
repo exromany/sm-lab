@@ -197,6 +197,21 @@ describe('sm-keys CLI --json', () => {
     expect(parsed[0]?.pubkey).not.toMatch(/^0x/);
     expect(parsed[0]?.pubkey).toBe('aabbcc');
   });
+
+  it('without --json: never prints the mnemonic (not to stdout, not to stderr)', async () => {
+    const stdoutLines: string[] = [];
+    const stderrLines: string[] = [];
+    vi.spyOn(console, 'log').mockImplementation((...args) => stdoutLines.push(String(args[0])));
+    vi.spyOn(console, 'error').mockImplementation((...args) =>
+      stderrLines.push(args.map(String).join(' ')),
+    );
+
+    const h = harness(RESULT);
+    await h.prog.parseAsync([], { from: 'user' });
+
+    expect([...stdoutLines, ...stderrLines].join('\n')).not.toContain('a b c');
+    expect(stderrLines).toHaveLength(0);
+  });
 });
 
 describe('sm-keys CLI completion + option validation', () => {

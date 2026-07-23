@@ -16,7 +16,7 @@ sm-keys --chain mainnet --count 1
 sm-keys --count 1 --type 0x02           # compounding (CM)
 sm-keys --count 3 --mnemonic "..."      # reproducible
 sm-keys --count 2 --wc 0xCustomAddress  # withdrawal address override
-sm-keys --count 5 -o deposit_data.json  # write file (mnemonic → stderr)
+sm-keys --count 5 -o deposit_data.json  # write file (deposit data only; no mnemonic)
 sm-keys --count 2 --json                # structured JSON result to stdout (mnemonic + keys)
 sm-keys help                            # mirrors --help
 sm-keys completion fish | source        # shell completion (bash | zsh | fish)
@@ -40,6 +40,9 @@ wins if both are given). `sm-keys help` mirrors `sm-keys --help`.
 
 With `--json` the output is a single JSON value (`JSON.stringify`, 2-space indent) on stdout.
 `keys` fields keep their `0x`-prefixed hex form. Errors go to stderr; exit code 1.
+
+The **mnemonic is emitted only under `--json`** — human mode (stdout or `-o`) prints just the
+deposit data. Opt into `--json` when you need the seed phrase.
 
 ## TS API
 
