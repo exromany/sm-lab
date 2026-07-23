@@ -1,5 +1,12 @@
 # @sm-lab/keys
 
+## 0.3.0
+
+### Minor Changes
+
+- 7e5668a: `sm-keys` no longer prints the mnemonic in human mode. The mnemonic is now emitted only under
+  `--json`; default output (stdout or `-o`) contains just the deposit data.
+
 ## 0.2.2
 
 ### Patch Changes

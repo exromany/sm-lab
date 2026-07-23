@@ -1,6 +1,6 @@
 {
   "name": "@sm-lab/recipes",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "module",
   "description": "TypeScript recipes to prepare Lido SM on-chain state on an anvil fork (rewritten fork.just; no Foundry)",
   "license": "MIT",
