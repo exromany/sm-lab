@@ -1,14 +1,34 @@
 {
   "name": "@sm-lab/survey",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "Direct-DB seed CLI for the Lido CSM survey-api (local dev / widget testing)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exromany/sm-lab.git",
+    "directory": "tools/survey"
+  },
+  "keywords": [
+    "csm",
+    "lido",
+    "survey",
+    "seed",
+    "prisma",
+    "testing"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "bin": {
+    "sm-survey": "dist/cli.mjs"
+  },
   "scripts": {
     "generate": "prisma generate",
     "prebuild": "prisma generate",
     "build": "tsdown",
+    "start": "node dist/cli.mjs",
     "survey": "tsx src/cli.ts",
     "refresh": "tsx src/refresh.ts",
     "test": "vitest run",

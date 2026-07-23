@@ -32,7 +32,7 @@ describe('buildProgram', () => {
     const prisma = mockDeep<PrismaClient>();
     const out: string[] = [];
     vi.spyOn(console, 'log').mockImplementation((s?: unknown) => void out.push(String(s)));
-    await buildProgram(prisma, [echo]).parseAsync(
+    await buildProgram(() => prisma, [echo]).parseAsync(
       ['demo', 'echo', '--name', 'x', '--tag', 'a=1', '--json'],
       { from: 'user' },
     );
@@ -55,7 +55,9 @@ describe('buildProgram', () => {
     };
     const out: string[] = [];
     vi.spyOn(console, 'log').mockImplementation((s?: unknown) => void out.push(String(s)));
-    await buildProgram(prisma, [noop]).parseAsync(['demo', 'noop', '--json'], { from: 'user' });
+    await buildProgram(() => prisma, [noop]).parseAsync(['demo', 'noop', '--json'], {
+      from: 'user',
+    });
     expect(out).toHaveLength(1);
     expect(JSON.parse(out[0]!)).toEqual({ ok: true });
     vi.restoreAllMocks();
@@ -73,7 +75,7 @@ describe('buildProgram', () => {
       },
     };
     const err = vi.spyOn(console, 'error').mockImplementation(() => {});
-    await buildProgram(prisma, [boom]).parseAsync(['demo', 'boom'], { from: 'user' });
+    await buildProgram(() => prisma, [boom]).parseAsync(['demo', 'boom'], { from: 'user' });
     expect(process.exitCode).toBe(1);
     expect(err).toHaveBeenCalledWith(expect.stringContaining('Error: kaboom'));
     vi.restoreAllMocks();

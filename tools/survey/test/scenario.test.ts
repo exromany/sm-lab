@@ -5,7 +5,7 @@ import { buildProgram } from '../src/define';
 import { scenarioCommand, SCENARIOS } from '../src/commands/maintenance';
 
 function run(prisma: PrismaClient, argv: string[]) {
-  return buildProgram(prisma, [scenarioCommand]).parseAsync(argv, { from: 'user' });
+  return buildProgram(() => prisma, [scenarioCommand]).parseAsync(argv, { from: 'user' });
 }
 
 describe('scenario', () => {

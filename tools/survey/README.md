@@ -1,12 +1,18 @@
 # @sm-lab/survey
 
 Direct-DB seed CLI for the Lido CSM survey-api — puts a **local** survey-api Postgres into arbitrary
-states for widget/SDK testing. Private, unpublished, dev-only. Bypasses SIWE/signature validation on
-purpose (signatures are placeholders).
+states for widget/SDK testing. Dev-only tool, published so it's runnable via `npx`. Bypasses
+SIWE/signature validation on purpose (signatures are placeholders).
 
 ## Run
 
 Set `DATABASE_URL` (the local survey-api Postgres) in `.env`, then:
+
+```
+npx @sm-lab/survey <group> <cmd> [--json]
+```
+
+Or, inside this monorepo:
 
 ```
 pnpm --filter @sm-lab/survey exec tsx src/cli.ts <group> <cmd> [--json]

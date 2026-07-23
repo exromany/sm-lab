@@ -141,9 +141,10 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   required non-repeatable options are accepted positionally in declaration order (a repeatable one
   becomes the trailing variadic — `set-gate <selector> <address...>`); a `help` command mirrors
   `--help` on root + groups. `bin: sm-recipes → dist/cli.mjs`, v0.1.0, changeset added. Hermetic tests via the `connectImpl`
-  seam. **All packages are now published on npm** — `@sm-lab/{merkle,recipes,keys,cl,ipfs,receipts}`
+  seam. **All packages are now published on npm** — `@sm-lab/{merkle,recipes,keys,cl,ipfs,receipts,survey}`
   (`recipes` shipped at v0.1.0, now 0.2.0); runnable via npx.
-- **`@sm-lab/survey`** ✅ — private, dev-only seed CLI for the survey-api Postgres (widget/SDK
+- **`@sm-lab/survey`** ✅ — dev-only seed CLI for the survey-api Postgres (published to npm as
+  `sm-survey`; connects lazily so `--help` works without `DATABASE_URL`) (widget/SDK
   testing). Direct Prisma writes via a **vendored, generate-only** copy of survey-api's `schema.prisma`
   (never migrates); `src/refresh.ts` re-vendors + regenerates + records provenance in
   `prisma/manifest.json`. Commands mirror `recipes`' declarative registry (`defineCommand`/`buildProgram`,

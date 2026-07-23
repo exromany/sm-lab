@@ -5,7 +5,7 @@ import { buildProgram } from '../src/define';
 import { membersCommands } from '../src/commands/members';
 
 function run(prisma: PrismaClient, argv: string[]) {
-  return buildProgram(prisma, membersCommands).parseAsync(argv, { from: 'user' });
+  return buildProgram(() => prisma, membersCommands).parseAsync(argv, { from: 'user' });
 }
 
 describe('members set', () => {

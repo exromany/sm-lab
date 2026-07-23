@@ -26,9 +26,12 @@ describe('reset', () => {
     for (const m of MODELS) (tx as any)[m].deleteMany.mockResolvedValue({ count: 0 });
     const out: string[] = [];
     vi.spyOn(console, 'log').mockImplementation((s?: unknown) => void out.push(String(s)));
-    await buildProgram(prisma, [resetCommand]).parseAsync(['reset', '--operator', '42', '--json'], {
-      from: 'user',
-    });
+    await buildProgram(() => prisma, [resetCommand]).parseAsync(
+      ['reset', '--operator', '42', '--json'],
+      {
+        from: 'user',
+      },
+    );
     vi.restoreAllMocks();
     expect(tx.activeMembers.deleteMany).toHaveBeenCalledWith({ where: { nodeOperatorId: '42' } });
     expect(tx.idvtcForm.deleteMany).toHaveBeenCalledWith({
@@ -43,7 +46,7 @@ describe('reset', () => {
     const tx = mockDeep<PrismaClient>();
     prisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
     for (const m of MODELS) (tx as any)[m].deleteMany.mockResolvedValue({ count: 0 });
-    await buildProgram(prisma, [resetCommand]).parseAsync(
+    await buildProgram(() => prisma, [resetCommand]).parseAsync(
       ['reset', '--operator', '42', '--main-address', '0x' + '1'.repeat(40)],
       { from: 'user' },
     );

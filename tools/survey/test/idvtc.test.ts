@@ -6,7 +6,7 @@ import { idvtcCommands } from '../src/commands/idvtc';
 
 const A1 = '0x' + '1'.repeat(40);
 function run(prisma: PrismaClient, argv: string[]) {
-  return buildProgram(prisma, idvtcCommands).parseAsync(argv, { from: 'user' });
+  return buildProgram(() => prisma, idvtcCommands).parseAsync(argv, { from: 'user' });
 }
 
 describe('idvtc seed', () => {

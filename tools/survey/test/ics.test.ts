@@ -7,7 +7,7 @@ import { icsCommands } from '../src/commands/ics';
 const A1 = '0x' + '1'.repeat(40);
 const A2 = '0x' + '2'.repeat(40);
 function run(prisma: PrismaClient, argv: string[]) {
-  return buildProgram(prisma, icsCommands).parseAsync(argv, { from: 'user' });
+  return buildProgram(() => prisma, icsCommands).parseAsync(argv, { from: 'user' });
 }
 
 describe('ics seed', () => {

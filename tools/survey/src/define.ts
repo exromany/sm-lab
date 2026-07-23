@@ -57,7 +57,7 @@ function printResult(result: unknown, json: boolean): void {
   console.log(typeof value === 'string' && !json ? value : JSON.stringify(value, jsonReplacer, 2));
 }
 
-export function defineCommand(desc: SeedCommand, prisma: PrismaClient): Command {
+export function defineCommand(desc: SeedCommand, getPrisma: () => PrismaClient): Command {
   const cmd = new Command(desc.name).description(desc.summary);
   if (desc.argument) cmd.argument(`<${desc.argument.name}>`, desc.argument.desc);
   for (const opt of desc.options) {
@@ -79,7 +79,7 @@ export function defineCommand(desc: SeedCommand, prisma: PrismaClient): Command 
     const opts = actionArgs[actionArgs.length - 2] as Record<string, unknown>;
     if (desc.argument) opts[desc.argument.prop] = actionArgs[0];
     try {
-      const result = await desc.run(prisma, opts);
+      const result = await desc.run(getPrisma(), opts);
       printResult(result, Boolean(opts.json));
     } catch (e) {
       console.error(`Error: ${e instanceof Error ? e.message : String(e)}`);
@@ -89,17 +89,17 @@ export function defineCommand(desc: SeedCommand, prisma: PrismaClient): Command 
   return cmd;
 }
 
-export function buildProgram(prisma: PrismaClient, commands: SeedCommand[]): Command {
+export function buildProgram(getPrisma: () => PrismaClient, commands: SeedCommand[]): Command {
   const program = new Command('sm-survey').description('survey-api seed CLI');
   const groups = new Map<string, Command>();
   for (const desc of commands) {
     if (desc.group === 'root') {
-      program.addCommand(defineCommand(desc, prisma)); // top-level: `sm-survey reset`, `scenario`
+      program.addCommand(defineCommand(desc, getPrisma)); // top-level: `sm-survey reset`, `scenario`
       continue;
     }
     if (!groups.has(desc.group))
       groups.set(desc.group, new Command(desc.group).description(`${desc.group} commands`));
-    groups.get(desc.group)!.addCommand(defineCommand(desc, prisma));
+    groups.get(desc.group)!.addCommand(defineCommand(desc, getPrisma));
   }
   for (const g of groups.values()) program.addCommand(g);
   return program;

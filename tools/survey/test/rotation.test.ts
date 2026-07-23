@@ -7,7 +7,7 @@ import { rotationCommands, buildSlotColumns, mergeSlots } from '../src/commands/
 const A1 = '0x' + '1'.repeat(40);
 const B = (n: number) => '0x' + String(n).repeat(40);
 function run(prisma: PrismaClient, argv: string[]) {
-  return buildProgram(prisma, rotationCommands).parseAsync(argv, { from: 'user' });
+  return buildProgram(() => prisma, rotationCommands).parseAsync(argv, { from: 'user' });
 }
 const openRequest = (slots: Record<string, string | null> = {}) => ({
   id: 5,
