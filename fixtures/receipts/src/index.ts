@@ -6,6 +6,7 @@ export type {
   AddressBook,
   CsmAddressBook,
   CmAddressBook,
+  Csm02AddressBook,
   Hex,
   ChainName,
   ModuleName,

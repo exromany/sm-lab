@@ -28,10 +28,11 @@ Public surface:
 
 ```ts
 import { addresses, csModuleAbi, vEBOAbi, manifest } from '@sm-lab/receipts';
-//       ^^^^^^^^^ { hoodi: { csm, cm }, mainnet: { csm, cm } }
+//       ^^^^^^^^^ { hoodi: { csm, cm, csm02 }, mainnet: { csm, cm } }
 ```
 
-Available chains/modules: `hoodi.csm`, `hoodi.cm`, `mainnet.csm`, `mainnet.cm`.
+Available chains/modules: `hoodi.csm`, `hoodi.cm`, `hoodi.csm02`, `mainnet.csm`, `mainnet.cm`. `csm02`
+(CSModule deployed in EIP-7251/0x02 mode) is hoodi-only — not deployed on mainnet.
 
 ## Address book shape
 
@@ -133,7 +134,7 @@ Run per-target when a deployment or contract changes:
 ```bash
 pnpm --filter @sm-lab/receipts refresh -- \
   --chain <hoodi|mainnet> \
-  --module <csm|cm> \
+  --module <csm|cm|csm02> \
   [--contracts <path-to-staking-modules>] \
   [--config <relative-path-inside-contracts-repo>] \
   [--force]
@@ -152,12 +153,18 @@ addresses change and new contracts are added. Current per-(chain, module) config
 | ------- | ------ | ----------------------------------------------- | ------- |
 | hoodi   | csm    | `artifacts/hoodi/csm/upgrade-v3-hoodi.json`     | v3      |
 | hoodi   | cm     | `artifacts/hoodi/curated/deploy-hoodi.json`     | —       |
+| hoodi   | csm02  | `artifacts/hoodi/csm0x02/deploy-hoodi.json`     | 0x02    |
 | mainnet | csm    | `artifacts/mainnet/csm/upgrade-v3-mainnet.json` | v3      |
 | mainnet | cm     | `artifacts/mainnet/curated/deploy-mainnet.json` | CMv2    |
 
+Note the `csm02`/`csm0x02` asymmetry: our module key is `csm02`, but the contracts repo's
+artifact directory for it is `csm0x02` — `refresh` accounts for this internally, so `--module
+csm02` is all a caller needs.
+
 If `--config` is omitted, the default is `artifacts/<chain>/deploy-<chain>.json` (or
-`artifacts/<chain>/curated/deploy-<chain>.json` for cm). Only override when the authoritative
-config for that chain has moved to an upgrade file.
+`artifacts/<chain>/curated/deploy-<chain>.json` for cm, `artifacts/<chain>/csm0x02/deploy-<chain>.json`
+for csm02 — csm02 isn't deployed on mainnet, so only the hoodi path is ever used). Only override
+when the authoritative config for that chain has moved to an upgrade file.
 
 After refreshing, commit the updated `data/` and `src/abi/` files together.
 

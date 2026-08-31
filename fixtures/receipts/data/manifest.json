@@ -1,5 +1,5 @@
 {
-  "abiGitRef": "085e0b681644a880cd879eaea02e98cffa052905",
+  "abiGitRef": "95062a053a8b124257da42d6e89176cff4d0d605",
   "abiHashes": {
     "CSModule": "dcbe513a15b78bfa3d15fe46556b3eade0cd25662991227f63b59cb5e5a3903f",
     "CuratedModule": "e7e9e45ee43f1e5f20c88feef188b72a5572c2338a3a6b5874388e5c4a9a8a8d",
@@ -14,7 +14,7 @@
     "MetaRegistry": "a178039da34d482c3ef7fdd8ae667e57798a9ea2570477225f8b56467ffa126d",
     "Verifier": "b86b0ba3eda936e51026043652c33197d73a77b708dfc67b41e605e964bcdcee",
     "VEBO": "7999bdb1db0520c141efdcc3be6e5e185ffefc74b928948feae9f209bec1b6df",
-    "StakingRouter": "351c7411a4903e904a399a9dd78ff79b5adcefd7140d87d91b5b4bc9bb513b77",
+    "StakingRouter": "6ae2029271a9ddcdf623a4d6647ad99d43af301a6984bd27c9ce892ce076b93a",
     "Lido": "5d0b9f1b8017e723505fdc8ade1516b2556891527c05bda13cccb4369b46e700",
     "LidoLocator": "352bf71565e2f635d6a86e59ea1f5921c1f6bc7a04d76caadcbd475a51e3b9e3"
   },
@@ -28,6 +28,11 @@
       "chain": "hoodi",
       "module": "csm",
       "gitRef": "a6be775483e17d76718f8852428b5251a75c6429"
+    },
+    {
+      "chain": "hoodi",
+      "module": "csm02",
+      "gitRef": "bbdb033df8b26e45641030d17b8b8465190b21db"
     },
     {
       "chain": "mainnet",
@@ -56,7 +61,11 @@
     "mainnet/cm": {
       "chainId": 1,
       "block": 25461661
+    },
+    "hoodi/csm02": {
+      "chainId": 560048,
+      "block": 3529706
     }
   },
-  "generatedAt": "2026-07-05T09:37:33.450Z"
+  "generatedAt": "2026-08-31T10:34:31.916Z"
 }

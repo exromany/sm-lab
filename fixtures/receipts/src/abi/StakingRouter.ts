@@ -538,6 +538,19 @@ export const stakingRouterAbi = [
   },
   {
     "type": "function",
+    "name": "getMaxTopUpPerBlockGwei",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getNodeOperatorDigests",
     "inputs": [
       {

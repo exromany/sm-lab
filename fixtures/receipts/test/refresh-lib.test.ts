@@ -14,6 +14,7 @@ import {
   assertProtocol,
   CSM_SCHEMA,
   CM_SCHEMA,
+  CSM02_SCHEMA,
   type Manifest,
 } from '../scripts/refresh-lib';
 
@@ -226,6 +227,75 @@ describe('curate', () => {
   it('throws when a flattened source array is missing an index', () => {
     const cm = { ...cmBase, CuratedGates: ['0x0000000000000000000000000000000000000030'] };
     expect(() => curate(cm, CM_SCHEMA)).toThrow(/CuratedGatePTO/);
+  });
+});
+
+describe('CSM02_SCHEMA curation', () => {
+  // csm0x02-shaped snapshot: CSM's key set minus GateSeal, plus CircuitBreaker + ExternalLibraries;
+  // VettedGate is present but not an entry gate on csm02, so it's not curated into the book.
+  const csm02Snapshot = {
+    Accounting: '0x0000000000000000000000000000000000000002',
+    AccountingImpl: '0x00000000000000000000000000000000000002ff',
+    CSModule: '0x0000000000000000000000000000000000000001',
+    CSModuleImpl: '0x00000000000000000000000000000000000001ff',
+    ChainId: 560048,
+    CircuitBreaker: '0x0000000000000000000000000000000000000f01',
+    DeployParams: '0xdeadbeef',
+    Ejector: '0x0000000000000000000000000000000000000009',
+    ExitPenalties: '0x000000000000000000000000000000000000000a',
+    ExitPenaltiesImpl: '0x000000000000000000000000000000000000aaff',
+    FeeDistributor: '0x0000000000000000000000000000000000000003',
+    FeeDistributorImpl: '0x00000000000000000000000000000000000003ff',
+    FeeOracle: '0x0000000000000000000000000000000000000004',
+    FeeOracleImpl: '0x00000000000000000000000000000000000004ff',
+    HashConsensus: '0x0000000000000000000000000000000000000005',
+    LidoLocator: '0x000000000000000000000000000000000000000c',
+    ParametersRegistry: '0x0000000000000000000000000000000000000006',
+    ParametersRegistryImpl: '0x00000000000000000000000000000000000006ff',
+    PermissionlessGate: '0x000000000000000000000000000000000000000e',
+    ValidatorStrikes: '0x0000000000000000000000000000000000000007',
+    ValidatorStrikesImpl: '0x00000000000000000000000000000000000007ff',
+    Verifier: '0x0000000000000000000000000000000000000008',
+    VettedGate: '0x0000000000000000000000000000000000000000',
+    VettedGateFactory: '0x0000000000000000000000000000000000000000',
+    VettedGateImpl: '0x0000000000000000000000000000000000000000',
+    'git-ref': 'deadbeef',
+    ExternalLibraries: {
+      AssetRecovererLib: '0x0000000000000000000000000000000000000f02',
+    },
+  };
+
+  it('keeps only PermissionlessGate as the entry gate, no IcsGate/IdvtcGate', () => {
+    const { book } = curate(csm02Snapshot, CSM02_SCHEMA);
+    expect(book.PermissionlessGate).toBe(csm02Snapshot.PermissionlessGate);
+    expect('IcsGate' in book).toBe(false);
+    expect('IdvtcGate' in book).toBe(false);
+  });
+
+  it("drops the suite/gate scaffolding CSM02 doesn't use", () => {
+    const { dropped } = curate(csm02Snapshot, CSM02_SCHEMA);
+    expect(dropped.toSorted()).toEqual(
+      [
+        'AccountingImpl',
+        'CSModuleImpl',
+        'CircuitBreaker',
+        'DeployParams',
+        'ExitPenaltiesImpl',
+        'ExternalLibraries',
+        'FeeDistributorImpl',
+        'FeeOracleImpl',
+        'ParametersRegistryImpl',
+        'ValidatorStrikesImpl',
+        'VettedGate',
+        'VettedGateFactory',
+        'VettedGateImpl',
+      ].toSorted(),
+    );
+  });
+
+  it('emits keys in schema order', () => {
+    const { book } = curate(csm02Snapshot, CSM02_SCHEMA);
+    expect(Object.keys(book)).toEqual(Object.keys(CSM02_SCHEMA));
   });
 });
 

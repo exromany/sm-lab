@@ -1,6 +1,6 @@
 export type Hex = `0x${string}`;
 export type ChainName = 'hoodi' | 'mainnet';
-export type ModuleName = 'csm' | 'cm';
+export type ModuleName = 'csm' | 'cm' | 'csm02';
 
 /** Protocol addresses resolved on-chain from LidoLocator during refresh (optional — present iff enriched). */
 export interface ProtocolAddresses {
@@ -63,5 +63,24 @@ export interface CmAddressBook {
   protocol?: ProtocolAddresses;
 }
 
+/** CSModule deployed in EIP-7251 (0x02) mode; SDK-aligned — its only entry gate is PermissionlessGate. */
+export interface Csm02AddressBook {
+  CSModule: Hex;
+  Accounting: Hex;
+  FeeDistributor: Hex;
+  FeeOracle: Hex;
+  HashConsensus: Hex;
+  ParametersRegistry: Hex;
+  ValidatorStrikes: Hex;
+  Verifier: Hex;
+  Ejector: Hex;
+  ExitPenalties: Hex;
+  LidoLocator: Hex;
+  PermissionlessGate: Hex;
+  ChainId: number;
+  'git-ref': string;
+  protocol?: ProtocolAddresses;
+}
+
 /** Either module's book (generic consumers). */
-export type AddressBook = CsmAddressBook | CmAddressBook;
+export type AddressBook = CsmAddressBook | CmAddressBook | Csm02AddressBook;

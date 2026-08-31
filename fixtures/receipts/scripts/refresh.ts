@@ -16,10 +16,13 @@ import {
   assertProtocol,
   CSM_SCHEMA,
   CM_SCHEMA,
+  CSM02_SCHEMA,
   type Manifest,
   type ContractName,
 } from './refresh-lib';
-import type { Hex, ProtocolAddresses } from '../src/types';
+import type { Hex, ModuleName, ProtocolAddresses } from '../src/types';
+
+const SCHEMA_BY_MODULE = { csm: CSM_SCHEMA, cm: CM_SCHEMA, csm02: CSM02_SCHEMA } as const;
 
 export type EnrichFn = (
   locator: string,
@@ -28,7 +31,7 @@ export type EnrichFn = (
 export interface RefreshOptions {
   contractsPath: string;
   chain: string;
-  module: 'csm' | 'cm';
+  module: ModuleName;
   pkgDir: string;
   headRef: string;
   force: boolean;
@@ -43,9 +46,16 @@ export interface RefreshResult {
   manifestFile: string;
 }
 
-function deployJsonPath(contractsPath: string, chain: string, module: 'csm' | 'cm'): string {
-  const sub =
-    module === 'cm' ? path.join('curated', `deploy-${chain}.json`) : `deploy-${chain}.json`;
+// Directory is `csm0x02` while our module key is `csm02` — mirrors the contracts repo's own naming.
+const DEPLOY_SUBDIR: Record<ModuleName, string | undefined> = {
+  csm: undefined,
+  cm: 'curated',
+  csm02: 'csm0x02',
+};
+
+function deployJsonPath(contractsPath: string, chain: string, module: ModuleName): string {
+  const subdir = DEPLOY_SUBDIR[module];
+  const sub = subdir ? path.join(subdir, `deploy-${chain}.json`) : `deploy-${chain}.json`;
   return path.join(contractsPath, 'artifacts', chain, sub);
 }
 
@@ -93,7 +103,7 @@ export async function runRefresh(opts: RefreshOptions): Promise<RefreshResult> {
   writeFile(path.join(abiDir, 'index.ts'), renderAbiIndex(names));
 
   // 3. Curate the snapshot to the allowlist; warn on dropped keys.
-  const schema = module === 'cm' ? CM_SCHEMA : CSM_SCHEMA;
+  const schema = SCHEMA_BY_MODULE[module];
   const { book, dropped } = curate(snapshot, schema);
   if (dropped.length > 0) console.warn(`  dropped ${dropped.length} key(s): ${dropped.join(', ')}`);
 
@@ -129,7 +139,7 @@ export async function runRefresh(opts: RefreshOptions): Promise<RefreshResult> {
 
 function parseArgs(argv: string[]): {
   chain: string;
-  module: 'csm' | 'cm';
+  module: ModuleName;
   contractsPath: string;
   force: boolean;
   pkgDir: string;
@@ -143,8 +153,8 @@ function parseArgs(argv: string[]): {
   const chain = get('--chain');
   const moduleArg = get('--module');
   if (!chain) throw new Error('Missing --chain (e.g. --chain hoodi)');
-  if (moduleArg !== 'csm' && moduleArg !== 'cm')
-    throw new Error('Missing/invalid --module (csm|cm)');
+  if (moduleArg !== 'csm' && moduleArg !== 'cm' && moduleArg !== 'csm02')
+    throw new Error('Missing/invalid --module (csm|cm|csm02)');
   const pkgDir = path.dirname(fileURLToPath(new URL('.', import.meta.url)));
   const contractsPath = path.resolve(pkgDir, get('--contracts') ?? '../../../staking-modules');
   const configPath = get('--config');

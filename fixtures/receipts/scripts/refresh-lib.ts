@@ -35,6 +35,24 @@ export const CSM_SCHEMA: Record<string, FieldSpec> = {
   'git-ref': { kind: 'string' },
 };
 
+// CSModule deployed in 0x02 mode: same schema minus IcsGate/IdvtcGate (no VettedGate/IDVTC entry gate).
+export const CSM02_SCHEMA: Record<string, FieldSpec> = {
+  CSModule: { kind: 'address' },
+  Accounting: { kind: 'address' },
+  FeeDistributor: { kind: 'address' },
+  FeeOracle: { kind: 'address' },
+  HashConsensus: { kind: 'address' },
+  ParametersRegistry: { kind: 'address' },
+  ValidatorStrikes: { kind: 'address' },
+  Verifier: { kind: 'address' },
+  Ejector: { kind: 'address' },
+  ExitPenalties: { kind: 'address' },
+  LidoLocator: { kind: 'address' },
+  PermissionlessGate: { kind: 'address' },
+  ChainId: { kind: 'number' },
+  'git-ref': { kind: 'string' },
+};
+
 export const CM_SCHEMA: Record<string, FieldSpec> = {
   CuratedModule: { kind: 'address' },
   Accounting: { kind: 'address' },

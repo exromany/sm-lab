@@ -135,4 +135,24 @@ describe('runRefresh', () => {
     const addr = JSON.parse(fs.readFileSync(res.addressFile, 'utf8'));
     expect(addr.protocol?.burner).toBe('0x0000000000000000000000000000000000000a05');
   });
+
+  it('resolves csm02 to the csm0x02/ artifact subdirectory and curates its schema', async () => {
+    // deploy-hoodi.json lives under artifacts/hoodi/csm0x02/ (dir name differs from the module key).
+    const res = await runRefresh({
+      contractsPath: fixtures,
+      chain: 'hoodi',
+      module: 'csm02',
+      pkgDir: tmpPkg,
+      headRef: 'deadbeef',
+      force: false,
+      generatedAt: '2026-06-26T00:00:00.000Z',
+    });
+    expect(res.addressFile.endsWith(path.join('hoodi', 'csm02.json'))).toBe(true);
+    const addr = JSON.parse(fs.readFileSync(res.addressFile, 'utf8'));
+    expect(addr.CSModule).toBe('0x0000000000000000000000000000000000000001');
+    expect(addr.PermissionlessGate).toBe('0x000000000000000000000000000000000000000e');
+    expect(addr.IcsGate).toBeUndefined();
+    expect(addr.IdvtcGate).toBeUndefined();
+    expect(addr.VettedGate).toBeUndefined();
+  });
 });
