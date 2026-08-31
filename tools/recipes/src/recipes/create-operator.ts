@@ -6,6 +6,7 @@ import { ACT_AS_FUNDING, actAs, roleMember } from '../act-as';
 import { contract, resolveGate, type Ctx } from '../context';
 import { deriveAddress } from '../derive';
 import { randomKeys } from '../keys';
+import { NAMED_GATE_MODULES } from '../modules';
 import { randomSeed } from '../random';
 import { DEFAULT_ADMIN_ROLE, RESUME_ROLE } from '../roles';
 import { addGateAddrs } from './add-gate';
@@ -16,7 +17,8 @@ export interface CreateCsmOperatorOptions {
   /**
    * Entry gate — the operator's "type" (the gate pins the bond curve). Absent →
    * PermissionlessGate (no proof); 'ics' | 'idvtc' | a raw 0x… gate address → vetted gate
-   * (the address is appended to the gate allowlist via addGateAddrs and proven).
+   * (the address is appended to the gate allowlist via addGateAddrs and proven). csm02 is
+   * PermissionlessGate-only — passing a selector for csm02 throws.
    */
   selector?: string;
   /** The operator/sender address. Default: deriveAddress(seed, 'csm-operator'). */
@@ -57,13 +59,18 @@ export async function createCsmOperator(
   ctx: Ctx,
   opts: CreateCsmOperatorOptions = {},
 ): Promise<CreateCsmOperatorResult> {
-  if (ctx.module !== 'csm') {
-    throw new Error('@sm-lab/recipes: createCsmOperator requires ctx.module === "csm"');
+  if (ctx.module !== 'csm' && ctx.module !== 'csm02') {
+    throw new Error('@sm-lab/recipes: createCsmOperator requires ctx.module === "csm" or "csm02"');
   }
   const keysCount = opts.keysCount ?? 1;
   if (keysCount < 1 || !Number.isInteger(keysCount)) {
     throw new Error(
       '@sm-lab/recipes: createCsmOperator needs keysCount to be a positive integer ≥ 1 (CSM requires a key at creation)',
+    );
+  }
+  if (opts.selector !== undefined && !NAMED_GATE_MODULES.has(ctx.module)) {
+    throw new Error(
+      `@sm-lab/recipes: ${ctx.module} has no named gates (PermissionlessGate only) — pass a raw 0x… gate address`,
     );
   }
   const seed = opts.seed ?? randomSeed();

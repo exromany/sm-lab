@@ -90,4 +90,10 @@ describe('getGateTree', () => {
     const res = await getGateTree(ctx, { selector: 'po' });
     expect(res.address).toBe(A(0x30));
   });
+  it('throws for csm02 — no typed gate ABI, even with a raw address', async () => {
+    const fc = makeFakeClient({ reads: { treeRoot: '0xabc', treeCid: 'cid-x' } });
+    const ctx = fakeCtx('csm02', fc.client);
+    await expect(getGateTree(ctx, { selector: A(0x99) })).rejects.toThrow(/no typed gate ABI/);
+    expect(fc.byMethod('readContract')).toHaveLength(0);
+  });
 });

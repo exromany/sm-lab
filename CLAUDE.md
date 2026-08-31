@@ -154,6 +154,23 @@ Steps 1–5 done (`cl-mock`, `ipfs-mock`, `merkle`, `core`). Step 6 was reshaped
   `reset`, `scenario`. Runs via `tsx` (Prisma runtime doesn't bundle). Hermetic vitest tests inject
   `mockDeep<PrismaClient>()`. See `docs/superpowers/specs/2026-07-21-survey-seed-cli-design.md`.
 
+- **csm02 support** ✅ — the same `CSModule` contract deployed in EIP-7251 (0x02) mode as a peer
+  StakingRouter module, **hoodi-only** (not deployed on mainnet). receipts: `ModuleName` gains
+  `'csm02'` + a `Csm02AddressBook` (the csm book minus `IcsGate`/`IdvtcGate` — its only entry gate
+  is `PermissionlessGate`) + a committed hoodi snapshot (`data/hoodi/csm02.json`);
+  `refresh --module csm02` reads the contracts repo's `artifacts/<chain>/csm0x02/` dir (module key
+  `csm02` vs artifact dir `csm0x02` — mirrors the contracts repo's own naming). recipes: new
+  `src/modules.ts` capability table (`NAMED_GATE_MODULES`) replaces binary
+  `ctx.module === 'cm'` branching at the gate touch points
+  (`resolveGate`, `createCsmOperator`, `defaultSelector`, `pause`/`resume`, `getGateTree`) — csm02
+  has no named/typed gates, so all of those now throw a clear error for it instead of mis-decoding
+  a `VettedGate`/`CuratedGate` ABI. New `registerModule` recipe (idempotent StakingRouter
+  registration, cloning an existing module's `StakingModuleConfig`) — needed because csm02 isn't
+  registered on a fresh fork, so `exitRequest` throws until it's run. New read-only `topUpQueue`
+  recipe (single-snapshot `enabled`/`limit`/`length`/`head`, `enabled: false` on a non-0x02 CSM).
+  New `sm-recipes csm02` CLI group mirrors `cm`/`csm`: its own `create-operator`/`register-module`/
+  `top-up-queue` plus every shared recipe pre-bound.
+
 Steps 1–6 (cl, ipfs, merkle, keys, core, receipts, recipes + CLI) are complete.
 
 ### sm-lab TODO roadmap (Phases 1–4) ✅

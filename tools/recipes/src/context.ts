@@ -15,6 +15,7 @@ import type {
   ModuleName,
 } from '@sm-lab/receipts';
 import { makeClient, type RecipeClient } from './client';
+import { NAMED_GATE_MODULES } from './modules';
 
 /** Module-suite snapshot + the protocol addresses resolved on-chain by connect(). */
 export type ResolvedAddresses = AddressBook & {
@@ -167,10 +168,16 @@ export function contract(ctx: Ctx, name: StaticName | 'module') {
  * Resolve a gate selector to an address (the `_resolve-gate-addr` port). Accepted forms:
  * a raw `0x…` 40-hex address (any module); for csm — `ics` → IcsGate, `idvtc` →
  * IdvtcGate (v3-only; throws on pre-v3 snapshots lacking it);
- * for cm — `po|pto|pgo|do|eeo|iodc|iodcp` or a numeric index → the named curated gates.
+ * for cm — `po|pto|pgo|do|eeo|iodc|iodcp` or a numeric index → the named curated gates;
+ * csm02 has no named gates (PermissionlessGate only) — a selector other than a raw address throws.
  */
 export function resolveGate(ctx: Ctx, selector: string): Hex {
   if (/^0x[0-9a-fA-F]{40}$/.test(selector)) return selector as Hex;
+  if (!NAMED_GATE_MODULES.has(ctx.module)) {
+    throw new Error(
+      `@sm-lab/recipes: ${ctx.module} has no named gates (PermissionlessGate only) — pass a raw 0x… gate address`,
+    );
+  }
   if (ctx.module === 'cm') {
     const idx = CM_SELECTORS[selector] ?? (/^\d+$/.test(selector) ? Number(selector) : undefined);
     if (idx === undefined)

@@ -101,6 +101,15 @@ describe('resolveGate', () => {
     expect(resolveGate(fakeCtx('csm', makeFakeClient().client), raw)).toBe(raw);
     expect(resolveGate(fakeCtx('cm', makeFakeClient().client), raw)).toBe(raw);
   });
+
+  it('csm02: accepts a raw 0x address but rejects any named selector', () => {
+    const ctx = fakeCtx('csm02', makeFakeClient().client);
+    const raw = A(0xabc);
+    expect(resolveGate(ctx, raw)).toBe(raw);
+    expect(() => resolveGate(ctx, 'ics')).toThrow(/no named gates/);
+    expect(() => resolveGate(ctx, 'idvtc')).toThrow(/no named gates/);
+    expect(() => resolveGate(ctx, 'po')).toThrow(/no named gates/);
+  });
 });
 
 describe('contract', () => {

@@ -126,6 +126,30 @@ describe('createCsmOperator — permissionless (no selector)', () => {
   });
 });
 
+describe('createCsmOperator — csm02', () => {
+  it('no-selector goes through PermissionlessGate exactly like csm', async () => {
+    const { client, byMethod } = makeFakeClient({
+      reads: { CURVE_ID: 0n, getBondAmountByKeysCount: parseEther('2.4') },
+      simulate: { result: 11n, request: REQUEST },
+    });
+    const ctx = fakeCtx('csm02', client);
+
+    const res = await createCsmOperator(ctx, { seed: SEED });
+
+    expect(res.noId).toBe(11n);
+    expect(res.treeCid).toBeUndefined();
+    const sim = byMethod('simulateContract')[0] as any;
+    expect(sim.address).toBe(PERM_GATE);
+    expect(sim.args).toHaveLength(5); // no proof param on the permissionless gate
+  });
+
+  it('a selector is rejected — csm02 has no named gates', async () => {
+    const ctx = fakeCtx('csm02', makeFakeClient().client);
+    await expect(createCsmOperator(ctx, { selector: 'ics' })).rejects.toThrow(/no named gates/);
+    await expect(createCsmOperator(ctx, { selector: A(0x99) })).rejects.toThrow(/no named gates/);
+  });
+});
+
 describe('createCsmOperator — gated (selector)', () => {
   beforeEach(clearIpfsEnv);
   afterEach(() => {

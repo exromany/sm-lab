@@ -1,7 +1,8 @@
 import { size } from 'viem';
-import { curatedGateAbi, vettedGateAbi } from '@sm-lab/receipts';
+import { curatedGateAbi, stakingRouterAbi, vettedGateAbi } from '@sm-lab/receipts';
 import type { Hex } from '@sm-lab/receipts';
 import { contract, resolveGate, type Ctx } from '../context';
+import { NAMED_GATE_MODULES } from '../modules';
 
 /** One key's 48-byte pubkey from on-chain storage. Throws if no key exists at `keyIndex`. */
 export async function getPubkey(ctx: Ctx, opts: { noId: bigint; keyIndex: bigint }): Promise<Hex> {
@@ -138,12 +139,46 @@ export interface GateTree {
   treeCid: string;
 }
 
-/** Read a gate's current merkle tree params (root + cid) by selector (read-only). */
+/**
+ * Read a gate's current merkle tree params (root + cid) by selector (read-only). csm02 has no
+ * typed gate ABI (its only gate, PermissionlessGate, carries no tree) — throws for csm02.
+ */
 export async function getGateTree(ctx: Ctx, opts: { selector: string }): Promise<GateTree> {
+  if (!NAMED_GATE_MODULES.has(ctx.module)) {
+    throw new Error(
+      `@sm-lab/recipes: ${ctx.module} has no typed gate ABI (PermissionlessGate only, no tree) — getGateTree is unsupported`,
+    );
+  }
   const address = resolveGate(ctx, opts.selector);
   const abi = ctx.module === 'cm' ? curatedGateAbi : vettedGateAbi;
   const gate = { address, abi } as const;
   const treeRoot = (await ctx.client.readContract({ ...gate, functionName: 'treeRoot' })) as Hex;
   const treeCid = (await ctx.client.readContract({ ...gate, functionName: 'treeCid' })) as string;
   return { selector: opts.selector, address, treeRoot, treeCid };
+}
+
+/** Find the staking-module id whose registered address is `moduleAddress` (scans ALL ids). */
+export async function findModuleId(ctx: Ctx, moduleAddress: Hex): Promise<bigint | undefined> {
+  const sr = { address: ctx.addresses.stakingRouter, abi: stakingRouterAbi } as const;
+  const ids = (await ctx.client.readContract({
+    ...sr,
+    functionName: 'getStakingModuleIds',
+  })) as bigint[];
+  const mods = (await Promise.all(
+    ids.map((id) =>
+      ctx.client.readContract({ ...sr, functionName: 'getStakingModule', args: [id] }),
+    ),
+  )) as { stakingModuleAddress: Hex }[];
+  const idx = mods.findIndex(
+    (mod) => mod.stakingModuleAddress.toLowerCase() === moduleAddress.toLowerCase(),
+  );
+  return idx === -1 ? undefined : ids[idx];
+}
+
+/** Resolve the staking-module id for `moduleAddress`. Throws when it isn't registered. */
+export async function resolveModuleId(ctx: Ctx, moduleAddress: Hex): Promise<bigint> {
+  const id = await findModuleId(ctx, moduleAddress);
+  if (id === undefined)
+    throw new Error(`@sm-lab/recipes: module ${moduleAddress} not registered in the StakingRouter`);
+  return id;
 }

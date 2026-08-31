@@ -14,6 +14,8 @@ export type {
 export { actAs, roleMember } from './act-as';
 export { randomKeys } from './keys';
 
+export { NAMED_GATE_MODULES } from './modules';
+
 export { addKeys } from './recipes/add-keys';
 export type { AddKeysOptions, AddKeysResult } from './recipes/add-keys';
 export { operatorInfo } from './recipes/operator-info';
@@ -34,7 +36,8 @@ export {
 export { nodeOperatorIdBytes, keyCountBytes } from './encode';
 export { unvet, exit, removeKey } from './recipes/vetting';
 export { deposit } from './recipes/deposit';
-export { increaseAllocatedBalance, topUpActiveKeys } from './recipes/topup';
+export { increaseAllocatedBalance, topUpActiveKeys, topUpQueue } from './recipes/topup';
+export type { TopUpQueueEntry, TopUpQueueSnapshot } from './recipes/topup';
 
 export { slash, withdraw, activateKeys, reportBalance } from './recipes/validators';
 export type { WithdrawnValidatorInfo } from './recipes/validators';
@@ -71,8 +74,17 @@ export {
   operatorsCount,
   getLastOperator,
   getGateTree,
+  findModuleId,
+  resolveModuleId,
 } from './recipes/reads';
 export type { BondCurveInfo, BondCurveInterval, BondInfo, GateTree } from './recipes/reads';
+
+export { registerModule } from './recipes/register-module';
+export type {
+  RegisterModuleOptions,
+  RegisterModuleResult,
+  StakingModuleConfig,
+} from './recipes/register-module';
 export { setClValidator } from './cl-mock';
 export type { SetValidatorInput } from './cl-mock';
 

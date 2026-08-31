@@ -67,6 +67,19 @@ describe('pause', () => {
     const ctx = fakeCtx('csm', fc.client);
     await expect(pause(ctx, { target: 'nonsense' })).rejects.toThrow(/unknown/i);
   });
+
+  it('csm02: module/accounting targets still work, a gate target throws', async () => {
+    const fc = makeFakeClient({ reads: { isPaused: false, getRoleMember: ADMIN } });
+    const ctx = fakeCtx('csm02', fc.client, { CSModule: A(0x01), Accounting: A(0x02) });
+
+    const moduleRes = await pause(ctx, { target: 'module' });
+    expect(moduleRes.address).toBe(A(0x01));
+    const accRes = await pause(ctx, { target: 'accounting' });
+    expect(accRes.address).toBe(A(0x02));
+
+    await expect(pause(ctx, { target: 'ics' })).rejects.toThrow(/no typed gate ABI/);
+    await expect(pause(ctx, { target: A(0x99) })).rejects.toThrow(/no typed gate ABI/);
+  });
 });
 
 describe('resume', () => {

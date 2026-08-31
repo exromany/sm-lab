@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { increaseAllocatedBalance, topUpActiveKeys } from '../src/recipes/topup';
+import { increaseAllocatedBalance, topUpActiveKeys, topUpQueue } from '../src/recipes/topup';
 import { makeFakeClient } from './helpers/fake-client';
 import { A, fakeCtx } from './helpers/book';
 
@@ -178,5 +178,78 @@ describe('topUpActiveKeys', () => {
     const lastRead = order.lastIndexOf('readContract');
     const firstWrite = order.indexOf('writeContract');
     expect(firstWrite).toBeGreaterThan(lastRead);
+  });
+});
+
+describe('topUpQueue', () => {
+  it('enabled=false short-circuits with zero item reads', async () => {
+    const fc = makeFakeClient({ reads: { getTopUpQueue: [false, 0n, 0n, 0n] } });
+    const ctx = fakeCtx('csm02', fc.client, { CSModule: A(0x01) });
+
+    const res = await topUpQueue(ctx);
+
+    expect(res).toEqual({ enabled: false, limit: 0n, length: 0n, head: 0n, items: [] });
+    expect(fc.byMethod('readContract')).toHaveLength(1); // just getTopUpQueue
+    expect(fc.byMethod('readContract')[0]).toMatchObject({ functionName: 'getTopUpQueue' });
+  });
+
+  it('enabled=true reads items 0..length-1 (offset from head, not the raw index)', async () => {
+    const fc = makeFakeClient({
+      reads: {
+        getTopUpQueue: [true, 10n, 3n, 7n], // head=7, 3 pending, capacity 10
+        getTopUpQueueItem: (args: unknown[]) => {
+          const i = (args as [bigint])[0];
+          return [100n + i, i]; // noId, keyIndex — distinct per offset
+        },
+      },
+    });
+    const ctx = fakeCtx('csm02', fc.client, { CSModule: A(0x01) });
+
+    const res = await topUpQueue(ctx);
+
+    expect(res.enabled).toBe(true);
+    expect(res.limit).toBe(10n);
+    expect(res.length).toBe(3n);
+    expect(res.head).toBe(7n);
+    expect(res.items).toEqual([
+      { index: 0n, noId: 100n, keyIndex: 0n },
+      { index: 1n, noId: 101n, keyIndex: 1n },
+      { index: 2n, noId: 102n, keyIndex: 2n },
+    ]);
+    const itemReads = (fc.byMethod('readContract') as any[]).filter(
+      (r) => r.functionName === 'getTopUpQueueItem',
+    );
+    expect(itemReads.map((r) => r.args)).toEqual([[0n], [1n], [2n]]);
+  });
+
+  it('bounds the item scan with opts.limit', async () => {
+    const fc = makeFakeClient({
+      reads: {
+        getTopUpQueue: [true, 10n, 5n, 0n],
+        getTopUpQueueItem: (args: unknown[]) => [200n, (args as [bigint])[0]],
+      },
+    });
+    const ctx = fakeCtx('csm02', fc.client, { CSModule: A(0x01) });
+
+    const res = await topUpQueue(ctx, { limit: 2 });
+
+    expect(res.items).toHaveLength(2);
+  });
+
+  it('opts.noId filters the (already-bounded) read items', async () => {
+    const fc = makeFakeClient({
+      reads: {
+        getTopUpQueue: [true, 10n, 3n, 0n],
+        getTopUpQueueItem: (args: unknown[]) => {
+          const i = (args as [bigint])[0];
+          return [i === 1n ? 9n : 1n, i];
+        },
+      },
+    });
+    const ctx = fakeCtx('csm02', fc.client, { CSModule: A(0x01) });
+
+    const res = await topUpQueue(ctx, { noId: 9n });
+
+    expect(res.items).toEqual([{ index: 1n, noId: 9n, keyIndex: 1n }]);
   });
 });

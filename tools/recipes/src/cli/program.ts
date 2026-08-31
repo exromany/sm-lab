@@ -5,9 +5,10 @@ import { defineCommand, type RecipeCommand } from './define';
 import { sharedCommands } from './commands/shared';
 import { cmCommands } from './commands/cm';
 import { csmCommands } from './commands/csm';
+import { csm02Commands } from './commands/csm02';
 
 /** Pre-bind shared descriptors to a module so they run group-form without --module. */
-const withModule = (descs: RecipeCommand[], module: 'cm' | 'csm'): RecipeCommand[] =>
+const withModule = (descs: RecipeCommand[], module: 'cm' | 'csm' | 'csm02'): RecipeCommand[] =>
   descs.map((d) => ({ ...d, module }));
 
 // addCommand does NOT copy configureHelp settings (only the .command() factory does), so
@@ -23,7 +24,7 @@ export function buildProgram(connectImpl: typeof connect = connect): Command {
     .description('Prepare Lido SM on-chain state on an anvil fork (run-and-exit recipes)')
     .version(readPackageVersion(import.meta.url))
     .option('--rpc-url <url>', 'anvil fork RPC URL (default: $RPC_URL or http://127.0.0.1:8545)')
-    .option('--module <csm|cm>', 'target module for shared commands')
+    .option('--module <csm|cm|csm02>', 'target module for shared commands')
     .option('--cl-mock-url <url>', 'cl-mock URL for cl-activate (default: $CL_MOCK_URL)')
     .option('--json', 'emit the raw result as JSON')
     .addHelpText(
@@ -34,6 +35,7 @@ Examples:
   sm-recipes csm operator-info 0 --json
   sm-recipes add-keys 0 --module cm --json
   sm-recipes cm seed --json
+  sm-recipes csm02 register-module --json
   sm-recipes completion fish | source`,
     )
     // `sm-recipes help [cmd]` mirrors `--help` (and the cm/csm groups get it too).
@@ -54,6 +56,13 @@ Examples:
   for (const desc of [...csmCommands, ...withModule(sharedCommands, 'csm')])
     csm.addCommand(defineCommand(desc, connectImpl));
   program.addCommand(csm);
+
+  const csm02 = new Command('csm02').description(
+    'csm02 recipes + shared recipes (module forced to csm02)',
+  );
+  for (const desc of [...csm02Commands, ...withModule(sharedCommands, 'csm02')])
+    csm02.addCommand(defineCommand(desc, connectImpl));
+  program.addCommand(csm02);
 
   showGlobals(program);
 

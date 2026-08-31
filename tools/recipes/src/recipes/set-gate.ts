@@ -8,6 +8,7 @@ import { curatedGateAbi, vettedGateAbi } from '@sm-lab/receipts';
 import type { Hex } from '@sm-lab/receipts';
 import { actAs, roleMember } from '../act-as';
 import { resolveGate, type Ctx, type GateSelector } from '../context';
+import { NAMED_GATE_MODULES } from '../modules';
 import { DEFAULT_ADMIN_ROLE, SET_TREE_ROLE } from '../roles';
 
 export interface SetGateAddrsOptions {
@@ -27,8 +28,16 @@ export interface SetGateAddrsResult {
   treeCid: string;
 }
 
-/** Default gate selector per module: cm → 'po' (CuratedGatePO); csm → 'ics' (IcsGate). */
+/**
+ * Default gate selector per module: cm → 'po' (CuratedGatePO); csm → 'ics' (IcsGate). csm02 has
+ * no named gates (PermissionlessGate only) — throws instead of defaulting.
+ */
 export function defaultSelector(ctx: Ctx): string {
+  if (!NAMED_GATE_MODULES.has(ctx.module)) {
+    throw new Error(
+      `@sm-lab/recipes: ${ctx.module} has no default gate selector (PermissionlessGate only) — pass --selector <0x… address>`,
+    );
+  }
   return ctx.module === 'cm' ? 'po' : 'ics';
 }
 

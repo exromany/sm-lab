@@ -128,3 +128,59 @@ export async function topUpActiveKeys(
 
   return { toppedUp: workList.length };
 }
+
+export interface TopUpQueueEntry {
+  /** offset from the queue head — also the `getTopUpQueueItem(index)` argument. */
+  index: bigint;
+  noId: bigint;
+  keyIndex: bigint;
+}
+
+export interface TopUpQueueSnapshot {
+  enabled: boolean;
+  /** queue capacity (`Queue.limit`). */
+  limit: bigint;
+  /** pending item count (`items.length - head`), from the same read as `head` (see below). */
+  length: bigint;
+  /** raw storage head pointer (`Queue.head`); NOT an item index — see `TopUpQueueEntry.index`. */
+  head: bigint;
+  items: TopUpQueueEntry[];
+}
+
+/** Bounded default item-read count — a fork's pending queue is rarely large; raise via `opts.limit`. */
+const DEFAULT_TOPUP_QUEUE_LIMIT = 50;
+
+/**
+ * Read the CSM 0x02 top-up queue (read-only; no `actAs`). `enabled`/`limit`/`length`/`head` all
+ * come from ONE `getTopUpQueue()` call — reading `head`/`length` apart (as the upstream helper
+ * does) can straddle an `allocateDeposits` write and report a stale, inconsistent position (e.g.
+ * item #13 of a since-shrunk total of 12). `enabled: false` (an upgraded, non-0x02 CSM) short-
+ * circuits with zero item reads — `getKeysForTopUp` reverts `TopUpQueueDisabled` in that state.
+ * Items are read via `getTopUpQueueItem(i)` for `i` in `0..length-1` — that `index` is already an
+ * offset from `head` (the contract adds `head` internally), NOT a raw storage array index.
+ */
+export async function topUpQueue(
+  ctx: Ctx,
+  opts: { noId?: bigint; limit?: number } = {},
+): Promise<TopUpQueueSnapshot> {
+  const m = contract(ctx, 'module');
+  const [enabled, limit, length, head] = (await ctx.client.readContract({
+    ...m,
+    functionName: 'getTopUpQueue',
+  })) as readonly [boolean, bigint, bigint, bigint];
+  if (!enabled) return { enabled, limit, length, head, items: [] };
+
+  const readCount = Math.min(Number(length), opts.limit ?? DEFAULT_TOPUP_QUEUE_LIMIT);
+  const entries = await Promise.all(
+    Array.from({ length: readCount }, (_, i) => i).map(async (i) => {
+      const [noId, keyIndex] = (await ctx.client.readContract({
+        ...m,
+        functionName: 'getTopUpQueueItem',
+        args: [BigInt(i)],
+      })) as readonly [bigint, bigint];
+      return { index: BigInt(i), noId, keyIndex };
+    }),
+  );
+  const items = opts.noId === undefined ? entries : entries.filter((e) => e.noId === opts.noId);
+  return { enabled, limit, length, head, items };
+}

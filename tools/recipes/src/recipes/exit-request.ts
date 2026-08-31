@@ -5,12 +5,13 @@ import {
   numberToHex,
   parseAbiParameters,
 } from 'viem';
-import { stakingRouterAbi, vEBOAbi, type Hex } from '@sm-lab/receipts';
+import { vEBOAbi, type Hex } from '@sm-lab/receipts';
 import { actAs, roleMember } from '../act-as';
 import { contract, type Ctx } from '../context';
 import { DEFAULT_ADMIN_ROLE } from '../roles';
 import { setClValidator } from '../cl-mock';
 import { activeEffectiveBalanceGwei } from './cl-activate';
+import { resolveModuleId } from './reads';
 
 export interface ExitRequestOptions {
   noId: bigint;
@@ -175,24 +176,4 @@ export async function exitRequest(ctx: Ctx, opts: ExitRequestOptions): Promise<E
     pubkey,
     clStatus,
   };
-}
-
-/** Find the staking-module id whose registered address is `moduleAddress` (scans ALL ids). */
-async function resolveModuleId(ctx: Ctx, moduleAddress: Hex): Promise<bigint> {
-  const sr = { address: ctx.addresses.stakingRouter, abi: stakingRouterAbi } as const;
-  const ids = (await ctx.client.readContract({
-    ...sr,
-    functionName: 'getStakingModuleIds',
-  })) as bigint[];
-  const mods = (await Promise.all(
-    ids.map((id) =>
-      ctx.client.readContract({ ...sr, functionName: 'getStakingModule', args: [id] }),
-    ),
-  )) as { stakingModuleAddress: Hex }[];
-  const idx = mods.findIndex(
-    (mod) => mod.stakingModuleAddress.toLowerCase() === moduleAddress.toLowerCase(),
-  );
-  if (idx === -1)
-    throw new Error(`@sm-lab/recipes: module ${moduleAddress} not registered in the StakingRouter`);
-  return ids[idx]!;
 }

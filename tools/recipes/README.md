@@ -36,12 +36,12 @@ node tools/recipes/dist/cli.mjs --help                         # built dist (rep
 ```
 
 Global flags: `--rpc-url` (or `RPC_URL`, defaulting to anvil's `http://127.0.0.1:8545`),
-`--module <csm|cm>`, `--cl-mock-url` (or `CL_MOCK_URL`), `--json`. Amounts (`--amount`,
+`--module <csm|cm|csm02>`, `--cl-mock-url` (or `CL_MOCK_URL`), `--json`. Amounts (`--amount`,
 `--exit-balance`, …) are in **ETH** (`0.000000000000000001` = 1 wei). `sm-recipes help [command]`
 mirrors `--help`. `sm-recipes completion <bash|zsh|fish>` prints a static shell-completion
 script (e.g. `sm-recipes completion fish | source`).
 
-The `cm`/`csm` groups host their own recipes **and** mirror every shared recipe with the
+The `cm`/`csm`/`csm02` groups host their own recipes **and** mirror every shared recipe with the
 module pre-bound — so a shared command works two ways: top-level with `--module`, or under
 the group (no `--module` needed):
 
@@ -51,6 +51,8 @@ sm-recipes csm operator-info --operator-id 0            # same, module from the 
 sm-recipes --module csm make-rewards --json
 sm-recipes cm seed --seed 0x01                          # cm-only recipe
 sm-recipes csm set-gate --address 0xabc... --address 0xdef...   # csm-only recipe
+sm-recipes csm02 register-module --json                 # csm02-only recipe (hoodi)
+sm-recipes csm02 top-up-queue --json                     # csm02-only, read-only
 ```
 
 Every **required, non-repeatable** option is also accepted **positionally**, in declaration
@@ -79,6 +81,7 @@ sm-recipes csm create-operator 10                 # PermissionlessGate, 10 keys
 sm-recipes csm create-operator idvtc              # IdvtcGate (whitelists + proves), 1 key
 sm-recipes csm create-operator idvtc 10           # order-free: `10 idvtc` works too
 sm-recipes csm create-operator --address 0xabc... --manager 0xdef... --extended-manager-permissions
+sm-recipes csm02 create-operator                  # PermissionlessGate only — no <selector> option at all
 ```
 
 ## The `actAs` model
@@ -90,8 +93,9 @@ This replaces the Solidity `broadcast*` modifiers.
 ## Subpaths & gate selectors
 
 - `@sm-lab/recipes` — shared: `connect`, `actAs`, `addKeys`, `operatorInfo`, `warpBy`,
-  `snapshot`, `revert`, `clActivate`, plus the module-agnostic gate helpers `resolveGate`
-  and `setGateAddrs` (both dispatch on `ctx.module` — see gate selectors below).
+  `snapshot`, `revert`, `clActivate`, `registerModule`, `topUpQueue`, plus the module-agnostic
+  gate helpers `resolveGate` and `setGateAddrs` (both dispatch on `ctx.module` via `src/modules.ts`'s
+  `NAMED_GATE_MODULES` — see gate selectors below).
 - `@sm-lab/recipes/cm` — `createCuratedOperator` (cm gates `po/pto/pgo/do/eeo/iodc/iodcp` →
   `CuratedGates[0..6]`), MetaRegistry group/curve recipes `createOperatorGroup`,
   `resetOperatorGroup`, `setBondCurveWeight`, and `seedCm` — seed a realistic cm fork in one call
@@ -103,6 +107,11 @@ This replaces the Solidity `broadcast*` modifiers.
 - csm — `ics` → `VettedGate` (default); `idvtc` → `IdentifiedDVTClusterGate` (v3-only, hoodi;
   throws on mainnet/v2 snapshots that lack it).
 - cm — `po/pto/pgo/do/eeo/iodc/iodcp` or a numeric index → `CuratedGates[0..6]` (`po` is the default).
+- csm02 — no named gates; its only entry gate is `PermissionlessGate`, not a typed `VettedGate`/
+  `CuratedGate`. A named selector (`ics`, `po`, …) throws in `resolveGate` itself; `create-operator`,
+  `pause`/`resume`, `get-gate-tree`, and `add-gate` reject any gate target outright (raw address or
+  not) since there's no typed gate ABI for them to operate on. `set-gate` has no default selector
+  for csm02 either — only usable there with an explicit raw `0x…` address.
 - any — a raw `0x…` gate address is used as-is.
 
 `setGateAddrs` builds the gate's address tree and installs it on whichever gate the selector
@@ -116,6 +125,28 @@ IPFS (set `IPFS_API_URL` to a local `@sm-lab/ipfs`, or `PINATA_*`), or pass `cid
 - `topUpActiveKeys(ctx, { noId })` — top up every not-yet-allocated, not-withdrawn deposited key,
   one at a time in ascending key-index order (FIFO `TopUpQueueOps`, capped at 2016 ETH per key).
   Returns `{ toppedUp }` (a no-op `{ toppedUp: 0 }` when nothing needs it).
+- `topUpQueue(ctx, opts?)` — read-only (no `actAs`): reads csm02's top-up queue's
+  `enabled`/`limit`/`length`/`head` from a single `getTopUpQueue()` snapshot (reading them apart
+  can straddle a write and report a stale position), plus up to `opts.limit` (default 50) pending
+  `{ index, noId, keyIndex }` items, optionally filtered to `opts.noId`. Reports `{ enabled: false
+}` on an upgraded, non-0x02 CSM instead of throwing.
+
+## csm02 registration (`registerModule`)
+
+**csm02 is not registered in the StakingRouter on a fresh fork** — `exitRequest`'s
+`resolveModuleId` throws until it is. Run `registerModule` before any recipe that needs the
+module id resolved:
+
+```bash
+sm-recipes csm02 register-module --json
+sm-recipes csm02 exit-request 0 0                 # now works
+```
+
+`registerModule(ctx, opts?)` registers `ctx.module`'s module contract in the StakingRouter — a
+no-op (`{ registered: false }`) if the address is already registered. Otherwise it clones an
+existing module's `StakingModuleConfig` (`getStakingModule` on the first registered module, or
+`opts.sourceModuleId`), overriding `withdrawalCredentialsType` to `2` for csm02 (`1` otherwise);
+any other config field can also be overridden via `opts`.
 
 ## Rewards (`makeRewards` → `submitRewards`)
 

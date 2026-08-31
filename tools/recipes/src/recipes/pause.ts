@@ -4,6 +4,7 @@ import { curatedGateAbi, vettedGateAbi } from '@sm-lab/receipts';
 import type { Hex } from '@sm-lab/receipts';
 import { actAs, roleMember } from '../act-as';
 import { contract, resolveGate, type Ctx } from '../context';
+import { NAMED_GATE_MODULES } from '../modules';
 import { DEFAULT_ADMIN_ROLE, PAUSE_ROLE, RESUME_ROLE } from '../roles';
 
 export interface PauseResult {
@@ -18,7 +19,8 @@ export interface PauseResult {
 /**
  * Resolve a pause target keyword to a contract handle. `module` and `accounting` are reserved;
  * anything else is a gate selector resolved via `resolveGate` (ics/idvtc for csm; po…iodcp/index
- * for cm; 0x… for either).
+ * for cm; 0x… for either). csm02 has no typed gate ABI (its only gate, PermissionlessGate, isn't
+ * pausable) — a gate target throws for csm02.
  */
 function resolveTarget(ctx: Ctx, target: string): { address: Hex; abi: Abi } {
   if (target === 'module') {
@@ -28,6 +30,11 @@ function resolveTarget(ctx: Ctx, target: string): { address: Hex; abi: Abi } {
   if (target === 'accounting') {
     const a = contract(ctx, 'Accounting');
     return { address: a.address, abi: a.abi as Abi };
+  }
+  if (!NAMED_GATE_MODULES.has(ctx.module)) {
+    throw new Error(
+      `@sm-lab/recipes: ${ctx.module} has no typed gate ABI (PermissionlessGate only, not pausable) — pause "module" or "accounting" instead`,
+    );
   }
   // All gate types share the PausableUntil surface, so either gate abi decodes it.
   const abi = (ctx.module === 'cm' ? curatedGateAbi : vettedGateAbi) as Abi;

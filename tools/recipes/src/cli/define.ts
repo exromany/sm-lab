@@ -41,8 +41,8 @@ export interface RecipeCommand<O = Record<string, unknown>, R = unknown> {
   // e.g. run(ctx, o: { noId: bigint }) — remain assignable to RecipeCommand[].
   run(ctx: Ctx, opts: O): Promise<R> | R;
   report(result: R, opts: O): string[];
-  /** cm/csm-only commands set this; it forces ctx.module and overrides global --module. */
-  module?: 'cm' | 'csm';
+  /** cm/csm/csm02-only commands set this; it forces ctx.module and overrides global --module. */
+  module?: 'cm' | 'csm' | 'csm02';
   needsClMock?: boolean;
 }
 
@@ -199,8 +199,8 @@ export function defineCommand(desc: RecipeCommand, connectImpl: typeof connect =
         opts[o.key] =
           typeof raw === 'boolean' ? raw : o.coerce ? o.coerce(raw as string | string[]) : raw;
       }
-      const moduleName = desc.module ?? (g.module as 'csm' | 'cm' | undefined);
-      if (!moduleName) throw new Error('set --module <csm|cm>');
+      const moduleName = desc.module ?? (g.module as 'csm' | 'cm' | 'csm02' | undefined);
+      if (!moduleName) throw new Error('set --module <csm|cm|csm02>');
       const rpcUrl = (g.rpcUrl as string | undefined) ?? process.env.RPC_URL ?? DEFAULT_RPC_URL;
       const clMockUrl = (g.clMockUrl as string | undefined) ?? process.env.CL_MOCK_URL;
       if (desc.needsClMock && !clMockUrl)
