@@ -1,5 +1,12 @@
 # @sm-lab/keys
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [7ea79c7]
+  - @sm-lab/receipts@0.3.0
+
 ## 0.3.0
 
 ### Minor Changes
